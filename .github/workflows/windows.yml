@@ -51,19 +51,19 @@ jobs:
       run: |
         conan profile new default --detect
         conan profile update settings.build_type=${{matrix.build_type}} default
-        conan install ${{runner.workspace}}/conanfile.py
+        conan install $GITHUB_WORKSPACE
     - name: Build conan
       working-directory: ${{runner.workspace}}/build
       env:
         CXX: ${{matrix.cxx}}
         CXXFLAGS: ${{matrix.cxxflags}}
       run: |
-        conan build ${{runner.workspace}}
+        conan build $GITHUB_WORKSPACE
     - name: Test conan
       working-directory: ${{runner.workspace}}/build
       run: |
-        conan test ${{runner.workspace}}
+        conan test $GITHUB_WORKSPACE
     - name: Package conan
       working-directory: ${{runner.workspace}}/build
       run: |
-        conan export-pkg ${{runner.workspace}}
+        conan export-pkg $GITHUB_WORKSPACE
