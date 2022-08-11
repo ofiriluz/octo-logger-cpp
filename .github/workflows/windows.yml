@@ -1,0 +1,74 @@
+name: windows
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        # windows-2019 has MSVC 2019 installed;
+        # windows-2022 has MSVC 2022 installed:
+        # https://github.com/actions/virtual-environments.
+        os: [windows-2019]
+        platform: [Win32, x64]
+        toolset: [v140, v141, v142]
+        standard: [14, 17, 20]
+        shared: ["", -DBUILD_SHARED_LIBS=ON]
+        build_type: [Debug, Release]
+        exclude:
+          - { toolset: v140, standard: 17 }
+          - { toolset: v140, standard: 20 }
+          - { toolset: v141, standard: 14 }
+          - { toolset: v141, standard: 20 }
+          - { toolset: v142, standard: 14 }
+          - { platform: Win32, toolset: v140 }
+          - { platform: Win32, toolset: v141 }
+          - { platform: Win32, standard: 14 }
+          - { platform: Win32, standard: 20 }
+          - { platform: x64, toolset: v140, shared: -DBUILD_SHARED_LIBS=ON }
+          - { platform: x64, toolset: v141, shared: -DBUILD_SHARED_LIBS=ON }
+          - { platform: x64, standard: 14, shared: -DBUILD_SHARED_LIBS=ON }
+          - { platform: x64, standard: 20, shared: -DBUILD_SHARED_LIBS=ON }
+        include:
+          - os: windows-2022
+            platform: x64
+            toolset: v143
+            build_type: Debug
+            standard: 20
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.8"
+    - name: Install Conan
+      run: |
+        pip3 install conan
+    - name: Consume conan
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        conan profile new default --detect
+        conan profile update settings.build_type=Debug default
+        conan install ${{runner.workspace}}
+    - name: Build conan
+      working-directory: ${{runner.workspace}}/build
+      env:
+        CXX: ${{matrix.cxx}}
+        CXXFLAGS: ${{matrix.cxxflags}}
+      run: |
+        conan build ${{runner.workspace}}
+    - name: Test conan
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        conan test ${{runner.workspace}}
+    - name: Package conan
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        conan export-pkg ${{runner.workspace}}
