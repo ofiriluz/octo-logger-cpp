@@ -6,8 +6,12 @@ FUNCTION(LOAD_CONAN_BUILD_INFO)
         PATHS
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/build
+        ${CMAKE_CURRENT_SOURCE_DIR}/../build
+        ${CMAKE_CURRENT_BINARY_DIR}
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/build
+        ${CMAKE_SOURCE_DIR}/../build
+        ${CMAKE_BINARY_DIR}
     )
     # Include Conan definition and set RPATHS
     INCLUDE(${CONAN_${PROJECT_NAME}_BUILD_INFO})
