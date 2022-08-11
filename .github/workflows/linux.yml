@@ -20,8 +20,6 @@ jobs:
         sudo apt update
         sudo apt install locales-all g++-10
         cmake -E make_directory ${{runner.workspace}}/build
-        ls -l ${{runner.workspace}}
-        ls -l ${{runner.workspace}}/build
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
