@@ -51,13 +51,15 @@ jobs:
             install: sudo apt install libc++-11-dev libc++abi-11-dev
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Create Build Environment
       run: |
         ${{matrix.install}}
         sudo apt update
         sudo apt install locales-all
         cmake -E make_directory ${{runner.workspace}}/build
+        ls -l ${{runner.workspace}}
+        ls -l ${{runner.workspace}}/build
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -69,8 +71,8 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         conan profile new default --detect
-        conan profile update settings.build_type=Debug default
-        conan install ${{runner.workspace}}
+        conan profile update settings.build_type=${{matrix.build_type}} default
+        conan install ${{runner.workspace}}/conanfile.py
     - name: Build conan
       working-directory: ${{runner.workspace}}/build
       env:

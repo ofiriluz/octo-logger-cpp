@@ -36,7 +36,7 @@ jobs:
             standard: 20
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
     - name: Set up Python
@@ -50,7 +50,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         conan profile new default --detect
-        conan profile update settings.build_type=Debug default
+        conan profile update settings.build_type=${{matrix.build_type}} default
         conan install ${{runner.workspace}}/conanfile.py
     - name: Build conan
       working-directory: ${{runner.workspace}}/build
