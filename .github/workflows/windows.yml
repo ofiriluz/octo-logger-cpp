@@ -27,7 +27,7 @@ jobs:
           - { platform: Win32, standard: 20 }
           - { platform: x64, toolset: v140 }
           - { platform: x64, toolset: v141 }
-          - { platform: x64, standard: 20, shared: -DBUILD_SHARED_LIBS=ON }
+          - { platform: x64, standard: 20 }
         include:
           - os: windows-2022
             platform: x64
