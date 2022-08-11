@@ -26,16 +26,19 @@ jobs:
       run: |
         pip3 install conan
     - name: Consume conan
+      shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
         conan profile new default --detect
         conan profile update settings.build_type=${{matrix.build_type}} default
         conan install $GITHUB_WORKSPACE
     - name: Build and test conan
+      shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
         conan build $GITHUB_WORKSPACE
     - name: Package conan
+      shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
         conan export-pkg $GITHUB_WORKSPACE
