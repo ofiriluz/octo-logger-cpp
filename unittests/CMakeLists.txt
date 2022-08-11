@@ -1,0 +1,45 @@
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CATCH2_ROOT}/lib/cmake/Catch2)
+
+SET(UT_EXECUTABLE ${PROJECT_NAME}-tests)
+
+# UT definition
+ADD_EXECUTABLE(${UT_EXECUTABLE}
+    ${PROJECT_SOURCE_DIR}/src/logger.cpp
+    ${PROJECT_SOURCE_DIR}/src/manager-config.cpp
+    ${PROJECT_SOURCE_DIR}/src/manager.cpp
+    src/log-tests.cpp
+    src/logger-tests.cpp
+    src/test.cpp
+)
+
+ADD_DEPENDENCIES(${UT_EXECUTABLE} ${PROJECT_NAME})
+
+# Properties
+SET_TARGET_PROPERTIES(${UT_EXECUTABLE} PROPERTIES CXX_STANDARD 17 POSITION_INDEPENDENT_CODE ON)
+
+TARGET_COMPILE_DEFINITIONS(${UT_EXECUTABLE}
+    PRIVATE
+        UNIT_TESTS
+)
+
+TARGET_INCLUDE_DIRECTORIES(${UT_EXECUTABLE}
+    PUBLIC
+    # Unit tests includes
+    ${CMAKE_CURRENT_LIST_DIR}/include
+
+    # Project includes
+    ${PROJECT_SOURCE_DIR}/include
+)
+
+TARGET_LINK_LIBRARIES(${UT_EXECUTABLE}
+    ${PROJECT_NAME}
+
+    # 3rdParties
+    CONAN_PKG::catch2
+    CONAN_PKG::trompeloeil
+)
+
+# Discover tests
+INCLUDE(CTest)
+INCLUDE(Catch)
+CATCH_DISCOVER_TESTS(${UT_EXECUTABLE})
