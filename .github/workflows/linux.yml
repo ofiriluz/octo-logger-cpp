@@ -10,46 +10,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        cxx: [g++-10, clang++-9]
+        cxx: [g++-10]
         build_type: [Debug, Release]
-        std: [11]
+        std: [17]
         os: [ubuntu-18.04]
-        include:
-          - cxx: g++-8
-            build_type: Debug
-            std: 17
-            install: sudo apt install g++-8
-            os: ubuntu-18.04
-          - cxx: g++-10
-            build_type: Debug
-            std: 17
-            os: ubuntu-18.04
-          - cxx: g++-11
-            build_type: Debug
-            std: 20
-            os: ubuntu-20.04
-            install: sudo apt install g++-11
-          - cxx: clang++-8
-            build_type: Debug
-            std: 17
-            cxxflags: -stdlib=libc++
-            os: ubuntu-18.04
-            install: sudo apt install clang-8 libc++-8-dev libc++abi-8-dev
-          - cxx: clang++-9
-            build_type: Debug
-            std: 17
-            os: ubuntu-18.04
-          - cxx: clang++-11
-            build_type: Debug
-            std: 20
-            os: ubuntu-20.04
-          - cxx: clang++-11
-            build_type: Debug
-            std: 20
-            cxxflags: -stdlib=libc++
-            os: ubuntu-20.04
-            install: sudo apt install libc++-11-dev libc++abi-11-dev
-
     steps:
     - uses: actions/checkout@v3
     - name: Create Build Environment
@@ -75,9 +39,6 @@ jobs:
         conan install $GITHUB_WORKSPACE
     - name: Build conan
       working-directory: ${{runner.workspace}}/build
-      env:
-        CXX: ${{matrix.cxx}}
-        CXXFLAGS: ${{matrix.cxxflags}}
       run: |
         conan build $GITHUB_WORKSPACE
     - name: Test conan

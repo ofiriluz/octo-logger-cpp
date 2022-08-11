@@ -10,31 +10,11 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        # windows-2019 has MSVC 2019 installed;
-        # windows-2022 has MSVC 2022 installed:
-        # https://github.com/actions/virtual-environments.
         os: [windows-2019]
         platform: [Win32, x64]
-        toolset: [v140, v141, v142]
-        standard: [17, 20]
+        toolset: [v142]
+        standard: [17]
         build_type: [Debug, Release]
-        exclude:
-          - { toolset: v140, standard: 17 }
-          - { toolset: v140, standard: 20 }
-          - { toolset: v141, standard: 20 }
-          - { platform: Win32, toolset: v140 }
-          - { platform: Win32, toolset: v141 }
-          - { platform: Win32, standard: 20 }
-          - { platform: x64, toolset: v140 }
-          - { platform: x64, toolset: v141 }
-          - { platform: x64, standard: 20 }
-        include:
-          - os: windows-2022
-            platform: x64
-            toolset: v143
-            build_type: Debug
-            standard: 20
-
     steps:
     - uses: actions/checkout@v3
     - name: Create Build Environment
@@ -54,9 +34,6 @@ jobs:
         conan install $GITHUB_WORKSPACE
     - name: Build conan
       working-directory: ${{runner.workspace}}/build
-      env:
-        CXX: ${{matrix.cxx}}
-        CXXFLAGS: ${{matrix.cxxflags}}
       run: |
         conan build $GITHUB_WORKSPACE
     - name: Test conan
