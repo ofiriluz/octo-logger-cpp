@@ -35,14 +35,10 @@ jobs:
         conan profile new default --detect
         conan profile update settings.build_type=${{matrix.build_type}} default
         conan install $GITHUB_WORKSPACE
-    - name: Build conan
+    - name: Build and test conan
       working-directory: ${{runner.workspace}}/build
       run: |
         conan build $GITHUB_WORKSPACE
-    - name: Test conan
-      working-directory: ${{runner.workspace}}/build
-      run: |
-        conan test $GITHUB_WORKSPACE
     - name: Package conan
       working-directory: ${{runner.workspace}}/build
       run: |
