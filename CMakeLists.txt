@@ -28,8 +28,8 @@ SET_TARGET_PROPERTIES(octo-logger-cpp PROPERTIES CXX_STANDARD 17 POSITION_INDEPE
 
 TARGET_COMPILE_OPTIONS(octo-logger-cpp
     PRIVATE
-        -Werror=return-type
-        -Werror=switch
+        $<$<NOT:$<PLATFORM_ID:Windows>>:-Werror=return-type>
+        $<$<NOT:$<PLATFORM_ID:Windows>>:-Werror=switch>
 )
 
 TARGET_INCLUDE_DIRECTORIES(octo-logger-cpp
