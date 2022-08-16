@@ -16,6 +16,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <memory>
 #include "sink-config.hpp"
 
 namespace octo::logger
