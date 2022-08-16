@@ -12,6 +12,8 @@
 #ifndef FILE_SINK_HPP_
 #define FILE_SINK_HPP_
 
+#ifndef _WIN32
+
 #include "octo-logger-cpp/channel.hpp"
 #include "octo-logger-cpp/log.hpp"
 #include "octo-logger-cpp/logger.hpp"
@@ -66,4 +68,5 @@ class FileSink : public Sink
 };
 } // namespace octo::logger
 
+#endif
 #endif

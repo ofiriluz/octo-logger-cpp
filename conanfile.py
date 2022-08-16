@@ -1,6 +1,4 @@
-from conans import CMake
-from conans import ConanFile
-from conans import tools
+from conans import CMake, ConanFile, tools
 
 class OctoLoggerCPPConan(ConanFile):
     name = "octo-logger-cpp"
@@ -20,7 +18,8 @@ class OctoLoggerCPPConan(ConanFile):
         cmake.configure()
         cmake.build()
         cmake.install()
-        cmake.test()
+        if str(self.settings.os) != "Windows":
+            cmake.test()
 
     def package(self):
         cmake = CMake(self)

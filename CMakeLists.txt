@@ -20,7 +20,7 @@ ADD_LIBRARY(octo-logger-cpp STATIC
     src/sink.cpp
     src/sinks/console-sink.cpp
     src/sinks/file-sink.cpp
-    src/sinks/syslog-sink.cpp
+    $<$<NOT:$<PLATFORM_ID:Windows>>:src/sinks/syslog-sink.cpp>
 )
 
 # Properties
@@ -28,8 +28,8 @@ SET_TARGET_PROPERTIES(octo-logger-cpp PROPERTIES CXX_STANDARD 17 POSITION_INDEPE
 
 TARGET_COMPILE_OPTIONS(octo-logger-cpp
     PRIVATE
-        -Werror=return-type
-        -Werror=switch
+        $<$<NOT:$<PLATFORM_ID:Windows>>:-Werror=return-type>
+        $<$<NOT:$<PLATFORM_ID:Windows>>:-Werror=switch>
 )
 
 TARGET_INCLUDE_DIRECTORIES(octo-logger-cpp
@@ -58,7 +58,7 @@ IF(NOT DISABLE_EXAMPLES)
 ENDIF()
 
 # Unittests
-IF (NOT DISABLE_TESTS)
+IF (NOT DISABLE_TESTS AND NOT WIN32)
     ENABLE_TESTING()
     ADD_SUBDIRECTORY(unittests)
 ENDIF ()
