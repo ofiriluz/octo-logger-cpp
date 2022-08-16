@@ -20,7 +20,7 @@ ADD_LIBRARY(octo-logger-cpp STATIC
     src/sink.cpp
     src/sinks/console-sink.cpp
     src/sinks/file-sink.cpp
-    src/sinks/syslog-sink.cpp
+    $<$<PLATFORM_ID:Linux>:src/sinks/syslog-sink.cpp>
 )
 
 # Properties

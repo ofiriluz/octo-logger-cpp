@@ -28,7 +28,9 @@ class SinkConfig
     {
         CONSOLE_SINK,
         FILE_SINK,
+#ifndef _WIN32
         SYSLOG_SINK,
+#endif
         CUSTOM_SINK
     };
 
@@ -48,7 +50,9 @@ class SinkConfig
         FILE_LOG_FOLDER_NO_SEPERATE_BY_DATE,
         FILE_DISABLE_CONTEXT_INFO,
 
+#ifndef _WIN32
         SYSLOG_LOG_NAME
+#endif
     };
 
   private:

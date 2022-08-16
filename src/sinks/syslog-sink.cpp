@@ -9,6 +9,8 @@
  *
  */
 
+#ifndef _WIN32
+
 #include "octo-logger-cpp/sinks/syslog-sink.hpp"
 #include <iomanip>
 
@@ -40,3 +42,5 @@ void SysLogSink::dump(const Log& log, const Channel& channel, Logger::ContextInf
     }
 }
 } // namespace octo::logger
+
+#endif

@@ -1,6 +1,4 @@
-from conans import CMake
-from conans import ConanFile
-from conans import tools
+from conans import CMake, ConanFile, tools
 
 class OctoLoggerCPPConan(ConanFile):
     name = "octo-logger-cpp"
