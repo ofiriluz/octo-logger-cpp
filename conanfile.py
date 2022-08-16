@@ -2,7 +2,7 @@ from conans import CMake, ConanFile, tools
 
 class OctoLoggerCPPConan(ConanFile):
     name = "octo-logger-cpp"
-    version = "1.0.0"
+    version = "1.1.0"
     url = "https://github.com/ofiriluz/octo-logger-cpp"
     author = "Ofir Iluz"
     generators = "cmake"
