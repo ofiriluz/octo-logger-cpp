@@ -17,7 +17,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Create Build Environment
-      shell: bash
       run: |
         cmake -E make_directory ${{runner.workspace}}/build
     - name: Set up Python
@@ -29,7 +28,7 @@ jobs:
       run: |
         pip3 install conan
     - name: Consume conan
-      working-directory: ${{runner.workspace}}\build
+      working-directory: ${{runner.workspace}}/build
       shell: bash
       run: |
         conan profile new default --detect
