@@ -13,7 +13,12 @@
 #include <fmt/format.h>
 #include <iomanip>
 #include <thread>
+#ifndef _WIN32
 #include <unistd.h>
+#else
+#include <windows.h>
+#define getpid GetCurrentProcessId
+#endif
 
 namespace octo::logger
 {
