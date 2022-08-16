@@ -9,6 +9,8 @@
  *
  */
 
+#ifndef _WIN32
+
 #include "octo-logger-cpp/sinks/file-sink.hpp"
 #include <unistd.h>
 #include <ctime>
@@ -249,3 +251,5 @@ void FileSink::dump(const Log& log, const Channel& channel, Logger::ContextInfo 
     file->stream << std::endl;
 }
 } // namespace octo::logger
+
+#endif

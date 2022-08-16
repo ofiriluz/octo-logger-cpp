@@ -27,8 +27,8 @@ class SinkConfig
     enum class SinkType : std::uint8_t
     {
         CONSOLE_SINK,
-        FILE_SINK,
 #ifndef _WIN32
+        FILE_SINK,
         SYSLOG_SINK,
 #endif
         CUSTOM_SINK
@@ -39,6 +39,7 @@ class SinkConfig
         CONSOLE_DISABLE_COLOR,
         CONSOLE_DISABLE_CONTEXT_INFO,
 
+#ifndef _WIN32
         FILE_LOG_FILES_PATH,
         FILE_SIZE_PER_LOG_FILE,
         FILE_MAX_LOG_FILES,
@@ -50,7 +51,6 @@ class SinkConfig
         FILE_LOG_FOLDER_NO_SEPERATE_BY_DATE,
         FILE_DISABLE_CONTEXT_INFO,
 
-#ifndef _WIN32
         SYSLOG_LOG_NAME
 #endif
     };
