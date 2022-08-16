@@ -32,7 +32,7 @@ SinkPtr SinkFactory::create_sink(const SinkConfig& sink_config)
     {
         return SinkPtr(new FileSink(sink_config));
     }
-#ifdef __linux__
+#ifndef _WIN32
     else if (sink_config.sink_type() == SinkConfig::SinkType::SYSLOG_SINK)
     {
         return SinkPtr(new SysLogSink(sink_config));
