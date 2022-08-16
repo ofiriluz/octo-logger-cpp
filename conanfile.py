@@ -18,7 +18,8 @@ class OctoLoggerCPPConan(ConanFile):
         cmake.configure()
         cmake.build()
         cmake.install()
-        cmake.test()
+        if str(self.settings.os) != "Windows":
+            cmake.test()
 
     def package(self):
         cmake = CMake(self)
