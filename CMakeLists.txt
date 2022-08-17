@@ -23,6 +23,9 @@ ADD_LIBRARY(octo-logger-cpp STATIC
     $<$<NOT:$<PLATFORM_ID:Windows>>:src/sinks/syslog-sink.cpp>
 )
 
+# Alias
+ADD_LIBRARY(core::octo-logger-cpp ALIAS octo-logger-cpp)
+
 # Properties
 SET_TARGET_PROPERTIES(octo-logger-cpp PROPERTIES CXX_STANDARD 17 POSITION_INDEPENDENT_CODE ON)
 

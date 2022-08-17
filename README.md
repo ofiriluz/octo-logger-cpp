@@ -2,6 +2,8 @@ octo-logger-cpp
 ==============
 
 [![Logger Linux Build Pipeline](https://github.com/ofiriluz/octo-logger-cpp/actions/workflows/linux.yml/badge.svg)](https://github.com/ofiriluz/octo-logger-cpp/actions/workflows/linux.yml)
+[![Logger Windows Build Pipeline](https://github.com/ofiriluz/octo-logger-cpp/actions/workflows/windows.yml/badge.svg)](https://github.com/ofiriluz/octo-logger-cpp/actions/workflows/windows.yml)
+[![Logger Mac Build Pipeline](https://github.com/ofiriluz/octo-logger-cpp/actions/workflows/mac.yml/badge.svg)](https://github.com/ofiriluz/octo-logger-cpp/actions/workflows/mac.yml)
 
 Logging library, capabable of logging to different channels from each logger
 
