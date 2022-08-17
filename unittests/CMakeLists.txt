@@ -1,4 +1,7 @@
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CATCH2_ROOT}/lib/cmake/Catch2)
+# SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CATCH2_ROOT}/lib/cmake/Catch2)
+
+FIND_PACKAGE(Catch2 REQUIRED CONFIG)
+FIND_PACKAGE(trompeloeil REQUIRED CONFIG)
 
 SET(UT_EXECUTABLE ${PROJECT_NAME}-tests)
 
@@ -35,8 +38,8 @@ TARGET_LINK_LIBRARIES(${UT_EXECUTABLE}
     ${PROJECT_NAME}
 
     # 3rdParties
-    CONAN_PKG::catch2
-    CONAN_PKG::trompeloeil
+    Catch2::Catch2
+    trompeloeil::trompeloeil
 )
 
 # Discover tests

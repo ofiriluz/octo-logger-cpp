@@ -5,8 +5,8 @@ PROJECT(octo-logger-cpp)
 # Add CMake options to path
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 INCLUDE(ConfigOptions)
-INCLUDE(LoadConanBuildInfo)
-LOAD_CONAN_BUILD_INFO()
+
+FIND_PACKAGE(fmt REQUIRED CONFIG)
 
 # Library definition
 ADD_LIBRARY(octo-logger-cpp STATIC
@@ -42,7 +42,7 @@ TARGET_INCLUDE_DIRECTORIES(octo-logger-cpp
 )
 
 TARGET_LINK_LIBRARIES(octo-logger-cpp
-    CONAN_PKG::fmt
+    fmt::fmt
 )
 
 # Installation of the logger
