@@ -7,6 +7,10 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 INCLUDE(ConfigOptions)
 
 FIND_PACKAGE(fmt REQUIRED CONFIG)
+IF (WITH_AWS)
+    FIND_PACKAGE(nlohmann_json REQUIRED CONFIG COMPONENTS)
+    FIND_PACKAGE(AWSSDK REQUIRED CONFIG COMPONENTS logs)
+ENDIF()
 
 # Library definition
 ADD_LIBRARY(octo-logger-cpp STATIC
@@ -21,6 +25,8 @@ ADD_LIBRARY(octo-logger-cpp STATIC
     src/sinks/console-sink.cpp
     src/sinks/file-sink.cpp
     $<$<NOT:$<PLATFORM_ID:Windows>>:src/sinks/syslog-sink.cpp>
+    $<$<BOOL:${WITH_AWS}>:src/aws/cloudwatch-sink.cpp>
+    $<$<BOOL:${WITH_AWS}>:src/aws/aws-log-system.cpp>
 )
 
 # Alias
@@ -41,8 +47,15 @@ TARGET_INCLUDE_DIRECTORIES(octo-logger-cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+TARGET_COMPILE_DEFINITIONS(octo-logger-cpp
+    PUBLIC
+        $<$<BOOL:${WITH_AWS}>:WITH_AWS>
+)
+
 TARGET_LINK_LIBRARIES(octo-logger-cpp
     fmt::fmt
+    $<$<BOOL:${WITH_AWS}>:nlohmann_json::nlohmann_json>
+    $<$<BOOL:${WITH_AWS}>:AWS::aws-sdk-cpp-logs>
 )
 
 # Installation of the logger

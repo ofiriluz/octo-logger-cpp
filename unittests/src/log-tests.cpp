@@ -1,6 +1,5 @@
 #include "octo-logger-cpp/log.hpp"
-
-#include "catch2_matchers.hpp"
+#include "catch2-matchers.hpp"
 #include "octo-logger-cpp/manager.hpp"
 #include "log-mock.hpp"
 #include "logger-mock.hpp"

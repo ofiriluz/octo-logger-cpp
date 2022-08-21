@@ -3,6 +3,7 @@
 
 #include "log-mock.hpp"
 #include "logger-mock.hpp"
+#include "cloudwatch-sink-mock.hpp"
 #include <catch2/catch_all.hpp>
 #include <fmt/format.h>
 #include <string>
@@ -94,6 +95,50 @@ class ContextInfoEquals : public Catch::Matchers::MatcherBase<LoggerMock::Contex
         return std::move(context_str);
     }
 };
+
+#ifdef WITH_AWS
+class LogStreamTypeEquals : public Catch::Matchers::MatcherBase<CloudWatchSinkMock::LogStreamType>
+{
+  private:
+    CloudWatchSinkMock::LogStreamType log_stream_type_;
+
+  public:
+    explicit LogStreamTypeEquals(CloudWatchSinkMock::LogStreamType log_stream_type) : log_stream_type_(log_stream_type)
+    {
+    }
+
+    bool match(CloudWatchSinkMock::LogStreamType const& in) const override
+    {
+        return log_stream_type_ == in;
+    }
+
+    std::string describe() const override
+    {
+        return fmt::format("equals {}", static_cast<int>(log_stream_type_));
+    }
+};
+
+class JSONEquals : public Catch::Matchers::MatcherBase<nlohmann::json>
+{
+  private:
+    nlohmann::json const json_;
+
+  public:
+    explicit JSONEquals(nlohmann::json json) : json_(std::move(json))
+    {
+    }
+
+    bool match(nlohmann::json const& in) const override
+    {
+        return json_ == in;
+    }
+
+    std::string describe() const override
+    {
+        return fmt::format("\nequals\n{}", json_.dump());
+    }
+};
+#endif
 
 } // namespace octo::logger::unittests
 #endif // CATCH2_MATCHERS_HPP_

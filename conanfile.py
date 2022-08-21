@@ -10,6 +10,12 @@ class OctoLoggerCPPConan(ConanFile):
     url = "https://github.com/ofiriluz/octo-logger-cpp"
     author = "Ofir Iluz"
     settings = "os", "compiler", "build_type", "arch"
+    options = {
+        "with_aws": [True, False]
+    }
+    default_options = {
+        "with_aws": False
+    }
 
     @property
     def _compilers_minimum_version(self):
@@ -19,6 +25,9 @@ class OctoLoggerCPPConan(ConanFile):
             "apple-clang": "11",
             "Visual Studio": "16",
         }
+
+    def configure(self):
+        self.options["aws-sdk-cpp"].logs = True
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -49,10 +58,15 @@ class OctoLoggerCPPConan(ConanFile):
         self.requires("catch2/3.1.0")
         self.requires("fmt/9.0.0")
         self.requires("trompeloeil/42")
+        if self.options.with_aws:
+            self.requires("nlohmann_json/3.11.2")
+            self.requires("aws-sdk-cpp/1.9.234")
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure()
+        cmake.configure(variables={
+            "WITH_AWS": self.options.with_aws
+        })
         cmake.build()
         if str(self.settings.os) != "Windows":
             cmake.test()
