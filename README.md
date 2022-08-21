@@ -17,6 +17,7 @@ Currently the log supports the following log sinks
 - ConsoleSink
 - SysLogSink
 - FileSink
+- CloudWatchSink - Only compiled with WITH_AWS flag on and aws-sdk-cpp libraries
 - CustomSink - Interface for custom sinks that the user can implement
 
 Note that the logger works in a stream oriented c++ style
@@ -47,19 +48,66 @@ Once the configuration is done, we set the manager with this config and can now 
 
 ```cpp
 octo::logger::Logger logger("Test");
-logger.debug() << "HI";
-logger.info() << "HI2";
-logger.notice() << "HI3";
-logger.warning() << "HI4";
-logger.error() << "HI5";
+logger.debug() << "A";
+logger.info() << "B";
+logger.notice() << "C";
+logger.warning() << "D";
+logger.error() << "E";
 
-logger.debug("ID1") << "HI WITH ID";
-logger.info("ID2") << "HI2 WITH ID";
-logger.notice("ID3") << "HI3 WITH ID";
-logger.warning("ID4") << "HI4 WITH ID";
-logger.error("ID5") << "HI5 WITH ID";
+logger.debug("ID1") << "A WITH ID";
+logger.info("ID2") << "B WITH ID";
+logger.notice("ID3") << "C WITH ID";
+logger.warning("ID4") << "D WITH ID";
+logger.error("ID5") << "E WITH ID";
 
-logger.log(octo::logger::Log::LogLevel::ERROR, "BLA") << "BLA LOG";
+logger.log(octo::logger::Log::LogLevel::ERROR, "ID") << "GENERAL";
 
-octo::logger::Manager::instance().global_logger().info() << "WTF IS GLOBAL";
+octo::logger::Manager::instance().global_logger().info() << "GLOBAL";
+```
+
+The logger also supports AWS related loggings using cloudwatch
+
+To use that, you need to consume / compile octo-logger with aws-sdk-cpp
+
+To do so with conan:
+
+```bash
+conan install . -o with_aws=True --build=aws-sdk-cpp
+```
+Note that building of aws-sdk-cpp might not be needed if AWS SDK is compiled with the logs SDK
+
+Once the octo logger is compiled with AWS support, we can use it as follows:
+
+```cpp
+// Init AWS
+Aws::SDKOptions options;
+octo::logger::aws::AwsLogSystem::instance()->SetLogLevel(settings_->logging_settings().aws_log_level());
+options.loggingOptions.logLevel = settings_->logging_settings().aws_log_level();
+options.loggingOptions.logger_create_fn = octo::logger::aws::AwsLogSystem::instance;
+Aws::InitAPI(options);
+
+if (!Aws::Utils::Logging::GetLogSystem())
+{
+    Aws::Utils::Logging::InitializeAWSLogging(octo::logger::aws::AwsLogSystem::instance());
+}
+
+// Add and configure cloudwatch log sink
+octo::logger::aws::CloudWatchSink::LogGroupTags log_group_tags{
+    {"product", "octo"}
+};
+std::string task_id = "local-task-"s + uuids::to_string(uuids::uuid_system_generator{}());
+if (auto task_md = octo::aws::ECSTaskMetadata::retrieve())
+{
+    task_id = "task-"s + task_md->task_id();
+}
+std::string log_group_name = "/octo";
+octo::logger::SinkConfig cloudwatch_config("Cloudwatch", octo::logger::SinkConfig::SinkType::CUSTOM_SINK);
+octo::logger::SinkPtr cloudwatch_sink = std::make_shared<octo::logger::aws::CloudWatchSink>(
+    cloudwatch_config,
+    std::move(task_id),
+    octo::logger::aws::CloudWatchSink::LogStreamType::BY_EXTRA_ID,
+    true,
+    log_group_name,
+    log_group_tags);
+config->add_custom_sink(cloudwatch_sink);
 ```
