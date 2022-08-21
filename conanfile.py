@@ -10,6 +10,12 @@ class OctoLoggerCPPConan(ConanFile):
     url = "https://github.com/ofiriluz/octo-logger-cpp"
     author = "Ofir Iluz"
     settings = "os", "compiler", "build_type", "arch"
+    options = {
+        "with_aws": [True, False]
+    }
+    default_options = {
+        "with_aws": False
+    }
 
     @property
     def _compilers_minimum_version(self):
@@ -19,6 +25,10 @@ class OctoLoggerCPPConan(ConanFile):
             "apple-clang": "11",
             "Visual Studio": "16",
         }
+
+    def configure(self):
+        if self.options.with_aws:
+            self.options["aws-sdk-cpp"].logs = True
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -49,10 +59,15 @@ class OctoLoggerCPPConan(ConanFile):
         self.requires("catch2/3.1.0")
         self.requires("fmt/9.0.0")
         self.requires("trompeloeil/42")
+        if self.options.with_aws:
+            self.requires("nlohmann_json/3.11.2")
+            self.requires("aws-sdk-cpp/1.9.234")
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure()
+        cmake.configure(variables={
+            "WITH_AWS": self.options.with_aws
+        })
         cmake.build()
         if str(self.settings.os) != "Windows":
             cmake.test()
@@ -67,6 +82,11 @@ class OctoLoggerCPPConan(ConanFile):
         self.cpp_info.set_property("pkg_config_name", "octo-logger-cpp")
         self.cpp_info.components["libocto-logger-cpp"].libs = ["octo-logger-cpp"]
         self.cpp_info.components["libocto-logger-cpp"].requires = ["fmt::fmt"]
+        if self.options.with_aws:
+            self.cpp_info.components["libocto-logger-cpp"].requires.extend([
+                "nlohmann_json::nlohmann_json",
+                "aws-sdk-cpp::monitoring"
+            ])
         self.cpp_info.filenames["cmake_find_package"] = "octo-logger-cpp"
         self.cpp_info.filenames["cmake_find_package_multi"] = "octo-logger-cpp"
         self.cpp_info.names["cmake_find_package"] = "octo-logger-cpp"
