@@ -42,101 +42,10 @@ class AwsLogSystem : public Aws::Utils::Logging::LogSystemInterface
     };
 
   public:
-    static std::string sanitizer_tag_to_string(SanitizerTags tag)
-    {
-        switch (tag)
-        {
-            case SanitizerTags::ALL_TAG:
-              return "ALL";
-            case SanitizerTags::AUTHV4_TAG:
-              return "AUTHV4";
-            case SanitizerTags::AWSCLIENT_TAG:
-              return "AWSCLIENT";
-            case SanitizerTags::CONFIG_FILE_PROFILE_TAG:
-              return "CONFIG_FILE_PROFILE";
-            case SanitizerTags::CURL_HTTP_CLIENT_TAG:
-              return "CURL_HTTP_CLIENT";
-            case SanitizerTags::CURL_TAG:
-              return "CURL";
-            case SanitizerTags::ERROR_MARSHALLER_TAG:
-              return "ERROR_MARSHALLER";
-        }
-        throw std::runtime_error("Invalid tag");
-    }
-
-    static SanitizerTags string_to_sanitizer_tag(const std::string& s)
-    {
-        if (s == "ALL")
-        {
-            return SanitizerTags::ALL_TAG;
-        }
-        if (s == "AUTHV4")
-        {
-            return SanitizerTags::AUTHV4_TAG;
-        }
-        if (s == "AWSCLIENT")
-        {
-            return SanitizerTags::AWSCLIENT_TAG;
-        }
-        if (s == "CONFIG_FILE_PROFILE")
-        {
-            return SanitizerTags::CONFIG_FILE_PROFILE_TAG;
-        }
-        if (s == "CURL_HTTP_CLIENT")
-        {
-            return SanitizerTags::CURL_HTTP_CLIENT_TAG;
-        }
-        if (s == "CURL")
-        {
-            return SanitizerTags::CURL_TAG;
-        }
-        if (s == "ERROR_MARSHALLER")
-        {
-            return SanitizerTags::ERROR_MARSHALLER_TAG;
-        }
-        throw std::runtime_error("Invalid tag string");
-    }
-
-    static Aws::Utils::Logging::LogLevel octo_log_level_to_aws(Log::LogLevel log_level)
-    {
-        switch (log_level)
-        {
-            case Log::LogLevel::TRACE:
-                return Aws::Utils::Logging::LogLevel::Trace;
-            case Log::LogLevel::DEBUG:
-                return Aws::Utils::Logging::LogLevel::Debug;
-            case Log::LogLevel::INFO:
-            case Log::LogLevel::NOTICE:
-                return Aws::Utils::Logging::LogLevel::Info;
-            case Log::LogLevel::WARNING:
-                return Aws::Utils::Logging::LogLevel::Warn;
-            case Log::LogLevel::ERROR:
-                return Aws::Utils::Logging::LogLevel::Error;
-            case Log::LogLevel::QUIET:
-                return Aws::Utils::Logging::LogLevel::Off;
-        }
-        throw std::runtime_error("Invalid log level");
-    }
-    static Log::LogLevel aws_log_level_to_octo(Aws::Utils::Logging::LogLevel log_level)
-    {
-        switch (log_level)
-        {
-            case Aws::Utils::Logging::LogLevel::Off:
-                return Log::LogLevel::QUIET;
-            case Aws::Utils::Logging::LogLevel::Fatal:
-            case Aws::Utils::Logging::LogLevel::Error:
-                return Log::LogLevel::ERROR;
-            case Aws::Utils::Logging::LogLevel::Warn:
-                return Log::LogLevel::WARNING;
-            case Aws::Utils::Logging::LogLevel::Info:
-                return Log::LogLevel::INFO;
-            case Aws::Utils::Logging::LogLevel::Debug:
-                return Log::LogLevel::DEBUG;
-            case Aws::Utils::Logging::LogLevel::Trace:
-                return Log::LogLevel::TRACE;
-        }
-        throw std::runtime_error("Invalid AWS log level");
-    }
+    static std::string sanitizer_tag_to_string(SanitizerTags tag);
+    static SanitizerTags string_to_sanitizer_tag(const std::string& s);
+    static Aws::Utils::Logging::LogLevel octo_log_level_to_aws(Log::LogLevel log_level);
+    static Log::LogLevel aws_log_level_to_octo(Aws::Utils::Logging::LogLevel log_level);
 
   private:
     [[nodiscard]] bool process_auth_v4_signer_tag(std::string& message) const;
