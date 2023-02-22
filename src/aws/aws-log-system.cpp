@@ -65,7 +65,7 @@ std::string AwsLogSystem::sanitizer_tag_to_string(SanitizerTags tag)
     throw std::runtime_error("Invalid tag");
 }
 
-SanitizerTags AwsLogSystem::string_to_sanitizer_tag(const std::string& s)
+AwsLogSystem::SanitizerTags AwsLogSystem::string_to_sanitizer_tag(const std::string& s)
 {
     if (s == "ALL")
     {
