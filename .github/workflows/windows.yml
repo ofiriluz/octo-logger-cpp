@@ -26,7 +26,7 @@ jobs:
     - name: Install Conan
       shell: bash
       run: |
-        pip3 install conan
+        pip3 install conan==1.59.0
     - name: Consume conan
       working-directory: ${{runner.workspace}}\\build
       shell: bash
