@@ -45,6 +45,7 @@ std::shared_ptr<AwsLogSystem> AwsLogSystem::instance_;
 
 AwsLogSystem::AwsLogSystem() : logger_("AwsLogSystem")
 {
+    allowed_sanitizer_tags_ = {SanitizerTags::ALL_TAG};
 }
 
 std::shared_ptr<AwsLogSystem> AwsLogSystem::instance()
@@ -54,6 +55,16 @@ std::shared_ptr<AwsLogSystem> AwsLogSystem::instance()
         instance_ = std::shared_ptr<AwsLogSystem>(new AwsLogSystem());
     }
     return instance_;
+}
+
+void AwsLogSystem::set_allowed_sanitizers_tags(const std::vector<SanitizerTags>& tags)
+{
+    allowed_sanitizer_tags_ = tags;
+}
+
+const std::vector<SanitizerTags>& AwsLogSystem::allowed_sanitizers_tags() const
+{
+    return allowed_sanitizer_tags_;
 }
 
 Aws::Utils::Logging::LogLevel AwsLogSystem::GetLogLevel() const
@@ -123,6 +134,13 @@ std::string AwsLogSystem::trim_white_spaces(Aws::OStringStream const& message_st
     return "";
 }
 
+bool AwsLogSystem::allowed_sanitizer_tag(SanitizerTags tag) const
+{
+    auto all_tags = std::find(allowed_sanitizer_tags_.begin(), allowed_sanitizer_tags_.end(), SanitizerTags::ALL_TAG);
+    return all_tags != std::end(allowed_sanitizer_tags_) ||
+           std::find(allowed_sanitizer_tags_.begin(), allowed_sanitizer_tags_.end(), tag) != std::end(allowed_sanitizer_tags_);
+}
+
 bool AwsLogSystem::process_tag(char const* tag, std::string& message) const
 {
     bool res = false;
@@ -133,27 +151,69 @@ bool AwsLogSystem::process_tag(char const* tag, std::string& message) const
     }
     else if (strcmp(tag, "Aws::Config::ConfigFileProfileFSM") == 0)
     {
-        res = process_config_file_profile_tag(message);
+        if (!allowed_sanitizer_tag(SanitizerTags::CONFIG_FILE_PROFILE_TAG))
+        {
+            res = true;
+        }
+        else
+        {
+            res = process_config_file_profile_tag(message);
+        }
     }
     else if (strcmp(tag, "AWSAuthV4Signer") == 0)
     {
-        res = process_auth_v4_signer_tag(message);
+        if (!allowed_sanitizer_tag(SanitizerTags::AUTHV4_TAG))
+        {
+            res = true;
+        }
+        else
+        {
+            res = process_auth_v4_signer_tag(message);
+        }
     }
     else if (strcmp(tag, "AWSClient") == 0)
     {
-        res = process_aws_client_tag(message);
+        if (!allowed_sanitizer_tag(SanitizerTags::AWSCLIENT_TAG))
+        {
+            res = true;
+        }
+        else
+        {
+            res = process_aws_client_tag(message);
+        }
     }
     else if (strcmp(tag, "AWSErrorMarshaller") == 0)
     {
-        res = process_error_marshaller_tag(message);
+        if (!allowed_sanitizer_tag(SanitizerTags::ERROR_MARSHALLER_TAG))
+        {
+            res = true;
+        }
+        else
+        {
+            res = process_error_marshaller_tag(message);
+        }
     }
     else if (strcmp(tag, "CURL") == 0)
     {
-        res = process_curl_tag(message);
+        if (!allowed_sanitizer_tag(SanitizerTags::CURL_TAG))
+        {
+            res = true;
+        }
+        else
+        {
+            res = process_curl_tag(message);
+        }
     }
     else if (strcmp(tag, "CurlHttpClient") == 0)
     {
-        res = process_curl_http_client_tag(message);
+        if (!allowed_sanitizer_tag(SanitizerTags::CURL_HTTP_CLIENT_TAG))
+        {
+            res = true;
+        }
+        else
+        {
+            res = process_curl_http_client_tag(message);
+        }
     }
     else if (strcmp(tag, "Aws::Config::AWSConfigFileProfileConfigLoader") == 0 ||
              strcmp(tag, "Aws::Config::AWSProfileConfigLoader") == 0 || strcmp(tag, "Aws_Init_Cleanup") == 0 ||

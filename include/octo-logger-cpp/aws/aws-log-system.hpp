@@ -30,6 +30,73 @@ namespace octo::logger::aws
 class AwsLogSystem : public Aws::Utils::Logging::LogSystemInterface
 {
   public:
+    enum class SanitizerTags : uint8_t
+    {
+      ALL_TAG,
+      AUTHV4_TAG,
+      AWSCLIENT_TAG,
+      CONFIG_FILE_PROFILE_TAG,
+      CURL_HTTP_CLIENT_TAG,
+      CURL_TAG,
+      ERROR_MARSHALLER_TAG
+    };
+
+  public:
+    static std::string sanitizer_tag_to_string(SanitizerTags tag)
+    {
+        switch (tag)
+        {
+            case SanitizerTags::ALL_TAG:
+              return "ALL";
+            case SanitizerTags::AUTHV4_TAG:
+              return "AUTHV4";
+            case SanitizerTags::AWSCLIENT_TAG:
+              return "AWSCLIENT";
+            case SanitizerTags::CONFIG_FILE_PROFILE_TAG:
+              return "CONFIG_FILE_PROFILE";
+            case SanitizerTags::CURL_HTTP_CLIENT_TAG:
+              return "CURL_HTTP_CLIENT";
+            case SanitizerTags::CURL_TAG:
+              return "CURL";
+            case SanitizerTags::ERROR_MARSHALLER_TAG:
+              return "ERROR_MARSHALLER";
+        }
+        throw std::runtime_error("Invalid tag");
+    }
+
+    static SanitizerTags string_to_sanitizer_tag(const std::string& s)
+    {
+        if (s == "ALL")
+        {
+            return SanitizerTags::ALL_TAG;
+        }
+        if (s == "AUTHV4")
+        {
+            return SanitizerTags::AUTHV4_TAG;
+        }
+        if (s == "AWSCLIENT")
+        {
+            return SanitizerTags::AWSCLIENT_TAG;
+        }
+        if (s == "CONFIG_FILE_PROFILE")
+        {
+            return SanitizerTags::CONFIG_FILE_PROFILE_TAG;
+        }
+        if (s == "CURL_HTTP_CLIENT")
+        {
+            return SanitizerTags::CURL_HTTP_CLIENT_TAG;
+        }
+        if (s == "CURL")
+        {
+            return SanitizerTags::CURL_TAG;
+        }
+        if (s == "ERROR_MARSHALLER")
+        {
+            return SanitizerTags::ERROR_MARSHALLER_TAG;
+        }
+        throw std::runtime_error("Invalid tag string");
+    }
+
     static Aws::Utils::Logging::LogLevel octo_log_level_to_aws(Log::LogLevel log_level)
     {
         switch (log_level)
@@ -81,6 +148,7 @@ class AwsLogSystem : public Aws::Utils::Logging::LogSystemInterface
 
   protected:
     Logger logger_;
+    std::vector<SanitizerTags> allowed_sanitizer_tags_;
     static std::shared_ptr<AwsLogSystem> instance_;
 
   protected:
@@ -88,6 +156,7 @@ class AwsLogSystem : public Aws::Utils::Logging::LogSystemInterface
 
     [[nodiscard]] std::string trim_white_spaces(Aws::OStringStream const& message_stream) const;
     [[nodiscard]] bool process_tag(char const* tag, std::string& message) const;
+    [[nodiscard]] bool allowed_sanitizer_tag(SanitizerTags tag) const;
 
   public:
     AwsLogSystem(AwsLogSystem const&) = delete;
@@ -96,6 +165,9 @@ class AwsLogSystem : public Aws::Utils::Logging::LogSystemInterface
     ~AwsLogSystem() override = default;
 
     static std::shared_ptr<AwsLogSystem> instance();
+
+    void set_allowed_sanitizers_tags(const std::vector<SanitizerTags>& tags);
+    const std::vector<SanitizerTags>& allowed_sanitizers_tags() const;
 
     Aws::Utils::Logging::LogLevel GetLogLevel() const override;
     void Log(Aws::Utils::Logging::LogLevel log_level, char const* tag, char const* format_str, ...) override;
