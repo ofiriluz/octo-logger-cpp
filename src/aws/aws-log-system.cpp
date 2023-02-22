@@ -62,7 +62,7 @@ void AwsLogSystem::set_allowed_sanitizers_tags(const std::vector<SanitizerTags>&
     allowed_sanitizer_tags_ = tags;
 }
 
-const std::vector<SanitizerTags>& AwsLogSystem::allowed_sanitizers_tags() const
+const std::vector<AwsLogSystem::SanitizerTags>& AwsLogSystem::allowed_sanitizers_tags() const
 {
     return allowed_sanitizer_tags_;
 }
