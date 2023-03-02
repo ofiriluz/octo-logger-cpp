@@ -58,6 +58,24 @@ void CloudWatchSink::assert_and_create_log_stream(const std::string& log_stream_
     if (std::find(existing_log_streams_.begin(), existing_log_streams_.end(), log_stream_name) ==
         existing_log_streams_.end())
     {
+        // Check if the log stream already exists
+        Aws::CloudWatchLogs::Model::DescribeLogStreamsRequest describe_log_streams_request;
+        describe_log_streams_request.WithLogGroupName(log_group_name_.c_str()).WithLogStreamNamePrefix(log_stream_name.c_str());
+        auto desc_outcome = aws_cloudwatch_client_->DescribeLogStreams(describe_log_streams_request);
+        if (desc_outcome.IsSuccess())
+        {
+            auto log_streams = desc_outcome.GetResult().GetLogStreams();
+            for (auto & stream : log_streams)
+            {
+                if (stream.GetLogStreamName() == log_stream_name)
+                {
+                    existing_log_streams_.insert(log_stream_name);
+                    return;
+                }
+            }
+        }
+
+        // Create it
         Aws::CloudWatchLogs::Model::CreateLogStreamRequest create_log_stream;
         create_log_stream.WithLogGroupName(log_group_name_.c_str()).WithLogStreamName(log_stream_name.c_str());
         auto outcome = aws_cloudwatch_client_->CreateLogStream(create_log_stream);
