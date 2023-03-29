@@ -9,7 +9,7 @@
  *
  */
 
-#ifdef WITH_AWS
+#ifdef OCTO_LOGGER_WITH_AWS
 
 #ifndef AWS_LOG_SYSTEM_HPP_
 #define AWS_LOG_SYSTEM_HPP_

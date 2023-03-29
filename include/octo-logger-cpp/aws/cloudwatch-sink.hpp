@@ -9,7 +9,7 @@
  *
  */
 
-#ifdef WITH_AWS
+#ifdef OCTO_LOGGER_WITH_AWS
 
 #ifndef CLOUDWATCH_SINK_HPP_
 #define CLOUDWATCH_SINK_HPP_

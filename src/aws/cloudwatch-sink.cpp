@@ -9,7 +9,7 @@
  *
  */
 
-#ifdef WITH_AWS
+#ifdef OCTO_LOGGER_WITH_AWS
 
 #include "octo-logger-cpp/aws/cloudwatch-sink.hpp"
 #include <aws/logs/model/CreateLogGroupRequest.h>

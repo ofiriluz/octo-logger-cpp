@@ -96,7 +96,7 @@ class ContextInfoEquals : public Catch::Matchers::MatcherBase<LoggerMock::Contex
     }
 };
 
-#ifdef WITH_AWS
+#ifdef OCTO_LOGGER_WITH_AWS
 class LogStreamTypeEquals : public Catch::Matchers::MatcherBase<CloudWatchSinkMock::LogStreamType>
 {
   private:

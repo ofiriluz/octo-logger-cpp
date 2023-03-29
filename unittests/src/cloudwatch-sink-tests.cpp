@@ -1,4 +1,4 @@
-#ifdef WITH_AWS
+#ifdef OCTO_LOGGER_WITH_AWS
 
 #include "cloudwatch-sink-mock.hpp"
 #include "catch2-matchers.hpp"

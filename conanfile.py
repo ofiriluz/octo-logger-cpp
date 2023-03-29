@@ -90,6 +90,8 @@ class OctoLoggerCPPConan(ConanFile):
                 "nlohmann_json::nlohmann_json",
                 "aws-sdk-cpp::monitoring"
             ])
+            component.defines.append('OCTO_LOGGER_WITH_AWS')
+            cpp_info.defines.append('OCTO_LOGGER_WITH_AWS')
         cpp_info.filenames["cmake_find_package"] = "octo-logger-cpp"
         cpp_info.filenames["cmake_find_package_multi"] = "octo-logger-cpp"
         cpp_info.names["cmake_find_package"] = "octo-logger-cpp"
