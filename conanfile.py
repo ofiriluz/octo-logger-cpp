@@ -6,7 +6,7 @@ from conan.tools.scm import Version
 
 class OctoLoggerCPPConan(ConanFile):
     name = "octo-logger-cpp"
-    version = "1.1.0"
+    version = "1.3.0"
     url = "https://github.com/ofiriluz/octo-logger-cpp"
     author = "Ofir Iluz"
     settings = "os", "compiler", "build_type", "arch"
