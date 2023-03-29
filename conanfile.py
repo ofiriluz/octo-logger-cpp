@@ -6,7 +6,7 @@ from conan.tools.scm import Version
 
 class OctoLoggerCPPConan(ConanFile):
     name = "octo-logger-cpp"
-    version = "1.1.0"
+    version = "1.3.0"
     url = "https://github.com/ofiriluz/octo-logger-cpp"
     author = "Ofir Iluz"
     settings = "os", "compiler", "build_type", "arch"
@@ -77,22 +77,27 @@ class OctoLoggerCPPConan(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.set_property("cmake_file_name", "octo-logger-cpp")
-        self.cpp_info.set_property("cmake_target_name", "octo::octo-logger-cpp")
-        self.cpp_info.set_property("pkg_config_name", "octo-logger-cpp")
-        self.cpp_info.components["libocto-logger-cpp"].libs = ["octo-logger-cpp"]
-        self.cpp_info.components["libocto-logger-cpp"].requires = ["fmt::fmt"]
+        cpp_info = self.cpp_info
+        cpp_info.set_property("cmake_file_name", "octo-logger-cpp")
+        cpp_info.set_property("cmake_target_name", "octo::octo-logger-cpp")
+        cpp_info.set_property("pkg_config_name", "octo-logger-cpp")
+
+        component = self.cpp_info.components["libocto-logger-cpp"]
+        component.libs = ["octo-logger-cpp"]
+        component.requires = ["fmt::fmt"]
         if self.options.with_aws:
-            self.cpp_info.components["libocto-logger-cpp"].requires.extend([
+            component.requires.extend([
                 "nlohmann_json::nlohmann_json",
                 "aws-sdk-cpp::monitoring"
             ])
-        self.cpp_info.filenames["cmake_find_package"] = "octo-logger-cpp"
-        self.cpp_info.filenames["cmake_find_package_multi"] = "octo-logger-cpp"
-        self.cpp_info.names["cmake_find_package"] = "octo-logger-cpp"
-        self.cpp_info.names["cmake_find_package_multi"] = "octo-logger-cpp"
-        self.cpp_info.names["pkg_config"] = "octo-logger-cpp"
-        self.cpp_info.components["libocto-logger-cpp"].names["cmake_find_package"] = "octo-logger-cpp"
-        self.cpp_info.components["libocto-logger-cpp"].names["cmake_find_package_multi"] = "octo-logger-cpp"
-        self.cpp_info.components["libocto-logger-cpp"].set_property("cmake_target_name", "octo::octo-logger-cpp")
-        self.cpp_info.components["libocto-logger-cpp"].set_property("pkg_config_name", "octo-logger-cpp")
+            component.defines.append('OCTO_LOGGER_WITH_AWS')
+            cpp_info.defines.append('OCTO_LOGGER_WITH_AWS')
+        cpp_info.filenames["cmake_find_package"] = "octo-logger-cpp"
+        cpp_info.filenames["cmake_find_package_multi"] = "octo-logger-cpp"
+        cpp_info.names["cmake_find_package"] = "octo-logger-cpp"
+        cpp_info.names["cmake_find_package_multi"] = "octo-logger-cpp"
+        cpp_info.names["pkg_config"] = "octo-logger-cpp"
+        component.names["cmake_find_package"] = "octo-logger-cpp"
+        component.names["cmake_find_package_multi"] = "octo-logger-cpp"
+        component.set_property("cmake_target_name", "octo::octo-logger-cpp")
+        component.set_property("pkg_config_name", "octo-logger-cpp")

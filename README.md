@@ -17,7 +17,7 @@ Currently the log supports the following log sinks
 - ConsoleSink
 - SysLogSink
 - FileSink
-- CloudWatchSink - Only compiled with WITH_AWS flag on and aws-sdk-cpp libraries
+- CloudWatchSink - Only compiled with OCTO_LOGGER_WITH_AWS flag on and aws-sdk-cpp libraries
 - CustomSink - Interface for custom sinks that the user can implement
 
 Note that the logger works in a stream oriented c++ style

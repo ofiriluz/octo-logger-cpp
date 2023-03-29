@@ -49,7 +49,7 @@ TARGET_INCLUDE_DIRECTORIES(octo-logger-cpp
 
 TARGET_COMPILE_DEFINITIONS(octo-logger-cpp
     PUBLIC
-        $<$<BOOL:${WITH_AWS}>:WITH_AWS>
+        $<$<BOOL:${WITH_AWS}>:OCTO_LOGGER_WITH_AWS>
 )
 
 TARGET_LINK_LIBRARIES(octo-logger-cpp
