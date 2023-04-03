@@ -60,12 +60,13 @@ void CloudWatchSink::assert_and_create_log_stream(const std::string& log_stream_
     {
         // Check if the log stream already exists
         Aws::CloudWatchLogs::Model::DescribeLogStreamsRequest describe_log_streams_request;
-        describe_log_streams_request.WithLogGroupName(log_group_name_.c_str()).WithLogStreamNamePrefix(log_stream_name.c_str());
+        describe_log_streams_request.WithLogGroupName(log_group_name_.c_str())
+            .WithLogStreamNamePrefix(log_stream_name.c_str());
         auto desc_outcome = aws_cloudwatch_client_->DescribeLogStreams(describe_log_streams_request);
         if (desc_outcome.IsSuccess())
         {
             auto log_streams = desc_outcome.GetResult().GetLogStreams();
-            for (auto & stream : log_streams)
+            for (auto& stream : log_streams)
             {
                 if (stream.GetLogStreamName() == log_stream_name)
                 {
@@ -176,10 +177,9 @@ CloudWatchSink::CloudWatchSink(SinkConfig const& config,
                                bool include_date_on_log_stream,
                                std::string const& log_group_name,
                                LogGroupTags log_group_tags)
-    : Sink(config),
+    : Sink(config, std::move(origin), LineFormat::JSON),
       log_stream_type_(log_stream_type),
       include_date_on_log_stream_(include_date_on_log_stream),
-      origin_(std::move(origin)),
       log_group_name_(log_group_name),
       is_running_(true),
       log_group_tags_(std::move(log_group_tags))
@@ -233,74 +233,14 @@ std::string CloudWatchSink::log_stream_name(const Log& log, const Channel& chann
     return channel.channel_name();
 }
 
-std::string CloudWatchSink::formatted_json(Log const& log,
-                                           Channel const& channel,
-                                           Logger::ContextInfo const& context_info) const
-{
-    nlohmann::json j;
-    std::stringstream ss;
-    std::time_t log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
-    ss << std::put_time(std::localtime(&log_time_t), "%FT%T%z");
-    j["message"] = log.stream()->str();
-    j["origin"] = origin_;
-    j["origin_service_name"] = channel.channel_name();
-    j["timestamp"] = ss.str(); // ISO 8601
-    auto log_level_str = Log::level_to_string(log.log_level());
-    std::transform(log_level_str.begin(), log_level_str.end(), log_level_str.begin(), ::toupper);
-    j["log_level"] = log_level_str;
-    j["origin_func_name"] = "";
-
-    j["context_info"] = init_context_info(log, channel, context_info);
-
-    return j.dump();
-}
-
-void CloudWatchSink::init_context_info(nlohmann::json& dst,
-                                       Log const& log,
-                                       Channel const& channel,
-                                       Logger::ContextInfo const& context_info) const
-{
-    switch (dst.type())
-    {
-        case nlohmann::json::value_t::null:
-            dst = nlohmann::json::object();
-        case nlohmann::json::value_t::object:
-            break;
-        default:
-            throw std::runtime_error(fmt::format("Wrong context_info destination type {}", dst.type_name()));
-    }
-
-    for (auto const& itr : context_info)
-    {
-        if (!dst.contains(itr.first))
-        {
-            dst[itr.first.data()] = itr.second;
-        }
-    }
-
-    if (!log.extra_identifier().empty())
-    {
-        dst["session_id"] = log.extra_identifier();
-    }
-}
-
-nlohmann::json CloudWatchSink::init_context_info(Log const& log,
-                                                 Channel const& channel,
-                                                 Logger::ContextInfo const& context_info) const
-{
-    nlohmann::json j(nlohmann::json::value_t::object);
-    init_context_info(j, log, channel, context_info);
-    return std::move(j);
-}
-
 void CloudWatchSink::dump(Log const& log, Channel const& channel, Logger::ContextInfo const& context_info)
 {
     try
     {
         Aws::CloudWatchLogs::Model::InputLogEvent e;
+        std::string line{formatted_log(log, channel, context_info, false)};
         // Set the event and add it to the queue
-        e.WithTimestamp(Aws::Utils::DateTime(log.time_created()).Millis())
-            .WithMessage(formatted_json(log, channel, context_info).c_str());
+        e.WithTimestamp(Aws::Utils::DateTime(log.time_created()).Millis()).WithMessage(line.c_str());
         logs_queue_.push_back(CloudWatchLog{std::move(e), std::move(log_stream_name(log, channel))});
         logs_cond_.notify_one();
     }

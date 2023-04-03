@@ -62,7 +62,7 @@ class CloudWatchSink::CloudWatchSinkMock : public CloudWatchSink
                                        Channel const& channel,
                                        Logger::ContextInfo const& context_info) const
     {
-        return CloudWatchSink::formatted_json(log, channel, context_info);
+        return CloudWatchSink::formatted_log(log, channel, context_info, false);
     }
 
     void init_context_info_wrapper(nlohmann::json& dst,
@@ -70,18 +70,18 @@ class CloudWatchSink::CloudWatchSinkMock : public CloudWatchSink
                                    Channel const& channel,
                                    Logger::ContextInfo const& context_info) const
     {
-        return CloudWatchSink::init_context_info(dst, log, channel, context_info);
+        return octo::logger::unittests::init_context_info(dst, log, channel, context_info);
     }
 
     nlohmann::json init_context_info_wrapper(Log const& log,
                                              Channel const& channel,
                                              Logger::ContextInfo const& context_info) const
     {
-        return CloudWatchSink::init_context_info(log, channel, context_info);
+        return octo::logger::unittests::init_context_info(log, channel, context_info);
     }
 };
 
-} // namespace octo::logger::aws::unittests
+} // namespace octo::logger::aws
 
 #endif // CLOUDWATCH_SINK_MOCK_HPP_
 #endif
