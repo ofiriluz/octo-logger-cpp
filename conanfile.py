@@ -6,7 +6,6 @@ from conan.tools.scm import Version
 
 class OctoLoggerCPPConan(ConanFile):
     name = "octo-logger-cpp"
-    version = "1.3.0"
     url = "https://github.com/ofiriluz/octo-logger-cpp"
     author = "Ofir Iluz"
     settings = "os", "compiler", "build_type", "arch"
@@ -16,6 +15,13 @@ class OctoLoggerCPPConan(ConanFile):
     default_options = {
         "with_aws": False
     }
+
+    def set_version(self):
+        from os import path
+        version_file_path = path.join(self.recipe_folder, 'VERSION')
+        with open(version_file_path) as fd:
+            contents = fd.readline()
+        self.version = contents.rstrip().lstrip()
 
     @property
     def _compilers_minimum_version(self):
@@ -44,12 +50,13 @@ class OctoLoggerCPPConan(ConanFile):
             check_min_cppstd(self, "17")
 
         minimum_version = self._compilers_minimum_version.get(str(self.info.settings.compiler), False)
-        if minimum_version and Version(self.info.settings.compiler.version) < minimum_version:
+        if not minimum_version: # Unknown compiler
+            self.output.warn(f"{self.name} requires C++17. Your compiler is unknown. Assuming it supports C++17.")
+        elif Version(self.info.settings.compiler.version) < minimum_version:
             raise ConanInvalidConfiguration(
                 f"{self.name} requires C++17, which your compiler does not support."
             )
-        else:
-            self.output.warn(f"{self.name} requires C++17. Your compiler is unknown. Assuming it supports C++17.")
+        
         if self.settings.compiler == "clang" and self.settings.compiler.get_safe("libcxx") == "libc++":
             raise ConanInvalidConfiguration(f"{self.name} does not support clang with libc++. Use libstdc++ instead.")
         if self.settings.compiler == "Visual Studio" and self.settings.compiler.runtime in ["MTd", "MT"]:
