@@ -162,7 +162,8 @@ void FileSink::switch_stream(const std::string& channel)
     file->stream.open(std::string(log_path_) + "/" + ss.str().data(), std::ofstream::out | std::ofstream::app);
 }
 
-FileSink::FileSink(const SinkConfig& config) : Sink(config)
+FileSink::FileSink(const SinkConfig& config)
+    : Sink(config, "", extract_format_with_default(config, LineFormat::PLAINTEXT_LONG))
 {
     combined_channels_prefix_ = config.option_default(SinkConfig::SinkOption::FILE_COMBINED_CHANNEL_PREFIX,
                                                       static_cast<std::string const&>("ALL"));
@@ -243,11 +244,7 @@ void FileSink::dump(const Log& log, const Channel& channel, Logger::ContextInfo 
         return;
     }
 
-    file->stream << formatted_log(log, channel);
-    if (!disable_file_context_info_ && !context_info.empty())
-    {
-        file->stream << "\n" << formatted_context_info(log, channel, context_info);
-    }
+    file->stream << formatted_log(log, channel, context_info, disable_file_context_info_);
     file->stream << std::endl;
 }
 } // namespace octo::logger

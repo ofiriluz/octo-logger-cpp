@@ -10,10 +10,12 @@ class OctoLoggerCPPConan(ConanFile):
     author = "Ofir Iluz"
     settings = "os", "compiler", "build_type", "arch"
     options = {
-        "with_aws": [True, False]
+        "with_aws": [True, False],
+        "with_json_formatting": [True, False]
     }
     default_options = {
-        "with_aws": False
+        "with_aws": False,
+        "with_json_formatting" : False
     }
 
     def set_version(self):
@@ -35,6 +37,7 @@ class OctoLoggerCPPConan(ConanFile):
     def configure(self):
         if self.options.with_aws:
             self.options["aws-sdk-cpp"].logs = True
+            self.options.with_json_formatting = True
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -66,14 +69,16 @@ class OctoLoggerCPPConan(ConanFile):
         self.requires("catch2/3.1.0")
         self.requires("fmt/9.0.0")
         self.requires("trompeloeil/42")
-        if self.options.with_aws:
+        if self.options.with_json_formatting:
             self.requires("nlohmann_json/3.11.2")
+        if self.options.with_aws:
             self.requires("aws-sdk-cpp/1.9.234")
 
     def build(self):
         cmake = CMake(self)
         cmake.configure(variables={
-            "WITH_AWS": self.options.with_aws
+            "WITH_AWS": self.options.with_aws,
+            "WITH_JSON_FORMATTING" : self.options.with_json_formatting
         })
         cmake.build()
         if str(self.settings.os) != "Windows":
@@ -92,9 +97,15 @@ class OctoLoggerCPPConan(ConanFile):
         component = self.cpp_info.components["libocto-logger-cpp"]
         component.libs = ["octo-logger-cpp"]
         component.requires = ["fmt::fmt"]
-        if self.options.with_aws:
+        if self.options.with_json_formatting:
             component.requires.extend([
                 "nlohmann_json::nlohmann_json",
+            ])
+            component.defines.append('OCTO_LOGGER_WITH_JSON_FORMATTING')
+            cpp_info.defines.append('OCTO_LOGGER_WITH_JSON_FORMATTING')
+
+        if self.options.with_aws:
+            component.requires.extend([
                 "aws-sdk-cpp::monitoring"
             ])
             component.defines.append('OCTO_LOGGER_WITH_AWS')

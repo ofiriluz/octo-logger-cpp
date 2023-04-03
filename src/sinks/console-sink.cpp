@@ -58,7 +58,8 @@ void ConsoleSink::reset_log_color()
     set_color(COLOR_RESET);
 }
 
-ConsoleSink::ConsoleSink(const SinkConfig& config) : Sink(config)
+ConsoleSink::ConsoleSink(const SinkConfig& config)
+    : Sink(config, "", extract_format_with_default(config, LineFormat::PLAINTEXT_LONG))
 {
     disable_console_color_ = Sink::config().option_default(SinkConfig::SinkOption::CONSOLE_DISABLE_COLOR, false);
     disable_console_context_info_ =
@@ -73,12 +74,7 @@ void ConsoleSink::dump(const Log& log, const Channel& channel, Logger::ContextIn
         {
             configure_log_color(log.log_level());
         }
-        std::cout << formatted_log(log, channel);
-
-        if (!disable_console_context_info_ && !context_info.empty())
-        {
-            std::cout << "\n" << formatted_context_info(log, channel, context_info);
-        }
+        std::cout << formatted_log(log, channel, context_info, disable_console_context_info_);
 
         if (!disable_console_color_)
         {
