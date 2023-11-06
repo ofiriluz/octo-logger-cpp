@@ -32,7 +32,7 @@ jobs:
       run: |
         conan profile new default --detect
         conan profile update settings.build_type=${{matrix.build_type}} default
-        conan install $GITHUB_WORKSPACE
+        conan install -o with_aws=True $GITHUB_WORKSPACE
     - name: Build and test conan
       working-directory: ${{runner.workspace}}/build
       run: |
