@@ -180,8 +180,14 @@ const std::string& Sink::sink_name() const
     return config_.sink_name();
 }
 
+void Sink::stop(bool discard)
+{
+    is_discarding_ = discard;
+    stop_impl();
+}
+
 Sink::Sink(const SinkConfig& config, std::string const& origin, LineFormat format)
-    : config_(config), origin_(std::move(origin)), line_format_(format)
+    : config_(config), origin_(std::move(origin)), line_format_(format), is_discarding_(false)
 {
 }
 } // namespace octo::logger

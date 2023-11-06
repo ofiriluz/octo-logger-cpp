@@ -16,6 +16,7 @@
 #include "octo-logger-cpp/log.hpp"
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/sink-config.hpp"
+#include <atomic>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -37,6 +38,7 @@ class Sink
 
   private:
     const SinkConfig config_;
+    std::atomic<bool> is_discarding_;
 
   protected:
     const SinkConfig& config() const;
@@ -83,12 +85,21 @@ class Sink
                                                              Channel const& channel,
                                                              Logger::ContextInfo const& context_info) const;
 
+    inline bool is_discarding() const
+    {
+        return is_discarding_;
+    }
+    virtual void stop_impl() {}
+
   public:
     explicit Sink(const SinkConfig& config, std::string const& origin, LineFormat format);
     virtual ~Sink() = default;
 
     virtual void dump(const Log& log, const Channel& channel, Logger::ContextInfo const& context_info) = 0;
     const std::string& sink_name() const;
+
+    void stop(bool discard);
+    virtual void restart_sink() noexcept {}
 };
 typedef std::shared_ptr<Sink> SinkPtr;
 } // namespace octo::logger

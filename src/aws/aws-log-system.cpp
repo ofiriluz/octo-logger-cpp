@@ -330,7 +330,6 @@ bool AwsLogSystem::process_auth_v4_signer_tag(std::string& message) const
 {
     bool redacted = false;
 
-#pragma unroll 7
     for (auto const& itr : {"Calculated sha256",
                             "Canonical Header String:",
                             "Canonical Request String:",
@@ -359,7 +358,6 @@ bool AwsLogSystem::process_auth_v4_signer_tag(std::string& message) const
 bool AwsLogSystem::process_aws_client_tag(std::string& message) const
 {
     bool redacted = false;
-#pragma unroll 5
     for (auto const& itr : {"Found body, but content-length has not been set",
                             "If the signature check failed.",
                             "Request returned error.",
@@ -371,7 +369,6 @@ bool AwsLogSystem::process_aws_client_tag(std::string& message) const
             return true;
         }
     }
-#pragma unroll 1
     for (auto const& itr : {"HTTP response code:"})
     {
         if (message.compare(0, strlen(itr), itr) == 0)
@@ -403,7 +400,6 @@ bool AwsLogSystem::process_aws_client_tag(std::string& message) const
 bool AwsLogSystem::process_config_file_profile_tag(std::string& message) const
 {
     bool redacted = false;
-#pragma unroll 3
     for (auto const& itr : {"found access key", "found profile", "found region"})
     {
         if (message.compare(0, strlen(itr), itr) == 0)
@@ -428,7 +424,6 @@ bool AwsLogSystem::process_curl_http_client_tag(std::string& message) const
     bool redacted = false;
     bool white_listed = false;
 
-#pragma unroll 10
     for (auto const& itr : {"Including headers:",
                             "Initializing Curl library with version:",
                             "Making request to",
@@ -445,7 +440,6 @@ bool AwsLogSystem::process_curl_http_client_tag(std::string& message) const
         }
     }
 
-#pragma unroll 1
     for (auto const& itr : {"bytes written to response"})
     {
         if (message.find(itr) != std::string::npos)
@@ -454,7 +448,6 @@ bool AwsLogSystem::process_curl_http_client_tag(std::string& message) const
         }
     }
 
-#pragma unroll sizeof(WHITE_LISTED_HEADERS)
     for (auto const& itr : WHITE_LISTED_HEADERS)
     {
         if (message.compare(0, strlen(itr), itr) == 0)
@@ -487,7 +480,6 @@ bool AwsLogSystem::process_curl_tag(std::string& message) const
     bool redacted = false;
     bool white_listed = false;
 
-#pragma unroll 2
     for (auto const& itr : {"(DataIn)", "(DataOut)"})
     {
         if (message.compare(0, strlen(itr), itr) == 0)
@@ -499,7 +491,6 @@ bool AwsLogSystem::process_curl_tag(std::string& message) const
     }
     if (!redacted)
     {
-#pragma unroll 3
         for (auto const& itr : {"(SSLDataIn)", "(SSLDataOut)", "(Text)"})
         {
             if (message.compare(0, strlen(itr), itr) == 0)
@@ -520,7 +511,6 @@ bool AwsLogSystem::process_curl_tag(std::string& message) const
     }
     else if (message.compare(0, 10, "(HeaderIn)") == 0)
     {
-#pragma unroll sizeof(WHITE_LISTED_HEADERS)
         for (auto const& itr : WHITE_LISTED_HEADERS)
         {
             if (message.compare(11, strlen(itr), itr) == 0)
