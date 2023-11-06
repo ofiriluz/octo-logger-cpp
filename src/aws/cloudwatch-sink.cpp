@@ -380,7 +380,6 @@ void CloudWatchSink::dump(Log const& log, Channel const& channel, Logger::Contex
         e.WithTimestamp(Aws::Utils::DateTime(log.time_created()).Millis())
             .WithMessage(formatted_json(log, channel, context_info).c_str());
         logs_queue_.push_back(CloudWatchLog{std::move(e), log_stream_name(log, channel)});
-        logs_cond_.notify_one();
     }
     catch (const std::exception& e)
     {
