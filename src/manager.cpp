@@ -114,8 +114,17 @@ void Manager::configure(const ManagerConfigPtr& config, bool clear_old_sinks)
 
 void Manager::terminate()
 {
+    stop(false);
     clear_sinks();
     clear_channels();
+}
+
+void Manager::stop(bool discard)
+{
+    for (auto& sink : sinks_)
+    {
+        sink->stop(discard);
+    }
 }
 
 void Manager::dump(const Log& log, const std::string& channel_name, Logger::ContextInfo const& context_info)
@@ -159,5 +168,26 @@ void Manager::set_log_level(Log::LogLevel log_level)
     {
         channel.second.set_log_level(default_log_level_);
     }
+}
+
+bool Manager::has_channel(std::string const& name) const
+{
+    return channels_.find(name) != channels_.cend();
+}
+
+bool Manager::mute_channel(std::string const& name)
+{
+    auto const itr = channels_.find(name);
+    if (itr == channels_.cend())
+    {
+        return false;
+    }
+    itr->second.set_log_level(Log::LogLevel::QUIET);
+    return true;
+}
+
+void Manager::restart_sinks() noexcept
+{
+    std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
 }
 } // namespace octo::logger

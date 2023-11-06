@@ -52,12 +52,16 @@ class Manager
 
     void create_channel(std::string_view name);
     Channel& editable_channel(const std::string& name);
-    const Channel& channel(const std::string& name) const;
+    [[nodiscard]] const Channel& channel(const std::string& name) const;
+    [[nodiscard]] bool has_channel(std::string const& name) const;
+    bool mute_channel(std::string const& name);
     void configure(const ManagerConfigPtr& config, bool clear_old_sinks = true);
     void terminate();
+    void stop(bool discard = false);
     void dump(const Log& log, const std::string& channel_name, Logger::ContextInfo const& context_info);
     void clear_sinks();
     void clear_channels();
+    void restart_sinks() noexcept;
     const Logger& global_logger() const;
 
     [[nodiscard]] Log::LogLevel get_log_level() const;

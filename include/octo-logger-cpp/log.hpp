@@ -70,12 +70,12 @@ class Log
         return *this;
     }
 
-    template <typename... Args>
-    void formatted(char const* fmt, Args... args)
+    template <typename... T>
+    void formatted(fmt::format_string<T...> fmt, T&&... args)
     {
         if (stream_)
         {
-            *stream_ << fmt::format(fmt, args...);
+            *stream_ << fmt::format(fmt, std::forward<T>(args)...);
         }
     }
 

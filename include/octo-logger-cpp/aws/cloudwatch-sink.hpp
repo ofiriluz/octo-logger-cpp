@@ -22,20 +22,23 @@
 #include "octo-logger-cpp/sink.hpp"
 #include <aws/core/utils/memory/stl/AWSMap.h>
 #include <aws/core/utils/memory/stl/AWSString.h>
+#include <aws/core/utils/memory/stl/AWSVector.h>
 #include <aws/logs/CloudWatchLogsClient.h>
 #include <aws/logs/model/InputLogEvent.h>
 #include <nlohmann/json.hpp>
+#include <atomic>
+#include <condition_variable>
+#include <cstdint>
+#include <deque>
 #include <iostream>
 #include <map>
-#include <thread>
-#include <deque>
-#include <set>
-#include <condition_variable>
+#include <memory>
 #include <mutex>
-#include <cstdint>
+#include <set>
 #include <string>
 #include <string_view>
-#include <memory>
+#include <thread>
+#include <unistd.h>
 #include <unordered_map>
 
 namespace octo::logger::aws
@@ -48,6 +51,15 @@ class CloudWatchSink : public Sink
         Aws::CloudWatchLogs::Model::InputLogEvent log_event;
         std::string stream_name;
     };
+    struct LogEventCmp
+    {
+        bool operator()(CloudWatchLog const& lhs, CloudWatchLog const& rhs) const
+        {
+            return lhs.log_event.GetTimestamp() < rhs.log_event.GetTimestamp();
+        }
+    };
+    using AwsLogEventVector = Aws::Vector<Aws::CloudWatchLogs::Model::InputLogEvent>;
+    using LogEventsMap = std::unordered_map<std::string, AwsLogEventVector>;
 
   public:
     enum class LogStreamType : std::uint8_t
@@ -73,20 +85,41 @@ class CloudWatchSink : public Sink
     std::set<std::string> existing_log_streams_;
     LogStreamType log_stream_type_;
     bool include_date_on_log_stream_;
-    bool is_running_;
+    std::atomic<bool> is_running_;
     std::string log_group_name_;
     std::unique_ptr<std::thread> cloudwatch_logs_thread_;
     std::condition_variable logs_cond_;
     std::mutex logs_mtx_, sequence_tokens_mtx_;
     LogGroupTags const log_group_tags_;
+    pid_t thread_pid_;
 
   private:
     void assert_and_create_log_stream(const std::string& log_stream_name);
     std::set<std::string> list_existing_log_streams();
     void assert_and_create_log_group();
-    void send_log(CloudWatchLog&& log);
+    void send_logs(std::set<CloudWatchLog, LogEventCmp>&& logs) noexcept;
+    bool send_log_events(std::string const& stream_name, AwsLogEventVector&& log_events) noexcept;
     std::string log_stream_name(const Log& log, const Channel& channel) const;
+    std::string formatted_json(Log const& log, Channel const& channel, Logger::ContextInfo const& context_info) const;
+    void init_context_info(nlohmann::json& dst,
+                           Log const& log,
+                           Channel const& channel,
+                           Logger::ContextInfo const& context_info) const;
+    nlohmann::json init_context_info(Log const& log,
+                                     Channel const& channel,
+                                     Logger::ContextInfo const& context_info) const;
+
+    void report_logger_error(std::string_view message,
+                             std::string const& name,
+                             Aws::String const& error) const noexcept;
     void cloudwatch_logs_thread();
+    bool started_by_current_process() const noexcept
+    {
+        return thread_pid_ == ::getpid();
+    }
+
+  protected:
+    void stop_impl() override;
 
   public:
     CloudWatchSink(SinkConfig const& config,
@@ -98,6 +131,7 @@ class CloudWatchSink : public Sink
     ~CloudWatchSink() override;
 
     void dump(Log const& log, Channel const& channel, Logger::ContextInfo const& context_info) override;
+    void restart_sink() noexcept override;
 
     TESTS_MOCK_CLASS(CloudWatchSink)
 };
