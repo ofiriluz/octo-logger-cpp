@@ -164,8 +164,6 @@ bool CloudWatchSink::send_log_events(std::string const& stream_name, AwsLogEvent
     }
     catch (std::exception const& e)
     {
-        // FIXME - Occasionally throws 'Operation not permitted' on local runs. <DPA-4169>
-        //  Need to catch exact exception and do something about the log events we lost.
         report_logger_error(
             fmt::format(FMT_STRING("Encountered an error while sending [{:d}] log events"), log_event_count),
             stream_name,
