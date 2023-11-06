@@ -142,14 +142,14 @@ void CloudWatchSink::send_logs(std::set<CloudWatchLog, LogEventCmp>&& logs) noex
     });
 }
 
-void CloudWatchSink::send_log_events(std::string const& stream_name, AwsLogEventVector&& log_events)
+bool CloudWatchSink::send_log_events(std::string const& stream_name, AwsLogEventVector&& log_events) noexcept
 {
     std::size_t const log_event_count = log_events.size();
     Aws::CloudWatchLogs::Model::PutLogEventsRequest put_req;
 
-    assert_and_create_log_stream(log.stream_name);
+    assert_and_create_log_stream(stream_name);
 
-    put_req.WithLogGroupName(log_group_name_.c_str()).WithLogStreamName(log.stream_name.c_str());
+    put_req.WithLogGroupName(log_group_name_.c_str()).WithLogStreamName(stream_name.c_str());
     put_req.SetLogEvents(std::move(log_events));
 
     auto const& sequence_token = sequence_tokens_.find(stream_name);
@@ -192,15 +192,15 @@ void CloudWatchSink::cloudwatch_logs_thread()
     // Create the log group if it does not exist
     assert_and_create_log_group();
     existing_log_streams_ = list_existing_log_streams();
-    while (is_service_running_)
+    while (is_running_)
     {
         std::unique_lock<std::mutex> lock(logs_mtx_);
         try
         {
             logs_cond_.wait_for(lock, THREAD_WAIT_DURATION, [&]() -> bool {
-                return logs_queue_.size() >= AWS_LOGS_PER_REQUEST_LIMIT || !is_service_running_;
+                return logs_queue_.size() >= AWS_LOGS_PER_REQUEST_LIMIT || !is_running_;
             });
-            if (!is_service_running_)
+            if (!is_running_)
             {
                 break;
             }
@@ -352,6 +352,14 @@ void CloudWatchSink::init_context_info(nlohmann::json& dst,
     }
 }
 
+void CloudWatchSink::report_logger_error(std::string_view message,
+                                         std::string const& name,
+                                         Aws::String const& error) const noexcept
+{
+    fmt::print(
+        stderr, FMT_STRING("{}[pid={}]: {} [name={}] [error={}]\n"), sink_name(), getpid(), message, name, error);
+}
+
 nlohmann::json CloudWatchSink::init_context_info(Log const& log,
                                                  Channel const& channel,
                                                  Logger::ContextInfo const& context_info) const
@@ -384,7 +392,7 @@ void CloudWatchSink::dump(Log const& log, Channel const& channel, Logger::Contex
 
 void CloudWatchSink::stop_impl()
 {
-    if (!is_service_running_)
+    if (!is_running_)
     {
         return;
     }
@@ -405,7 +413,7 @@ void CloudWatchSink::stop_impl()
 
 void CloudWatchSink::restart_sink() noexcept
 {
-    if (!is_service_running_)
+    if (!is_running_)
     {
         report_logger_error("Requested to restart sink but sink is not running!", log_group_name_, "");
         return;
