@@ -97,7 +97,7 @@ class CloudWatchSink : public Sink
     void assert_and_create_log_stream(const std::string& log_stream_name);
     std::set<std::string> list_existing_log_streams();
     void assert_and_create_log_group();
-    void send_logs(std::set<CloudWatchLog, LogEventCmp>&& logs) noexcept;
+    void send_logs(std::multiset<CloudWatchLog, LogEventCmp>&& logs) noexcept;
     bool send_log_events(std::string const& stream_name, AwsLogEventVector&& log_events) noexcept;
     std::string log_stream_name(const Log& log, const Channel& channel) const;
     std::string formatted_json(Log const& log, Channel const& channel, Logger::ContextInfo const& context_info) const;
