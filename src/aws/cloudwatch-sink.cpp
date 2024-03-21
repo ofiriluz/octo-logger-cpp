@@ -125,7 +125,7 @@ std::set<std::string> CloudWatchSink::list_existing_log_streams()
     return log_streams;
 }
 
-void CloudWatchSink::send_logs(std::set<CloudWatchLog, LogEventCmp>&& logs) noexcept
+void CloudWatchSink::send_logs(std::multiset<CloudWatchLog, LogEventCmp>&& logs) noexcept
 {
     if (is_discarding())
     {
@@ -207,7 +207,7 @@ void CloudWatchSink::cloudwatch_logs_thread()
                 continue;
             }
 
-            std::set<CloudWatchLog, LogEventCmp> logs;
+            std::multiset<CloudWatchLog, LogEventCmp> logs;
             for (std::size_t i = 0; i < AWS_LOGS_PER_REQUEST_LIMIT && !logs_queue_.empty(); ++i)
             {
                 logs.insert(std::move(logs_queue_.front()));
@@ -226,7 +226,7 @@ void CloudWatchSink::cloudwatch_logs_thread()
     {
         try
         {
-            std::set<CloudWatchLog, LogEventCmp> logs;
+            std::multiset<CloudWatchLog, LogEventCmp> logs;
             while (!logs_queue_.empty())
             {
                 for (std::size_t i = 0; i < AWS_LOGS_PER_REQUEST_LIMIT && !logs_queue_.empty(); ++i)
@@ -406,6 +406,7 @@ void CloudWatchSink::stop_impl()
     }
     cloudwatch_logs_thread_.reset();
     aws_cloudwatch_client_.reset();
+    logs_queue_.clear();
 }
 
 void CloudWatchSink::restart_sink() noexcept
