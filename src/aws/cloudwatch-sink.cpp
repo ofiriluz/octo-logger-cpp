@@ -418,6 +418,7 @@ void CloudWatchSink::restart_sink() noexcept
     }
     stop_impl();
     is_running_ = true;
+    thread_pid_ = ::getpid();
     aws_cloudwatch_client_ = Aws::MakeUnique<Aws::CloudWatchLogs::CloudWatchLogsClient>("cloudwatch");
     cloudwatch_logs_thread_ = std::make_unique<std::thread>(&CloudWatchSink::cloudwatch_logs_thread, this);
 }
