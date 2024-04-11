@@ -119,7 +119,7 @@ void Manager::terminate()
     clear_channels();
 }
 
-void Manager::stop(bool discard)    
+void Manager::stop(bool discard)
 {
     for (auto& sink : sinks_)
     {
@@ -187,11 +187,6 @@ bool Manager::mute_channel(std::string const& name)
 }
 
 void Manager::restart_sinks() noexcept
-{
-    std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
-}
-
-void Manager::start() noexcept
 {
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
 }
