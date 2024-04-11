@@ -424,7 +424,6 @@ void CloudWatchSink::stop_impl()
             // Mutex owned by parent only thread, best solution for bad state.
             sequence_tokens_mtx_.release();
         }
-
     }
     cloudwatch_logs_thread_.reset();
     aws_cloudwatch_client_.reset();
