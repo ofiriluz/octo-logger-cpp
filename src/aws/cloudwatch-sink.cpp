@@ -179,7 +179,7 @@ bool CloudWatchSink::send_log_events(std::string const& stream_name, AwsLogEvent
     }
     if (!outcome.GetResult().GetNextSequenceToken().empty())
     {
-        std::lock_guard<std::mutex> lock(sequence_tokens_mtx_);
+        std::lock_guard<std::mutex> lock(*sequence_tokens_mtx_);
         sequence_tokens_[stream_name] = outcome.GetResult().GetNextSequenceToken();
     }
     return true;
@@ -192,7 +192,7 @@ void CloudWatchSink::cloudwatch_logs_thread()
     existing_log_streams_ = list_existing_log_streams();
     while (is_running_)
     {
-        std::unique_lock<std::mutex> lock(logs_mtx_);
+        std::unique_lock<std::mutex> lock(*logs_mtx_);
         try
         {
             logs_cond_.wait_for(lock, THREAD_WAIT_DURATION, [&]() -> bool {
@@ -256,6 +256,8 @@ CloudWatchSink::CloudWatchSink(SinkConfig const& config,
       include_date_on_log_stream_(include_date_on_log_stream),
       log_group_name_(log_group_name),
       is_running_(true),
+      logs_mtx_(std::make_unique<std::mutex>()),
+      sequence_tokens_mtx_(std::make_unique<std::mutex>()),
       log_group_tags_(std::move(log_group_tags)),
       thread_pid_(::getpid())
 {
@@ -403,6 +405,26 @@ void CloudWatchSink::stop_impl()
         // We are in a forked process, calling `reset()` will hang the client.
         cloudwatch_logs_thread_.release();
         aws_cloudwatch_client_.release();
+        if (log_mtx_->try_lock()) {
+            log_mtx_->unlock();
+            log_mtx.reset();
+        }
+        else
+        {
+            // Mutex owned by parent only thread, best solution for bad state.
+            log_mtx.release();
+        }
+
+        if (sequence_tokens_mtx_->try_lock()) {
+            sequence_tokens_mtx_->unlock();
+            sequence_tokens_mtx_.reset();
+        }
+        else
+        {
+            // Mutex owned by parent only thread, best solution for bad state.
+            sequence_tokens_mtx_.release();
+        }
+
     }
     cloudwatch_logs_thread_.reset();
     aws_cloudwatch_client_.reset();
@@ -419,6 +441,8 @@ void CloudWatchSink::restart_sink() noexcept
     stop_impl();
     is_running_ = true;
     thread_pid_ = ::getpid();
+    logs_mtx_ = std::make_unique<std::mutex>();
+    sequence_tokens_mtx_ =std::make_unique<std::mutex>();
     aws_cloudwatch_client_ = Aws::MakeUnique<Aws::CloudWatchLogs::CloudWatchLogsClient>("cloudwatch");
     cloudwatch_logs_thread_ = std::make_unique<std::thread>(&CloudWatchSink::cloudwatch_logs_thread, this);
 }
