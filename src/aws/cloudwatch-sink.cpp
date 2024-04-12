@@ -405,14 +405,14 @@ void CloudWatchSink::stop_impl()
         // We are in a forked process, calling `reset()` will hang the client.
         cloudwatch_logs_thread_.release();
         aws_cloudwatch_client_.release();
-        if (log_mtx_->try_lock()) {
-            log_mtx_->unlock();
-            log_mtx_.reset();
+        if (logs_mtx_->try_lock()) {
+            logs_mtx_->unlock();
+            logs_mtx_.reset();
         }
         else
         {
             // Mutex owned by parent only thread, best solution for bad state.
-            log_mtx_.release();
+            logs_mtx_.release();
         }
 
         if (sequence_tokens_mtx_->try_lock()) {
