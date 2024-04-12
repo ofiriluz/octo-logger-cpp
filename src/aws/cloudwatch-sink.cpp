@@ -407,12 +407,12 @@ void CloudWatchSink::stop_impl()
         aws_cloudwatch_client_.release();
         if (log_mtx_->try_lock()) {
             log_mtx_->unlock();
-            log_mtx.reset();
+            log_mtx_.reset();
         }
         else
         {
             // Mutex owned by parent only thread, best solution for bad state.
-            log_mtx.release();
+            log_mtx_.release();
         }
 
         if (sequence_tokens_mtx_->try_lock()) {
