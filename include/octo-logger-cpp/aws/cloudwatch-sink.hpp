@@ -89,7 +89,7 @@ class CloudWatchSink : public Sink
     std::string log_group_name_;
     std::unique_ptr<std::thread> cloudwatch_logs_thread_;
     std::condition_variable logs_cond_;
-    std::mutex logs_mtx_, sequence_tokens_mtx_;
+    std::unique_ptr<std::mutex> logs_mtx_, sequence_tokens_mtx_;
     LogGroupTags const log_group_tags_;
     pid_t thread_pid_;
 
