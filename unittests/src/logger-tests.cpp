@@ -37,7 +37,7 @@ TEST_CASE_METHOD(LoggerTestsFixture, "Logger Initialization Tests", "[logger]")
     {
         LoggerMock logger2("basic_test_logger");
 
-        REQUIRE_THAT(&logger.logger_channel(), &logger2.logger_channel());
+        REQUIRE(&logger.logger_channel() == &logger2.logger_channel());
     }
 
 }
