@@ -188,7 +188,11 @@ bool Manager::mute_channel(std::string const& name)
 
 void Manager::restart_sinks() noexcept
 {
-    sinks_mutex_.fork_reset();
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
+}
+
+void Manager::child_on_fork() noexcept
+{
+    sinks_mutex_.fork_reset();
 }
 } // namespace octo::logger

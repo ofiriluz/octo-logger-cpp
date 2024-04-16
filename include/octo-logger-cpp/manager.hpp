@@ -66,6 +66,8 @@ class Manager
     void clear_channels();
     void restart_sinks() noexcept;
     const Logger& global_logger() const;
+    // @brief execute this function on child process after fork before logging anything
+    void child_on_fork();
 
     [[nodiscard]] Log::LogLevel get_log_level() const;
     void set_log_level(Log::LogLevel log_level);
