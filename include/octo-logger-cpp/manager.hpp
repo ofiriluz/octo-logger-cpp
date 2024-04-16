@@ -13,10 +13,10 @@
 #define MANAGER_HPP_
 
 #include "octo-logger-cpp/channel.hpp"
+#include "octo-logger-cpp/fork-safe-mutex.hpp"
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/manager-config.hpp"
 #include "octo-logger-cpp/sink-factory.hpp"
-#include "octo-logger-cpp/fork-safe-mutex.hpp"
 #include <memory>
 #include <mutex>
 #include <string>
