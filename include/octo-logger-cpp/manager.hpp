@@ -13,6 +13,7 @@
 #define MANAGER_HPP_
 
 #include "octo-logger-cpp/channel.hpp"
+#include "octo-logger-cpp/channel-view.hpp"
 #include "octo-logger-cpp/fork-safe-mutex.hpp"
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/manager-config.hpp"
@@ -32,7 +33,7 @@ class Manager
     static std::mutex manager_init_mutex_;
     static std::shared_ptr<Manager> manager_;
 
-    std::unordered_map<std::string, Channel> channels_;
+    std::unordered_map<std::string, ChannelPtr> channels_;
     std::vector<SinkPtr> sinks_;
     ForkSafeMutex sinks_mutex_;
     ManagerConfigPtr config_;
@@ -43,6 +44,7 @@ class Manager
     Manager();
 
   public:
+
     Manager(const Manager& other) = delete;
     Manager& operator=(const Manager& other) = delete;
 
@@ -51,7 +53,7 @@ class Manager
 
     virtual ~Manager();
 
-    void create_channel(std::string_view name);
+    ChannelView create_channel(std::string_view name);
     Channel& editable_channel(const std::string& name);
     [[nodiscard]] const Channel& channel(const std::string& name) const;
     [[nodiscard]] bool has_channel(std::string const& name) const;

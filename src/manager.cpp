@@ -51,16 +51,16 @@ Manager::~Manager()
     terminate();
 }
 
-void Manager::create_channel(std::string_view name)
+ChannelView Manager::create_channel(std::string_view name)
 {
-    channels_.try_emplace(std::string(name), Channel(name, default_log_level_));
+    return ChannelView((channels_.try_emplace(std::string(name), std::make_shared<Channel>(name, default_log_level_)).first->second));
 }
 
 const Channel& Manager::channel(const std::string& name) const
 {
     if (channels_.find(name) != channels_.cend())
     {
-        return channels_.at(name);
+        return *channels_.at(name);
     }
     throw std::runtime_error("No channel for given name [" + name + "]");
 }
@@ -69,7 +69,7 @@ Channel& Manager::editable_channel(const std::string& name)
 {
     if (channels_.find(name) != channels_.cend())
     {
-        return channels_.at(name);
+        return *channels_.at(name);
     }
     throw std::runtime_error("No channel for given name [" + name + "]");
 }
@@ -108,7 +108,7 @@ void Manager::configure(const ManagerConfigPtr& config, bool clear_old_sinks)
 
     for (auto& channel : channels_)
     {
-        channel.second.set_log_level(default_log_level_);
+        channel.second->set_log_level(default_log_level_);
     }
 }
 
@@ -166,7 +166,7 @@ void Manager::set_log_level(Log::LogLevel log_level)
     default_log_level_ = log_level;
     for (auto& channel : channels_)
     {
-        channel.second.set_log_level(default_log_level_);
+        channel.second->set_log_level(default_log_level_);
     }
 }
 
@@ -182,7 +182,7 @@ bool Manager::mute_channel(std::string const& name)
     {
         return false;
     }
-    itr->second.set_log_level(Log::LogLevel::QUIET);
+    itr->second->set_log_level(Log::LogLevel::QUIET);
     return true;
 }
 

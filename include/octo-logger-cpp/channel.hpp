@@ -16,6 +16,7 @@
 #include <memory>
 #include <string_view>
 #include <thread>
+#include <memory>
 
 namespace octo::logger
 {
@@ -32,9 +33,10 @@ class Channel
     Log::LogLevel log_level() const;
     void set_log_level(const Log::LogLevel& channel_level);
     const std::string& channel_name() const;
-
     friend class Manager;
 };
+typedef std::shared_ptr<Channel> ChannelPtr;
+
 } // namespace octo::logger
 
 #endif
