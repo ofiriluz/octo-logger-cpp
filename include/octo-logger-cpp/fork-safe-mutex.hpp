@@ -18,7 +18,9 @@
 #include <unistd.h>
 #else
 #include <windows.h>
-#define pid_t DWORD
+#ifndef _WIN_PID_T
+typedef DWORD pid_t;
+#endif _WIN_PID_T
 #endif
 
 namespace octo::logger
