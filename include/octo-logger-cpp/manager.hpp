@@ -16,6 +16,7 @@
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/manager-config.hpp"
 #include "octo-logger-cpp/sink-factory.hpp"
+#include "octo-logger-cpp/fork-safe-mutex.hpp"
 #include <memory>
 #include <mutex>
 #include <string>
@@ -33,7 +34,7 @@ class Manager
 
     std::unordered_map<std::string, Channel> channels_;
     std::vector<SinkPtr> sinks_;
-    std::mutex sinks_mutex_;
+    ForkSafeMutex sinks_mutex_;
     ManagerConfigPtr config_;
     Log::LogLevel default_log_level_;
     std::shared_ptr<Logger> global_logger_;
