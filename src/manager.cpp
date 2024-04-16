@@ -129,7 +129,7 @@ void Manager::stop(bool discard)
 
 void Manager::dump(const Log& log, const std::string& channel_name, Logger::ContextInfo const& context_info)
 {
-    std::lock_guard<std::mutex> lock(sinks_mutex_);
+    std::lock_guard<ForkSafeMutex> lock(sinks_mutex_);
     for (auto& sink : sinks_)
     {
         sink->dump(log, channel(channel_name), context_info);
@@ -162,7 +162,7 @@ void Manager::set_log_level(Log::LogLevel log_level)
     {
         return;
     }
-    std::lock_guard<std::mutex> lock(sinks_mutex_);
+    std::lock_guard<ForkSafeMutex> lock(sinks_mutex_);
     default_log_level_ = log_level;
     for (auto& channel : channels_)
     {
