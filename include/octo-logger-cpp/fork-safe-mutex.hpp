@@ -36,9 +36,9 @@ public:
     void fork_reset();
 private:
     ForkSafeMutex(ForkSafeMutex&&)            = delete;
-    ForkSafeMutex(ForkSafeMutex&&)            = delete;
     ForkSafeMutex& operator=(ForkSafeMutex&&) = delete;
-    ForkSafeMutex& operator=(ForkSafeMutex&&) = delete;
+    ForkSafeMutex(const ForkSafeMutex&)            = delete;
+    ForkSafeMutex& operator=(const ForkSafeMutex&) = delete;
 
 };
 
