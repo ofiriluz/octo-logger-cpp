@@ -14,6 +14,12 @@
 
 #include <mutex>
 #include <memory>
+#ifndef _WIN32
+#include <unistd.h>
+#else
+#include <windows.h>
+#define pid_t DWORD
+#endif
 
 namespace octo::logger
 {
