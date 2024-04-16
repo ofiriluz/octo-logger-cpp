@@ -56,7 +56,7 @@ void ForkSafeMutex::fork_reset() {
     // Mutex owned by parent only thread, best solution for bad state.
     mutex_.release();
     mutex_ = std::make_unique<std::mutex>();
-
+    mutex_pid_ = getpid();
 }
 
 } // namespace octo::logger
