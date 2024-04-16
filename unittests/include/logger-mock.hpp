@@ -24,12 +24,7 @@ class Logger::LoggerMock : public Logger
 
     std::string const& channel_name_getter() const
     {
-        return Logger::channel_name_;
-    }
-
-    std::string& channel_name_getter()
-    {
-        return Logger::channel_name_;
+        return Logger::channel_view_.channel().channel_name();
     }
 
     Logger::ContextInfo& context_info_getter()

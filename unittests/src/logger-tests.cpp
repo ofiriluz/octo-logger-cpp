@@ -32,7 +32,17 @@ TEST_CASE_METHOD(LoggerTestsFixture, "Logger Initialization Tests", "[logger]")
         REQUIRE_THAT(logger.channel_name_getter(), Catch::Matchers::Equals("basic_test_logger"));
         REQUIRE(logger.context_info().empty());
     }
+
+    SECTION("Channel sharing upon same name")
+    {
+        LoggerMock logger2("basic_test_logger");
+
+        REQUIRE(&logger.logger_channel() == &logger2.logger_channel());
+    }
+
 }
+
+
 
 TEST_CASE_METHOD(LoggerTestsFixture, "Logger ContextInfo Tests", "[logger]")
 {

@@ -13,6 +13,7 @@
 #define LOGGER_HPP_
 
 #include "octo-logger-cpp/channel.hpp"
+#include "octo-logger-cpp/channel-view.hpp"
 #include "octo-logger-cpp/log.hpp"
 #include "octo-logger-cpp/logger-test-definitions.hpp"
 #include <mutex>
@@ -31,8 +32,8 @@ class Logger
     static constexpr auto TenantID = "tenant_id";
 
   private:
-    std::string channel_name_;
     ContextInfo context_info_;
+    ChannelView channel_view_;
 
   private:
     void dump_log(const Log& log) const;

@@ -16,22 +16,22 @@ namespace octo::logger
 {
 void Logger::dump_log(const Log& log) const
 {
-    Manager::instance().dump(log, channel_name_, context_info_);
+    Manager::instance().dump(log, channel_view_.channel().channel_name(), context_info_);
 }
 
-Logger::Logger(std::string_view channel) : channel_name_(channel)
+Logger::Logger(std::string_view channel)
 {
-    Manager::instance().create_channel(channel);
+    channel_view_ = Manager::instance().create_channel(channel);
 }
 
 const Channel& Logger::logger_channel() const
 {
-    return Manager::instance().channel(channel_name_);
+    return channel_view_.channel();
 }
 
 Channel& Logger::editable_logger_channel()
 {
-    return Manager::instance().editable_channel(channel_name_);
+    return channel_view_.editable_channel();
 }
 
 Log Logger::trace(std::string_view extra_identifier) const
