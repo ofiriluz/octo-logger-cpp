@@ -24,6 +24,7 @@ ADD_LIBRARY(octo-logger-cpp STATIC
     src/channel.cpp
     src/log.cpp
     src/logger.cpp
+    src/fork-safe-mutex.cpp
     src/manager-config.cpp
     src/manager.cpp
     src/sink-config.cpp
