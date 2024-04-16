@@ -26,21 +26,11 @@ ForkSafeMutex::ForkSafeMutex():
 mutex_(std::make_unique<std::mutex>()), 
 mutex_pid_(getpid())
 {
-
 }
 
-void ForkSafeMutex::lock() 
+std::mutex& ForkSafeMutex::get() 
 {
-    mutex_->lock();
-}
-
-[[nodiscard]] bool ForkSafeMutex::try_lock() {
-    return mutex_->try_lock();
-}
-
-void ForkSafeMutex::unlock() 
-{
-    return mutex_->unlock();
+    return *mutex_;
 }
 
 void ForkSafeMutex::fork_reset() {

@@ -179,7 +179,7 @@ bool CloudWatchSink::send_log_events(std::string const& stream_name, AwsLogEvent
     }
     if (!outcome.GetResult().GetNextSequenceToken().empty())
     {
-        std::lock_guard<ForkSafeMutex> lock(sequence_tokens_mtx_);
+        std::lock_guard<std::mutex> lock(sequence_tokens_mtx_.get());
         sequence_tokens_[stream_name] = outcome.GetResult().GetNextSequenceToken();
     }
     return true;
@@ -192,7 +192,7 @@ void CloudWatchSink::cloudwatch_logs_thread()
     existing_log_streams_ = list_existing_log_streams();
     while (is_running_)
     {
-        std::unique_lock<ForkSafeMutex> lock(logs_mtx_);
+        std::unique_lock<std::mutex> lock(logs_mtx_.get());
         try
         {
             logs_cond_.wait_for(lock, THREAD_WAIT_DURATION, [&]() -> bool {

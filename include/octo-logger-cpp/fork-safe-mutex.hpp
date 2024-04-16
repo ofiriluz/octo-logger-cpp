@@ -26,9 +26,7 @@ private:
 
 public:
     ForkSafeMutex();
-    void lock();
-    [[nodiscard]] bool try_lock(); 
-    void unlock();
+    std::mutex& get();
     /**
      * @brief Resets the mutex after a fork.
      * Should only be called if currently there are no additional threads using the mutex.
