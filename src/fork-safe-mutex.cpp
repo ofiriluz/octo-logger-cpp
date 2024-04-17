@@ -46,11 +46,13 @@ void ForkSafeMutex::fork_reset() {
     if (mutex_->try_lock()) {
         // Mutex state is good
         mutex_->unlock();
-        return;
     }
-    // Mutex owned by parent only thread, best solution for bad state.
-    mutex_.release();
-    mutex_ = std::make_unique<std::mutex>();
+    else 
+    {
+        // Mutex owned by parent only thread, best solution for bad state.
+        mutex_.release();
+        mutex_ = std::make_unique<std::mutex>();
+    }
     mutex_pid_ = getpid();
 }
 
