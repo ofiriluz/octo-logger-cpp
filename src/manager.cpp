@@ -129,7 +129,7 @@ void Manager::stop(bool discard)
 
 void Manager::dump(const Log& log, const std::string& channel_name, Logger::ContextInfo const& context_info)
 {
-    std::lock_guard<std::mutex> lock(sinks_mutex_);
+    std::lock_guard<std::mutex> lock(sinks_mutex_.get());
     for (auto& sink : sinks_)
     {
         sink->dump(log, channel(channel_name), context_info);
@@ -162,7 +162,7 @@ void Manager::set_log_level(Log::LogLevel log_level)
     {
         return;
     }
-    std::lock_guard<std::mutex> lock(sinks_mutex_);
+    std::lock_guard<std::mutex> lock(sinks_mutex_.get());
     default_log_level_ = log_level;
     for (auto& channel : channels_)
     {
@@ -189,5 +189,10 @@ bool Manager::mute_channel(std::string const& name)
 void Manager::restart_sinks() noexcept
 {
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
+}
+
+void Manager::child_on_fork() noexcept
+{
+    sinks_mutex_.fork_reset();
 }
 } // namespace octo::logger

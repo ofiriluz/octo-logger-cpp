@@ -14,6 +14,7 @@
 
 #include "octo-logger-cpp/channel.hpp"
 #include "octo-logger-cpp/channel-view.hpp"
+#include "octo-logger-cpp/fork-safe-mutex.hpp"
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/manager-config.hpp"
 #include "octo-logger-cpp/sink-factory.hpp"
@@ -34,7 +35,7 @@ class Manager
 
     std::unordered_map<std::string, ChannelPtr> channels_;
     std::vector<SinkPtr> sinks_;
-    std::mutex sinks_mutex_;
+    ForkSafeMutex sinks_mutex_;
     ManagerConfigPtr config_;
     Log::LogLevel default_log_level_;
     std::shared_ptr<Logger> global_logger_;
@@ -65,6 +66,8 @@ class Manager
     void clear_channels();
     void restart_sinks() noexcept;
     const Logger& global_logger() const;
+    // @brief execute this function on child process after fork before logging anything
+    void child_on_fork() noexcept;
 
     [[nodiscard]] Log::LogLevel get_log_level() const;
     void set_log_level(Log::LogLevel log_level);

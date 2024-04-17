@@ -15,6 +15,7 @@
 #define CLOUDWATCH_SINK_HPP_
 
 #include "octo-logger-cpp/channel.hpp"
+#include "octo-logger-cpp/fork-safe-mutex.hpp"
 #include "octo-logger-cpp/log.hpp"
 #include "octo-logger-cpp/logger-test-definitions.hpp"
 #include "octo-logger-cpp/logger.hpp"
@@ -33,7 +34,6 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <set>
 #include <string>
 #include <string_view>
@@ -89,7 +89,7 @@ class CloudWatchSink : public Sink
     std::string log_group_name_;
     std::unique_ptr<std::thread> cloudwatch_logs_thread_;
     std::condition_variable logs_cond_;
-    std::unique_ptr<std::mutex> logs_mtx_, sequence_tokens_mtx_;
+    ForkSafeMutex logs_mtx_, sequence_tokens_mtx_;
     LogGroupTags const log_group_tags_;
     pid_t thread_pid_;
 
