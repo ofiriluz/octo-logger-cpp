@@ -1,5 +1,5 @@
 /**
- * @file fork-safe-mutex.h
+ * @file fork-safe-mutex.hpp
  * @author arad yaron (aradyaron98@gmail.com)
  * @brief
  * @version 0.1
@@ -29,7 +29,11 @@ private:
 
 public:
     ForkSafeMutex();
-    ~ForkSafeMutex();
+    virtual ~ForkSafeMutex();
+    ForkSafeMutex(ForkSafeMutex&&)            = delete;
+    ForkSafeMutex& operator=(ForkSafeMutex&&) = delete;
+    ForkSafeMutex(const ForkSafeMutex&)            = delete;
+    ForkSafeMutex& operator=(const ForkSafeMutex&) = delete;
 
     std::mutex& get();
     /**
@@ -37,12 +41,6 @@ public:
      * Should only be called if currently there are no additional threads using the mutex.
      */
     void fork_reset();
-private:
-    ForkSafeMutex(ForkSafeMutex&&)            = delete;
-    ForkSafeMutex& operator=(ForkSafeMutex&&) = delete;
-    ForkSafeMutex(const ForkSafeMutex&)            = delete;
-    ForkSafeMutex& operator=(const ForkSafeMutex&) = delete;
-
 };
 
 } // namespace octo::logger
