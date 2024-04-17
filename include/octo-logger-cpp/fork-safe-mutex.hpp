@@ -14,14 +14,6 @@
 
 #include <mutex>
 #include <memory>
-#ifndef _WIN32
-#include <unistd.h>
-#else
-#include <windows.h>
-#ifndef _WIN_PID_T
-typedef DWORD pid_t;
-#endif _WIN_PID_T
-#endif
 
 namespace octo::logger
 {
@@ -30,6 +22,9 @@ class ForkSafeMutex
 {
 private:
     std::unique_ptr<std::mutex> mutex_;
+#ifdef _WIN32
+    typedef std::uint32_t pid_t;
+#endif
     pid_t mutex_pid_;
 
 public:
