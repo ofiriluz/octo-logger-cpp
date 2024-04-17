@@ -29,6 +29,8 @@ private:
 
 public:
     ForkSafeMutex();
+    ~ForkSafeMutex();
+
     std::mutex& get();
     /**
      * @brief Resets the mutex after a fork.

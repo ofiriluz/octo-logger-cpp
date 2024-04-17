@@ -28,6 +28,11 @@ mutex_pid_(getpid())
 {
 }
 
+ForkSafeMutex::~ForkSafeMutex()
+{
+    fork_reset();
+}
+
 std::mutex& ForkSafeMutex::get() 
 {
     return *mutex_;
