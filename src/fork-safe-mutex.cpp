@@ -33,12 +33,13 @@ ForkSafeMutex::~ForkSafeMutex()
     fork_reset();
 }
 
-std::mutex& ForkSafeMutex::get() 
+std::mutex& ForkSafeMutex::get()
 {
     return *mutex_;
 }
 
-void ForkSafeMutex::fork_reset() {
+void ForkSafeMutex::fork_reset()
+{
     if (mutex_pid_ == getpid()) {
         // Still on parent process, no need to reset
         return;
