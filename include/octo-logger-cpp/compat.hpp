@@ -2,6 +2,9 @@
 #ifndef COMPAT_HPP
 #define COMPAT_HPP
 #include <ctime>
+#ifdef _WIN32
+#include <cerrno>
+#endif
 
 namespace octo::logger::compat
 {
