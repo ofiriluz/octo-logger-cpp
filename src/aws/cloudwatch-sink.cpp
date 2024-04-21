@@ -11,6 +11,7 @@
 
 #ifdef OCTO_LOGGER_WITH_AWS
 
+#include "octo-logger-cpp/compat.hpp"
 #include "octo-logger-cpp/aws/cloudwatch-sink.hpp"
 #include <aws/logs/model/CreateLogGroupRequest.h>
 #include <aws/logs/model/CreateLogStreamRequest.h>
@@ -306,7 +307,8 @@ std::string CloudWatchSink::formatted_json(Log const& log,
     nlohmann::json j;
     std::stringstream ss;
     std::time_t log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
-    ss << std::put_time(std::localtime(&log_time_t), "%FT%T%z");
+    struct tm timeinfo;
+    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%FT%T%z");
     j["message"] = log.stream()->str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
