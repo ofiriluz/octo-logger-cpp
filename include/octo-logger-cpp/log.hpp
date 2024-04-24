@@ -46,6 +46,7 @@ class Log
     const Logger& logger_;
     std::chrono::time_point<std::chrono::system_clock> time_created_;
     std::string extra_identifier_;
+    Logger::ContextInfo context_info_;
 
   private:
     Log(const LogLevel& log_level, std::string_view extra_identifier, const Logger& logger);
@@ -60,6 +61,8 @@ class Log
     const std::ostringstream* stream() const;
     const LogLevel& log_level() const;
     const std::string& extra_identifier() const;
+    const Logger::ContextInfo& context_info() const;
+    
     template <class T>
     Log& operator<<(const T& value)
     {
@@ -71,20 +74,34 @@ class Log
     }
 
     template <typename... T>
-    void formatted(fmt::format_string<T...> fmt, T&&... args)
+    Log& formatted(fmt::format_string<T...> fmt, T&&... args)
     {
         if (stream_)
         {
             *stream_ << fmt::format(fmt, std::forward<T>(args)...);
         }
+        return *this
     }
 
-    template <typename... Args>
-    void formattedf(char const* fmt, Args... args)
+    Log& with_context(char const* fmt, Args... args)
     {
         if (stream_)
         {
             *stream_ << fmt::sprintf(fmt, args...);
+        }
+        return *this
+    }
+
+    Log& with_context(std::string_view key, std::string value)
+    {
+        context_info_[key] = std::move(value);
+    }
+
+    Log& with_context(ContextInfo context_info)
+    {
+        for (auto& itr : context_info)
+        {
+            add_context_key(itr.first, std::move(itr.second));
         }
     }
 

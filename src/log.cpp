@@ -17,7 +17,7 @@ namespace octo::logger
 {
 
 Log::Log(const Log::LogLevel& log_level, std::string_view extra_identifier, const Logger& logger)
-    : stream_(nullptr), log_level_(log_level), logger_(logger), extra_identifier_(extra_identifier)
+    : stream_(nullptr), log_level_(log_level), logger_(logger), extra_identifier_(extra_identifier), context_info_()
 {
     if (log_level_ >= logger.logger_channel().log_level() && log_level_ != LogLevel::QUIET)
     {

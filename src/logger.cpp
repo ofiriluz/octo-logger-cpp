@@ -16,7 +16,13 @@ namespace octo::logger
 {
 void Logger::dump_log(const Log& log) const
 {
-    Manager::instance().dump(log, channel_view_.channel().channel_name(), context_info_);
+    if (log.context_info().empty()) {
+        Manager::instance().dump(log, channel_view_.channel().channel_name(), context_info_);
+        return;
+    }
+    auto merged_context(log.context_info()); // copy
+    merged_context.merge(context_info_);
+    Manager::instance().dump(log, channel_view_.channel().channel_name(), merged_context);
 }
 
 Logger::Logger(std::string_view channel)
