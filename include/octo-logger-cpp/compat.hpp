@@ -31,5 +31,4 @@ inline struct tm* localtime(const time_t* timep, struct tm* result)
 
 } // namespace octo::logger::compat
 
-
 #endif // COMPAT_HPP
