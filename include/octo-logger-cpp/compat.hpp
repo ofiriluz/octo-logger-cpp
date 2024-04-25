@@ -1,3 +1,13 @@
+/**
+ * @file compat.h
+ * @author arad yaron (aradyaron98@gmail.com)
+ * @brief
+ * @version 0.1
+ * @date 2024-04-21
+ *
+ * @copyright Copyright (c) 2024
+ *
+ */
 
 #ifndef COMPAT_HPP
 #define COMPAT_HPP
@@ -11,11 +21,11 @@ namespace octo::logger::compat
 
 inline struct tm* localtime(const time_t* timep, struct tm* result)
 {
-#ifdef _WIN32
+#ifndef _WIN32
+    return localtime_r(timep, result);
+#else
     errno = localtime_s(result, timep);
     return errno == 0 ? result : nullptr;
-#else
-    return localtime_r(timep, result);
 #endif
 }
 
