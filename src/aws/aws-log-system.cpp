@@ -180,6 +180,12 @@ void AwsLogSystem::Log(Aws::Utils::Logging::LogLevel log_level, char const* tag,
                                     << static_cast<unsigned int>(log_level) << "][" << tag << "]";
 }
 
+void AwsLogSystem::vaLog(LogLevel logLevel, const char* tag, const char* format_str, va_list args)
+{
+    logger_.warning("AwsLogSystem") << "Unsupported method [methodAwsLogSystem::vaLog()] was called! ["
+                                    << static_cast<unsigned int>(log_level) << "][" << tag << "]";
+}
+
 void AwsLogSystem::LogStream(Aws::Utils::Logging::LogLevel log_level,
                              char const* tag,
                              Aws::OStringStream const& message_stream)
