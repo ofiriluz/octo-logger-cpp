@@ -80,6 +80,7 @@ class AwsLogSystem : public Aws::Utils::Logging::LogSystemInterface
 
     Aws::Utils::Logging::LogLevel GetLogLevel() const override;
     void Log(Aws::Utils::Logging::LogLevel log_level, char const* tag, char const* format_str, ...) override;
+    void vaLog(Aws::Utils::Logging::LogLevel log_level, const char* tag, const char* format_str, va_list args) override;
     void LogStream(Aws::Utils::Logging::LogLevel log_level,
                    char const* tag,
                    Aws::OStringStream const& message_stream) override;
