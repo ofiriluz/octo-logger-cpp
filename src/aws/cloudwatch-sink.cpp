@@ -376,9 +376,9 @@ void CloudWatchSink::dump(Log const& log, Channel const& channel, Logger::Contex
     {
         return;
     }
-    std::unique_lock<std::mutex> lock(logs_mtx_);
     try
     {
+        std::unique_lock<std::mutex> lock(logs_mtx_);
         Aws::CloudWatchLogs::Model::InputLogEvent e;
         auto message = formatted_json(log, channel, context_info).c_str();
         auto log_name = log_stream_name(log, channel);
@@ -403,22 +403,29 @@ void CloudWatchSink::stop_impl()
     {
         return;
     }
-    is_running_ = false;
-    if (started_by_current_process() && cloudwatch_logs_thread_ && cloudwatch_logs_thread_->joinable())
+    try
     {
-        cloudwatch_logs_thread_->join();
+        is_running_ = false;
+        if (started_by_current_process() && cloudwatch_logs_thread_ && cloudwatch_logs_thread_->joinable())
+        {
+            cloudwatch_logs_thread_->join();
+        }
+        else if (!started_by_current_process())
+        {
+            // We are in a forked process, calling `reset()` will hang the client.
+            cloudwatch_logs_thread_.release();
+            aws_cloudwatch_client_.release();
+            logs_mtx_.fork_reset();
+            sequence_tokens_mtx_.fork_reset();
+        }
+        cloudwatch_logs_thread_.reset();
+        aws_cloudwatch_client_.reset();
+        logs_queue_.clear();
     }
-    else if (!started_by_current_process())
+    catch (const std::exception& e)
     {
-        // We are in a forked process, calling `reset()` will hang the client.
-        cloudwatch_logs_thread_.release();
-        aws_cloudwatch_client_.release();
-        logs_mtx_.fork_reset();
-        sequence_tokens_mtx_.fork_reset();
+        // Ignored, just so the thread itself will not die
     }
-    cloudwatch_logs_thread_.reset();
-    aws_cloudwatch_client_.reset();
-    logs_queue_.clear();
 }
 
 void CloudWatchSink::restart_sink() noexcept
@@ -428,15 +435,22 @@ void CloudWatchSink::restart_sink() noexcept
         report_logger_error("Requested to restart sink but sink is not running!", log_group_name_, "");
         return;
     }
-    stop_impl();
+    try
     {
-        std::unique_lock<std::mutex> lock(logs_mtx_);
-        logs_queue_.clear();
+        stop_impl();
+        {
+            std::unique_lock<std::mutex> lock(logs_mtx_);
+            logs_queue_.clear();
+        }
+        is_running_ = true;
+        thread_pid_ = ::getpid();
+        aws_cloudwatch_client_ = Aws::MakeUnique<Aws::CloudWatchLogs::CloudWatchLogsClient>("cloudwatch");
+        cloudwatch_logs_thread_ = std::make_unique<std::thread>(&CloudWatchSink::cloudwatch_logs_thread, this);
     }
-    is_running_ = true;
-    thread_pid_ = ::getpid();
-    aws_cloudwatch_client_ = Aws::MakeUnique<Aws::CloudWatchLogs::CloudWatchLogsClient>("cloudwatch");
-    cloudwatch_logs_thread_ = std::make_unique<std::thread>(&CloudWatchSink::cloudwatch_logs_thread, this);
+    catch (const std::exception& e)
+    {
+        // Ignored, just so the thread itself will not die
+    }
 }
 } // namespace octo::logger::aws
 
