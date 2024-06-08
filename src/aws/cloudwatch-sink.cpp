@@ -193,9 +193,9 @@ void CloudWatchSink::cloudwatch_logs_thread()
     existing_log_streams_ = list_existing_log_streams();
     while (is_running_)
     {
-        std::unique_lock<std::mutex> lock(logs_mtx_.get());
         try
         {
+            std::unique_lock<std::mutex> lock(logs_mtx_.get());
             logs_cond_.wait_for(lock, THREAD_WAIT_DURATION, [&]() -> bool {
                 return logs_queue_.size() >= AWS_LOGS_PER_REQUEST_LIMIT || !is_running_;
             });
@@ -222,6 +222,7 @@ void CloudWatchSink::cloudwatch_logs_thread()
             report_logger_error("Encountered an error while sending log events", "", e.what());
         }
     }
+    std::unique_lock<std::mutex> lock(logs_mtx_);
     // Send the remainder logs
     while (!logs_queue_.empty())
     {
@@ -375,13 +376,20 @@ void CloudWatchSink::dump(Log const& log, Channel const& channel, Logger::Contex
     {
         return;
     }
+    std::unique_lock<std::mutex> lock(logs_mtx_);
     try
     {
         Aws::CloudWatchLogs::Model::InputLogEvent e;
+        auto message = formatted_json(log, channel, context_info).c_str();
+        auto log_name = log_stream_name(log, channel);
+        if (message.empty() || log_name.empty())
+        {
+            return;
+        }
         // Set the event and add it to the queue
         e.WithTimestamp(Aws::Utils::DateTime(log.time_created()).Millis())
-            .WithMessage(formatted_json(log, channel, context_info).c_str());
-        logs_queue_.push_back(CloudWatchLog{std::move(e), log_stream_name(log, channel)});
+            .WithMessage(std::move(message));
+        logs_queue_.push_back(CloudWatchLog{std::move(e), std::move(log_name}));
     }
     catch (const std::exception& e)
     {
@@ -421,6 +429,10 @@ void CloudWatchSink::restart_sink() noexcept
         return;
     }
     stop_impl();
+    {
+        std::unique_lock<std::mutex> lock(logs_mtx_);
+        logs_queue_.clear();
+    }
     is_running_ = true;
     thread_pid_ = ::getpid();
     aws_cloudwatch_client_ = Aws::MakeUnique<Aws::CloudWatchLogs::CloudWatchLogsClient>("cloudwatch");
