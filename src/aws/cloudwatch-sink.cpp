@@ -222,7 +222,7 @@ void CloudWatchSink::cloudwatch_logs_thread()
             report_logger_error("Encountered an error while sending log events", "", e.what());
         }
     }
-    std::unique_lock<std::mutex> lock(logs_mtx_);
+    std::unique_lock<std::mutex> lock(logs_mtx_.get());
     // Send the remainder logs
     while (!logs_queue_.empty())
     {
@@ -378,9 +378,9 @@ void CloudWatchSink::dump(Log const& log, Channel const& channel, Logger::Contex
     }
     try
     {
-        std::unique_lock<std::mutex> lock(logs_mtx_);
+        std::unique_lock<std::mutex> lock(logs_mtx_.get());
         Aws::CloudWatchLogs::Model::InputLogEvent e;
-        auto message = formatted_json(log, channel, context_info).c_str();
+        auto message = formatted_json(log, channel, context_info);
         auto log_name = log_stream_name(log, channel);
         if (message.empty() || log_name.empty())
         {
@@ -389,7 +389,7 @@ void CloudWatchSink::dump(Log const& log, Channel const& channel, Logger::Contex
         // Set the event and add it to the queue
         e.WithTimestamp(Aws::Utils::DateTime(log.time_created()).Millis())
             .WithMessage(std::move(message));
-        logs_queue_.push_back(CloudWatchLog{std::move(e), std::move(log_name}));
+        logs_queue_.push_back(CloudWatchLog{std::move(e), std::move(log_name)});
     }
     catch (const std::exception& e)
     {
@@ -438,10 +438,7 @@ void CloudWatchSink::restart_sink() noexcept
     try
     {
         stop_impl();
-        {
-            std::unique_lock<std::mutex> lock(logs_mtx_);
-            logs_queue_.clear();
-        }
+        logs_queue_.clear();
         is_running_ = true;
         thread_pid_ = ::getpid();
         aws_cloudwatch_client_ = Aws::MakeUnique<Aws::CloudWatchLogs::CloudWatchLogsClient>("cloudwatch");
