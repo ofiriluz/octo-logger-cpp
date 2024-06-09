@@ -222,28 +222,36 @@ void CloudWatchSink::cloudwatch_logs_thread()
             report_logger_error("Encountered an error while sending log events", "", e.what());
         }
     }
-    std::unique_lock<std::mutex> lock(logs_mtx_.get());
-    // Send the remainder logs
-    while (!logs_queue_.empty())
+    try
     {
-        try
+        std::unique_lock<std::mutex> lock(logs_mtx_.get());
+        // Send the remainder logs
+        while (!logs_queue_.empty())
         {
-            std::multiset<CloudWatchLog, LogEventCmp> logs;
-            while (!logs_queue_.empty())
+            try
             {
-                for (std::size_t i = 0; i < AWS_LOGS_PER_REQUEST_LIMIT && !logs_queue_.empty(); ++i)
+                std::multiset<CloudWatchLog, LogEventCmp> logs;
+                while (!logs_queue_.empty())
                 {
-                    logs.insert(std::move(logs_queue_.front()));
-                    logs_queue_.pop_front();
+                    for (std::size_t i = 0; i < AWS_LOGS_PER_REQUEST_LIMIT && !logs_queue_.empty(); ++i)
+                    {
+                        logs.insert(std::move(logs_queue_.front()));
+                        logs_queue_.pop_front();
+                    }
+                    send_logs(std::move(logs));
                 }
-                send_logs(std::move(logs));
+            }
+            catch (std::exception const& e)
+            {
+                // Ignored, just so the thread itself will not die
+                report_logger_error("Encountered an error while flushing remaining logs", "", e.what());
             }
         }
-        catch (std::exception const& e)
-        {
-            // Ignored, just so the thread itself will not die
-            report_logger_error("Encountered an error while flushing remaining logs", "", e.what());
-        }
+    }
+    catch (std::exception const& e)
+    {
+        // Ignored, just so the thread itself will not die
+        report_logger_error("Encountered an error while flushing remaining logs", "", e.what());
     }
 }
 
