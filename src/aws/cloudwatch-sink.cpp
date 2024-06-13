@@ -386,7 +386,6 @@ void CloudWatchSink::dump(Log const& log, Channel const& channel, Logger::Contex
     }
     try
     {
-        std::lock_guard<std::mutex> lock(dump_mtx_.get());
         Aws::CloudWatchLogs::Model::InputLogEvent e;
         auto message = formatted_json(log, channel, context_info);
         auto log_name = log_stream_name(log, channel);
@@ -424,7 +423,6 @@ void CloudWatchSink::stop_impl()
             cloudwatch_logs_thread_.release();
             aws_cloudwatch_client_.release();
             logs_mtx_.fork_reset();
-            dump_mtx_.fork_reset();
             sequence_tokens_mtx_.fork_reset();
         }
         cloudwatch_logs_thread_.reset();
