@@ -114,11 +114,6 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
         Logger logger("logging-tests");
         logger.add_context_keys({{"key3", "value3"}, {"key4", "value4"}});
         logger.info("Test log", {{"key5", "value5"}});
-        REQUIRE(dummy_sink_->last_log().context_info.contains("key1"));
-        REQUIRE(dummy_sink_->last_log().context_info.contains("key2"));
-        REQUIRE(dummy_sink_->last_log().context_info.contains("key3"));
-        REQUIRE(dummy_sink_->last_log().context_info.contains("key4"));
-        REQUIRE(dummy_sink_->last_log().context_info.contains("key5"));
         REQUIRE_THAT(dummy_sink_->last_log().context_info, 
         ContextInfoEquals(ContextInfo({{ {"key1", "value1"}, {"key2", "value2"}, {"key3", "value3"}, {"key4", "value4"}, {"key5", "value5"} }})));
         logger.info("Test log");
