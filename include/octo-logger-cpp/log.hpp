@@ -62,7 +62,7 @@ class Log
     const std::ostringstream* stream() const;
     const LogLevel& log_level() const;
     const std::string& extra_identifier() const;
-    const ContextInfo& context_info() const
+    ContextInfo const& context_info() const
     {
       return context_info_;
     }

@@ -41,10 +41,10 @@ public:
 
     ContextInfo(ContextInfo&&) = default;
     ContextInfo& operator=(ContextInfo&&) = default;
-    ContextInfo(const ContextInfo&) = default;
-    ContextInfo& operator=(const ContextInfo&) = default;
+    ContextInfo(ContextInfo const&) = default;
+    ContextInfo& operator=(ContextInfo const&) = default;
 
-    ContextInfo operator+(const ContextInfo& other) const
+    ContextInfo operator+(ContextInfo const& other) const
     {
         ContextInfo result = *this;
         for (const auto& [key, value] : other.context_info_)
@@ -54,7 +54,7 @@ public:
         return result;
     }
 
-    [[nodiscard]] bool operator==(const ContextInfo& other) const
+    [[nodiscard]] bool operator==(ContextInfo const& other) const
     {
         return context_info_ == other.context_info_;
     }
@@ -67,7 +67,7 @@ public:
         context_info_[key] = oss.str();
     }
 
-    void update(const ContextInfo& other)
+    void update(ContextInfo const& other)
     {
         for (const auto& [key, value] : other.context_info_)
         {

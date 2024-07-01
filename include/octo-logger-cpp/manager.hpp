@@ -40,7 +40,7 @@ class Manager
     ManagerConfigPtr config_;
     Log::LogLevel default_log_level_;
     std::shared_ptr<Logger> global_logger_;
-    std::shared_ptr<const ContextInfo> global_context_info_;
+    std::shared_ptr<ContextInfo const> global_context_info_;
 
   private:
     Manager();
@@ -69,8 +69,8 @@ class Manager
     void restart_sinks() noexcept;
     const Logger& global_logger() const;
     // @brief get the global context info
-    const ContextInfo& global_context_info() const;
-    void set_global_context_info(const ContextInfo&& context_info);
+    ContextInfo const& global_context_info() const;
+    void set_global_context_info(ContextInfo const&& context_info);
     // @brief execute this function on child process after fork before logging anything
     void child_on_fork() noexcept;
 
