@@ -43,17 +43,14 @@ public:
     ContextInfo& operator=(ContextInfo&&) = default;
     ContextInfo(ContextInfo const&) = default;
     ContextInfo& operator=(ContextInfo const&) = default;
-
     [[nodiscard]] ContextInfo operator+(ContextInfo const& other) const;
     ContextInfo& operator+=(ContextInfo const& other);
-
     [[nodiscard]] bool operator==(ContextInfo const& other) const;
-
-    void update(std::string_view key, std::string value);
+    void update(ContextInfoKey key, ContextInfoValue value);
     void update(ContextInfo const& other);
-    void erase(std::string_view key);
+    void erase(ContextInfoKey key);
     [[nodiscard]] bool empty() const;
-    [[nodiscard]] bool contains(const std::string_view& key) const;
+    [[nodiscard]] bool contains(ContextInfoKey key) const;
     void clear();
     [[nodiscard]] ContextInfoType::iterator begin();
     [[nodiscard]] ContextInfoType::iterator end();
