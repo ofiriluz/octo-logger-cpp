@@ -66,7 +66,7 @@ ConsoleSink::ConsoleSink(const SinkConfig& config)
         Sink::config().option_default(SinkConfig::SinkOption::CONSOLE_DISABLE_CONTEXT_INFO, true);
 }
 
-void ConsoleSink::dump(const Log& log, const Channel& channel, Logger::ContextInfo const& context_info)
+void ConsoleSink::dump(const Log& log, const Channel& channel, ContextInfo const& context_info)
 {
     if (log.stream())
     {

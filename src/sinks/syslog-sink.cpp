@@ -22,7 +22,7 @@ SysLogSink::SysLogSink(const SinkConfig& config)
     sys_log_name_ = config.option_default(SinkConfig::SinkOption::SYSLOG_LOG_NAME, "octo-logger-cpp");
 }
 
-void SysLogSink::dump(const Log& log, const Channel& channel, Logger::ContextInfo const& context_info)
+void SysLogSink::dump(const Log& log, const Channel& channel, ContextInfo const& context_info)
 {
     if (log.stream())
     {

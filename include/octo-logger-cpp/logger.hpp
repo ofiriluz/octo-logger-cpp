@@ -14,6 +14,7 @@
 
 #include "octo-logger-cpp/channel.hpp"
 #include "octo-logger-cpp/channel-view.hpp"
+#include "octo-logger-cpp/context-info.hpp"
 #include "octo-logger-cpp/log.hpp"
 #include "octo-logger-cpp/logger-test-definitions.hpp"
 #include <mutex>
@@ -26,8 +27,6 @@ namespace octo::logger
 class Logger
 {
   public:
-    typedef std::unordered_map<std::string_view, std::string> ContextInfo;
-
     static constexpr auto SessionID = "session_id";
     static constexpr auto TenantID = "tenant_id";
 

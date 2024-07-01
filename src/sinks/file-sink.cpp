@@ -209,7 +209,7 @@ FileSink::~FileSink()
     }
 }
 
-void FileSink::dump(const Log& log, const Channel& channel, Logger::ContextInfo const& context_info)
+void FileSink::dump(const Log& log, const Channel& channel, ContextInfo const& context_info)
 {
     std::shared_ptr<File> file;
     std::string channel_name;

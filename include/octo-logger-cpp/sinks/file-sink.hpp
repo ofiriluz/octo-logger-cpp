@@ -64,7 +64,7 @@ class FileSink : public Sink
     explicit FileSink(const SinkConfig& config);
     ~FileSink() override;
 
-    void dump(const Log& log, const Channel& channel, Logger::ContextInfo const& context_info) override;
+    void dump(const Log& log, const Channel& channel, ContextInfo const& context_info) override;
 };
 } // namespace octo::logger
 

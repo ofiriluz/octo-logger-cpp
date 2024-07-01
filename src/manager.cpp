@@ -16,7 +16,7 @@ namespace octo::logger
 std::shared_ptr<Manager> Manager::manager_;
 std::mutex Manager::manager_init_mutex_;
 
-Manager::Manager() : config_(std::make_shared<ManagerConfig>()), default_log_level_(Log::LogLevel::INFO)
+Manager::Manager() : config_(std::make_shared<ManagerConfig>()), default_log_level_(Log::LogLevel::INFO), global_context_info_(std::make_unique<ContextInfo>())
 {
 }
 
@@ -127,12 +127,14 @@ void Manager::stop(bool discard)
     }
 }
 
-void Manager::dump(const Log& log, const std::string& channel_name, Logger::ContextInfo const& context_info)
+void Manager::dump(const Log& log, const std::string& channel_name, ContextInfo const& context_info)
 {
+    auto context_info_handle(global_context_info_);
     std::lock_guard<std::mutex> lock(sinks_mutex_.get());
+    // Copy shared pointer in order to allow update without locking on set_global_context_info
     for (auto& sink : sinks_)
     {
-        sink->dump(log, channel(channel_name), context_info);
+        sink->dump(log, channel(channel_name), *context_info_handle + context_info);
     }
 }
 
@@ -186,6 +188,17 @@ bool Manager::mute_channel(std::string const& name)
     return true;
 }
 
+const ContextInfo& Manager::global_context_info() const
+{
+    return *global_context_info_;
+}
+
+void Manager::set_global_context_info(const ContextInfo&& context_info)
+{
+    global_context_info_ = std::make_shared<const ContextInfo>(std::move(context_info));
+}
+
+
 void Manager::restart_sinks() noexcept
 {
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
@@ -195,4 +208,5 @@ void Manager::child_on_fork() noexcept
 {
     sinks_mutex_.fork_reset();
 }
+
 } // namespace octo::logger

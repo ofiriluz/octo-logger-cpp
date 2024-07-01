@@ -33,44 +33,20 @@ class LogLevelEquals : public Catch::Matchers::MatcherBase<LogMock::LogLevel>
     }
 };
 
-class ContextInfoEquals : public Catch::Matchers::MatcherBase<LoggerMock::ContextInfo>
+class ContextInfoEquals : public Catch::Matchers::MatcherBase<ContextInfo>
 {
   private:
-    LoggerMock::ContextInfo context_;
-    decltype(context_)::size_type context_elements_;
+    ContextInfo context_;
 
   public:
-    explicit ContextInfoEquals(LoggerMock::ContextInfo context)
-        : context_(std::move(context)), context_elements_(context_.size())
+    explicit ContextInfoEquals(ContextInfo context)
+        : context_(std::move(context))
     {
     }
 
-    bool match(LoggerMock::ContextInfo const& in) const override
+    bool match(ContextInfo const& in) const override
     {
-        if (context_.empty())
-        {
-            return in.empty();
-        }
-        else if (in.empty())
-        {
-            return false;
-        }
-
-        int in_elements = 0;
-        for (auto const& in_itr : in)
-        {
-            ++in_elements;
-            auto const& context_itr = context_.find(in_itr.first);
-            if (context_itr == context_.cend())
-            {
-                return false;
-            }
-            if (context_itr->second != in_itr.second)
-            {
-                return false;
-            }
-        }
-        return context_elements_ == in_elements;
+        return context_ == in;
     }
 
     std::string describe() const override
@@ -78,7 +54,7 @@ class ContextInfoEquals : public Catch::Matchers::MatcherBase<LoggerMock::Contex
         return fmt::format("equals {}", to_string(context_));
     }
 
-    static std::string to_string(LoggerMock::ContextInfo const& in)
+    static std::string to_string(ContextInfo const& in)
     {
         std::string context_str("{");
         bool first = true;

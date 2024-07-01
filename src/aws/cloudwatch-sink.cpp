@@ -301,7 +301,7 @@ std::string CloudWatchSink::log_stream_name(const Log& log, const Channel& chann
 
 std::string CloudWatchSink::formatted_json(Log const& log,
                                            Channel const& channel,
-                                           Logger::ContextInfo const& context_info) const
+                                           ContextInfo const& context_info) const
 {
     nlohmann::json j;
     std::stringstream ss;
@@ -324,7 +324,7 @@ std::string CloudWatchSink::formatted_json(Log const& log,
 void CloudWatchSink::init_context_info(nlohmann::json& dst,
                                        Log const& log,
                                        [[maybe_unused]] Channel const& channel,
-                                       Logger::ContextInfo const& context_info) const
+                                       ContextInfo const& context_info) const
 {
     switch (dst.type())
     {
@@ -360,14 +360,14 @@ void CloudWatchSink::report_logger_error(std::string_view message,
 
 nlohmann::json CloudWatchSink::init_context_info(Log const& log,
                                                  Channel const& channel,
-                                                 Logger::ContextInfo const& context_info) const
+                                                 ContextInfo const& context_info) const
 {
     nlohmann::json j(nlohmann::json::value_t::object);
     init_context_info(j, log, channel, context_info);
     return j;
 }
 
-void CloudWatchSink::dump(Log const& log, Channel const& channel, Logger::ContextInfo const& context_info)
+void CloudWatchSink::dump(Log const& log, Channel const& channel, ContextInfo const& context_info)
 {
     if (!is_running_)
     {

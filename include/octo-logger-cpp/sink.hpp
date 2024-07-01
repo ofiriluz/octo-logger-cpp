@@ -47,18 +47,18 @@ class Sink
 
     std::string formatted_log_plaintext_long(Log const& log,
                                              Channel const& channel,
-                                             Logger::ContextInfo const& context_info,
+                                             ContextInfo const& context_info,
                                              bool disable_context_info) const;
     std::string formatted_log_plaintext_short(Log const& log, Channel const& channel) const;
 #ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
     std::string formatted_log_json(Log const& log,
                                    Channel const& channel,
-                                   Logger::ContextInfo const& context_info) const;
+                                   ContextInfo const& context_info) const;
 #endif
 
     inline std::string formatted_log(Log const& log,
                                      Channel const& channel,
-                                     Logger::ContextInfo const& context_info,
+                                     ContextInfo const& context_info,
                                      bool disable_context_info) const
     {
         switch (line_format_)
@@ -83,7 +83,7 @@ class Sink
 
     [[nodiscard]] virtual std::string formatted_context_info(Log const& log,
                                                              Channel const& channel,
-                                                             Logger::ContextInfo const& context_info) const;
+                                                             ContextInfo const& context_info) const;
 
     inline bool is_discarding() const
     {
@@ -95,7 +95,7 @@ class Sink
     explicit Sink(const SinkConfig& config, std::string const& origin, LineFormat format);
     virtual ~Sink() = default;
 
-    virtual void dump(const Log& log, const Channel& channel, Logger::ContextInfo const& context_info) = 0;
+    virtual void dump(const Log& log, const Channel& channel, ContextInfo const& context_info) = 0;
     const std::string& sink_name() const;
 
     void stop(bool discard);
@@ -111,8 +111,8 @@ namespace octo::logger::unittests
 void init_context_info(nlohmann::json& dst,
                        Log const& log,
                        Channel const& channel,
-                       Logger::ContextInfo const& context_info);
-nlohmann::json init_context_info(Log const& log, Channel const& channel, Logger::ContextInfo const& context_info);
+                       ContextInfo const& context_info);
+nlohmann::json init_context_info(Log const& log, Channel const& channel, ContextInfo const& context_info);
 } // namespace octo::logger::unittests
 #endif
 

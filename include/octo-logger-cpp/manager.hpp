@@ -14,6 +14,7 @@
 
 #include "octo-logger-cpp/channel.hpp"
 #include "octo-logger-cpp/channel-view.hpp"
+#include "octo-logger-cpp/context-info.hpp"
 #include "octo-logger-cpp/fork-safe-mutex.hpp"
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/manager-config.hpp"
@@ -39,6 +40,7 @@ class Manager
     ManagerConfigPtr config_;
     Log::LogLevel default_log_level_;
     std::shared_ptr<Logger> global_logger_;
+    std::shared_ptr<const ContextInfo> global_context_info_;
 
   private:
     Manager();
@@ -61,11 +63,14 @@ class Manager
     void configure(const ManagerConfigPtr& config, bool clear_old_sinks = true);
     void terminate();
     void stop(bool discard = false);
-    void dump(const Log& log, const std::string& channel_name, Logger::ContextInfo const& context_info);
+    void dump(const Log& log, const std::string& channel_name, ContextInfo const& context_info);
     void clear_sinks();
     void clear_channels();
     void restart_sinks() noexcept;
     const Logger& global_logger() const;
+    // @brief get the global context info
+    const ContextInfo& global_context_info() const;
+    void set_global_context_info(const ContextInfo&& context_info);
     // @brief execute this function on child process after fork before logging anything
     void child_on_fork() noexcept;
 

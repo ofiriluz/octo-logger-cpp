@@ -11,7 +11,7 @@
 #include <string>
 #include <deque>
 
-namespace octo::logger
+namespace octo::logger::unittests
 {
 class DummySink : public Sink
 {
@@ -19,7 +19,7 @@ class DummySink : public Sink
     struct DumpedLog
     {
       std::string message;
-      Logger::ContextInfo context_info;
+      ContextInfo context_info;
       std::string channel_name;
       std::string log_level;
     };
@@ -27,24 +27,33 @@ class DummySink : public Sink
   private:
     std::deque<DumpedLog> dumped_logs_;
   public:
-    explicit DummySink(const SinkConfig& config);
+    explicit DummySink(): Sink(SinkConfig("Dummy", octo::logger::SinkConfig::SinkType::CUSTOM_SINK), "tests",  LineFormat::PLAINTEXT_SHORT)
+    {
+    }
     ~DummySink() override = default;
-    const DumpedLog& last_log() const;
-    const std::deque<DumpedLog>& logs() const;
-    void clear_logs();
-
-
-    void dump(const Log& log, const Channel& channel, Logger::ContextInfo const& context_info) override 
+    const DumpedLog& last_log() const
+    {
+      return dumped_logs_.front();
+    }
+    const std::deque<DumpedLog>& logs() const
+    {
+      return dumped_logs_;
+    }
+    void clear_logs()
+    {
+      dumped_logs_.clear();
+    }
+    void dump(const Log& log, const Channel& channel, ContextInfo const& context_info) override
     {
       dumped_logs_.push_front(DumpedLog{
         .message = log.stream()->str(),
         .context_info = context_info,
         .channel_name = channel.channel_name(),
         .log_level = Log::level_to_string(log.log_level())
-      })
+      });
     }
 };
-} // namespace octo::logger
+} // namespace octo::logger::unittests
 
 #endif
 #endif

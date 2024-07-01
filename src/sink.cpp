@@ -29,8 +29,8 @@ namespace octo::logger::unittests
 void init_context_info(nlohmann::json& dst,
                        Log const& log,
                        Channel const& channel,
-                       Logger::ContextInfo const& context_info);
-nlohmann::json init_context_info(Log const& log, Channel const& channel, Logger::ContextInfo const& context_info);
+                       ContextInfo const& context_info);
+nlohmann::json init_context_info(Log const& log, Channel const& channel, ContextInfo const& context_info);
 } // namespace octo::logger::unittests
 #endif
 
@@ -38,7 +38,7 @@ namespace octo::logger
 {
 std::string Sink::formatted_log_plaintext_long(Log const& log,
                                                Channel const& channel,
-                                               Logger::ContextInfo const& context_info,
+                                               ContextInfo const& context_info,
                                                bool disable_context_info) const
 {
     char dtf[1024];
@@ -69,7 +69,7 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
 static void init_context_info_impl(nlohmann::json& dst,
                                    Log const& log,
                                    Channel const& channel,
-                                   Logger::ContextInfo const& context_info)
+                                   ContextInfo const& context_info)
 {
     switch (dst.type())
     {
@@ -97,7 +97,7 @@ static void init_context_info_impl(nlohmann::json& dst,
 
 static nlohmann::json init_context_info_impl(Log const& log,
                                              Channel const& channel,
-                                             Logger::ContextInfo const& context_info)
+                                             ContextInfo const& context_info)
 {
     nlohmann::json j(nlohmann::json::value_t::object);
     init_context_info_impl(j, log, channel, context_info);
@@ -107,21 +107,21 @@ static nlohmann::json init_context_info_impl(Log const& log,
 void octo::logger::unittests::init_context_info(nlohmann::json& dst,
                                                 Log const& log,
                                                 Channel const& channel,
-                                                Logger::ContextInfo const& context_info)
+                                                ContextInfo const& context_info)
 {
     init_context_info_impl(dst, log, channel, context_info);
 }
 
 nlohmann::json octo::logger::unittests::init_context_info(Log const& log,
                                                           Channel const& channel,
-                                                          Logger::ContextInfo const& context_info)
+                                                          ContextInfo const& context_info)
 {
     return init_context_info_impl(log, channel, context_info);
 }
 
 std::string Sink::formatted_log_json(Log const& log,
                                      Channel const& channel,
-                                     Logger::ContextInfo const& context_info) const
+                                     ContextInfo const& context_info) const
 {
     nlohmann::json j;
     std::stringstream ss;
@@ -160,7 +160,7 @@ std::string Sink::formatted_log_plaintext_short(Log const& log, Channel const& c
 
 std::string Sink::formatted_context_info(Log const& log,
                                          Channel const& channel,
-                                         Logger::ContextInfo const& context_info) const
+                                         ContextInfo const& context_info) const
 {
     std::string context_info_str("context_info: ");
     for (auto const& itr : context_info)

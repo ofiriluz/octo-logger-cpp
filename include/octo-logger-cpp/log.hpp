@@ -12,6 +12,7 @@
 #ifndef LOG_HPP_
 #define LOG_HPP_
 
+#include "octo-logger-cpp/context-info.hpp"
 #include "octo-logger-cpp/logger-test-definitions.hpp"
 #include <fmt/format.h>
 #include <fmt/printf.h>
@@ -46,7 +47,7 @@ class Log
     const Logger& logger_;
     std::chrono::time_point<std::chrono::system_clock> time_created_;
     std::string extra_identifier_;
-    Logger::ContextInfo context_info_;
+    ContextInfo context_info_;
 
   private:
     Log(const LogLevel& log_level, std::string_view extra_identifier, const Logger& logger);
@@ -61,7 +62,10 @@ class Log
     const std::ostringstream* stream() const;
     const LogLevel& log_level() const;
     const std::string& extra_identifier() const;
-    const Logger::ContextInfo& context_info() const;
+    const ContextInfo& context_info() const
+    {
+      return context_info_;
+    }
     
     template <class T>
     Log& operator<<(const T& value)
@@ -80,30 +84,20 @@ class Log
         {
             *stream_ << fmt::format(fmt, std::forward<T>(args)...);
         }
-        return *this
-    }
-
-    Log& with_context(char const* fmt, Args... args)
-    {
-        if (stream_)
-        {
-            *stream_ << fmt::sprintf(fmt, args...);
-        }
-        return *this
-    }
-
-    Log& with_context(std::string_view key, std::string value)
-    {
-        context_info_[key] = std::move(value);
+        return *this;
     }
 
     Log& with_context(ContextInfo context_info)
     {
-        for (auto& itr : context_info)
-        {
-            add_context_key(itr.first, std::move(itr.second));
-        }
+        context_info_.update(std::move(context_info));
+        return *this;
     }
+
+    // Log& with_context(ContextInfo::ContextInfoInitializerList context_info)
+    // {
+    //     context_info_.update(ContextInfo(context_info));
+    //     return *this;
+    // }
 
     friend class Logger;
 

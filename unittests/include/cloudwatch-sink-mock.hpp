@@ -60,7 +60,7 @@ class CloudWatchSink::CloudWatchSinkMock : public CloudWatchSink
 
     std::string formatted_json_wrapper(Log const& log,
                                        Channel const& channel,
-                                       Logger::ContextInfo const& context_info) const
+                                       ContextInfo const& context_info) const
     {
         return CloudWatchSink::formatted_log(log, channel, context_info, false);
     }
@@ -68,14 +68,14 @@ class CloudWatchSink::CloudWatchSinkMock : public CloudWatchSink
     void init_context_info_wrapper(nlohmann::json& dst,
                                    Log const& log,
                                    Channel const& channel,
-                                   Logger::ContextInfo const& context_info) const
+                                   ContextInfo const& context_info) const
     {
         return octo::logger::unittests::init_context_info(dst, log, channel, context_info);
     }
 
     nlohmann::json init_context_info_wrapper(Log const& log,
                                              Channel const& channel,
-                                             Logger::ContextInfo const& context_info) const
+                                             ContextInfo const& context_info) const
     {
         return octo::logger::unittests::init_context_info(log, channel, context_info);
     }
