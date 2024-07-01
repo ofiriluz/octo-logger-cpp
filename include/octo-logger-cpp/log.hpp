@@ -93,12 +93,6 @@ class Log
         return *this;
     }
 
-    // Log& with_context(ContextInfo::ContextInfoInitializerList context_info)
-    // {
-    //     context_info_.update(ContextInfo(context_info));
-    //     return *this;
-    // }
-
     friend class Logger;
 
     TESTS_MOCK_CLASS(Log)
