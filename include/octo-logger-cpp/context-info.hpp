@@ -37,92 +37,30 @@ public:
 
     virtual ~ContextInfo() = default;
 
-    ContextInfo(ContextInfoInitializerList init) : context_info_(init)
-    {
-    }
+    ContextInfo(ContextInfoInitializerList init);
 
     ContextInfo(ContextInfo&&) = default;
     ContextInfo& operator=(ContextInfo&&) = default;
     ContextInfo(ContextInfo const&) = default;
     ContextInfo& operator=(ContextInfo const&) = default;
 
-    ContextInfo operator+(ContextInfo const& other) const
-    {
-        ContextInfo result = *this;
-        for (const auto& [key, value] : other.context_info_)
-        {
-            result.context_info_[key] = value;
-        }
-        return result;
-    }
+    [[nodiscard]] ContextInfo operator+(ContextInfo const& other) const;
+    ContextInfo& operator+=(ContextInfo const& other);
 
-    [[nodiscard]] bool operator==(ContextInfo const& other) const
-    {
-        return context_info_ == other.context_info_;
-    }
+    [[nodiscard]] bool operator==(ContextInfo const& other) const;
 
-    void update(std::string_view key, std::string value)
-    {
-        context_info_[key] = std::move(value);
-    }
-
-    void update(ContextInfo const& other)
-    {
-        for (const auto& [key, value] : other.context_info_)
-        {
-            context_info_[key] = value;
-        }
-    }
-
-    void erase(std::string_view key)
-    {
-        context_info_.erase(key);
-    }
-
-    [[nodiscard]] bool empty() const
-    {
-        return context_info_.empty();
-    }
-
-    [[nodiscard]] bool contains(const std::string_view& key) const
-    {
-        return context_info_.find(key) != context_info_.cend();
-    }
-
-    void clear()
-    {
-        return context_info_.clear();
-    }
-
-    ContextInfoType::iterator begin() 
-    {
-        return context_info_.begin();
-    }
-
-    ContextInfoType::const_iterator begin() const
-    {
-        return context_info_.begin();
-    }
-
-    ContextInfoType::const_iterator cbegin() const 
-    {
-        return context_info_.cbegin();
-    }
-
-    ContextInfoType::iterator end() 
-    {
-        return context_info_.end();
-    }
-
-    ContextInfoType::const_iterator end() const
-    {
-        return context_info_.end();
-    }
-
-    ContextInfoType::const_iterator cend() const 
-    {
-        return context_info_.cend();
-    }
+    void update(std::string_view key, std::string value);
+    void update(ContextInfo const& other);
+    void erase(std::string_view key);
+    [[nodiscard]] bool empty() const;
+    [[nodiscard]] bool contains(const std::string_view& key) const;
+    void clear();
+    [[nodiscard]] ContextInfoType::iterator begin();
+    [[nodiscard]] ContextInfoType::iterator end();
+    [[nodiscard]] ContextInfoType::const_iterator begin() const;
+    [[nodiscard]] ContextInfoType::const_iterator end() const;
+    [[nodiscard]] ContextInfoType::const_iterator cbegin() const;
+    [[nodiscard]] ContextInfoType::const_iterator cend() const;
 };
 
 } // namespace octo::logger
