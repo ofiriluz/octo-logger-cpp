@@ -49,10 +49,10 @@ class Logger
     Log error(std::string_view extra_identifier = "", ContextInfo context_info = {}) const;
     Log log(Log::LogLevel level, std::string_view extra_identifier = "", ContextInfo context_info = {}) const;
 
-    void add_context_key(std::string_view key, std::string value);
+    void add_context_key(ContextInfo::ContextInfoKey key, ContextInfo::ContextInfoValue value);
     void add_context_keys(ContextInfo context_info);
-    void remove_context_key(std::string_view key);
-    bool has_context_key(std::string_view const& key) const;
+    void remove_context_key(ContextInfo::ContextInfoKey key);
+    bool has_context_key(ContextInfo::ContextInfoKey const& key) const;
     void clear_context_info();
 
     const Channel& logger_channel() const;

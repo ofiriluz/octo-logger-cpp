@@ -91,7 +91,7 @@ ContextInfo const& Logger::context_info() const
     return context_info_;
 }
 
-void Logger::add_context_key(std::string_view key, std::string value)
+void Logger::add_context_key(ContextInfo::ContextInfoKey key, ContextInfo::ContextInfoValue value)
 {
     
     context_info_.update(key, std::move(value));
@@ -102,12 +102,12 @@ void Logger::add_context_keys(ContextInfo context_info)
     context_info_.update(std::move(context_info));
 }
 
-void Logger::remove_context_key(std::string_view key)
+void Logger::remove_context_key(ContextInfo::ContextInfoKey key)
 {
     context_info_.erase(key);
 }
 
-bool Logger::has_context_key(std::string_view const& key) const
+bool Logger::has_context_key(ContextInfo::ContextInfoKey const& key) const
 {
     return context_info_.contains(key);
 }

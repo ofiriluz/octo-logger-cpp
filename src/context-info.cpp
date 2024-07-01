@@ -15,7 +15,7 @@
 namespace octo::logger
 {
 
-ContextInfo::ContextInfo(ContextInfoInitializerList init) : context_info_(init)
+ContextInfo::ContextInfo(ContextInfoInitializerList init) : context_info_(std::move(init))
 {
 }
 
@@ -52,7 +52,7 @@ void ContextInfo::update(ContextInfo const& other)
     }
 }
 
-void ContextInfo::erase(ContextInfoKey key)
+void ContextInfo::erase(ContextInfoKey const& key)
 {
     context_info_.erase(key);
 }
@@ -62,7 +62,7 @@ void ContextInfo::erase(ContextInfoKey key)
     return context_info_.empty();
 }
 
-[[nodiscard]] bool ContextInfo::contains(ContextInfoKey key) const
+[[nodiscard]] bool ContextInfo::contains(ContextInfoKey const& key) const
 {
     return context_info_.find(key) != context_info_.cend();
 }

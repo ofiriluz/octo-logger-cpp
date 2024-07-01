@@ -48,9 +48,9 @@ public:
     [[nodiscard]] bool operator==(ContextInfo const& other) const;
     void update(ContextInfoKey key, ContextInfoValue value);
     void update(ContextInfo const& other);
-    void erase(ContextInfoKey key);
+    void erase(ContextInfoKey const& key);
     [[nodiscard]] bool empty() const;
-    [[nodiscard]] bool contains(ContextInfoKey key) const;
+    [[nodiscard]] bool contains(ContextInfoKey const& key) const;
     void clear();
     [[nodiscard]] ContextInfoType::iterator begin();
     [[nodiscard]] ContextInfoType::iterator end();
