@@ -113,21 +113,45 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
         manager.set_global_context_info(std::move(ci));
         Logger logger("logging-tests");
         logger.add_context_keys({{"key3", "value3"}, {"key4", "value4"}});
-        logger.info("Test log").with_context({{"key5", "value5"}});
+        logger.info("Test log", {{"key5", "value5"}});
         REQUIRE(dummy_sink_->last_log().context_info.contains("key1"));
         REQUIRE(dummy_sink_->last_log().context_info.contains("key2"));
         REQUIRE(dummy_sink_->last_log().context_info.contains("key3"));
         REQUIRE(dummy_sink_->last_log().context_info.contains("key4"));
         REQUIRE(dummy_sink_->last_log().context_info.contains("key5"));
+        REQUIRE_THAT(dummy_sink_->last_log().context_info, 
+        ContextInfoEquals(ContextInfo({{ {"key1", "value1"}, {"key2", "value2"}, {"key3", "value3"}, {"key4", "value4"}, {"key5", "value5"} }})));
+        logger.info("Test log");
+
+        REQUIRE_THAT(dummy_sink_->last_log().context_info, 
+        ContextInfoEquals(ContextInfo({{ {"key1", "value1"}, {"key2", "value2"}, {"key3", "value3"}, {"key4", "value4"} }})));
+
     }
 
     SECTION("With New Context Info")
     {
+        auto old_ci = manager.global_context_info();
         ContextInfo ci{{"key5", "value5"}};
         manager.set_global_context_info(std::move(ci));
         Logger logger("logging-tests");
         logger.add_context_keys({{"key3", "value3"}});
-        logger.info("Test log").with_context({{"key4", "value4"}});
+        logger.info("Test log", {{"key4", "value4"}});
+        REQUIRE_FALSE(dummy_sink_->last_log().context_info.contains("key1"));
+        REQUIRE_FALSE(dummy_sink_->last_log().context_info.contains("key2"));
+        REQUIRE(dummy_sink_->last_log().context_info.contains("key3"));
+        REQUIRE(dummy_sink_->last_log().context_info.contains("key4"));
+        REQUIRE(dummy_sink_->last_log().context_info.contains("key5"));
+        manager.set_global_context_info(std::move(old_ci));
+    }
+
+    SECTION("Update Manager Context ")
+    {
+        ContextInfo ci{manager.global_context_info()};
+        ci.update("key5", "value5");
+        manager.set_global_context_info(std::move(ci));
+        Logger logger("logging-tests");
+        logger.add_context_keys({{"key3", "value3"}});
+        logger.info("Test log", {{"key4", "value4"}});
         REQUIRE_FALSE(dummy_sink_->last_log().context_info.contains("key1"));
         REQUIRE_FALSE(dummy_sink_->last_log().context_info.contains("key2"));
         REQUIRE(dummy_sink_->last_log().context_info.contains("key3"));

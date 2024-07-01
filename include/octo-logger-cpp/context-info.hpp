@@ -24,7 +24,9 @@ namespace octo::logger
 class ContextInfo
 {
 public:
-    typedef std::unordered_map<std::string_view, std::string> ContextInfoType;
+    typedef std::string_view ContextInfoKey;
+    typedef std::string ContextInfoValue;
+    typedef std::unordered_map<ContextInfoKey, ContextInfoValue> ContextInfoType;
     typedef std::initializer_list<ContextInfoType::value_type> ContextInfoInitializerList;
 
 private:
@@ -59,12 +61,9 @@ public:
         return context_info_ == other.context_info_;
     }
 
-    template <typename T>
-    void update(std::string_view key, const T& value)
+    void update(std::string_view key, std::string value)
     {
-        std::ostringstream oss;
-        oss << value;
-        context_info_[key] = oss.str();
+        context_info_[key] = std::move(value);
     }
 
     void update(ContextInfo const& other)
@@ -87,7 +86,7 @@ public:
 
     [[nodiscard]] bool contains(const std::string_view& key) const
     {
-        return context_info_.find(key) != context_info_.end();
+        return context_info_.find(key) != context_info_.cend();
     }
 
     void clear()
@@ -100,9 +99,14 @@ public:
         return context_info_.begin();
     }
 
-    ContextInfoType::const_iterator begin() const 
+    ContextInfoType::const_iterator begin() const
     {
         return context_info_.begin();
+    }
+
+    ContextInfoType::const_iterator cbegin() const 
+    {
+        return context_info_.cbegin();
     }
 
     ContextInfoType::iterator end() 
@@ -110,9 +114,14 @@ public:
         return context_info_.end();
     }
 
-    ContextInfoType::const_iterator end() const 
+    ContextInfoType::const_iterator end() const
     {
         return context_info_.end();
+    }
+
+    ContextInfoType::const_iterator cend() const 
+    {
+        return context_info_.cend();
     }
 };
 

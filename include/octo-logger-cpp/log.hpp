@@ -50,7 +50,7 @@ class Log
     ContextInfo context_info_;
 
   private:
-    Log(const LogLevel& log_level, std::string_view extra_identifier, const Logger& logger);
+    Log(const LogLevel& log_level, std::string_view extra_identifier, ContextInfo&& context_info, const Logger& logger);
 
   public:
     virtual ~Log();
@@ -86,13 +86,16 @@ class Log
         }
         return *this;
     }
-
-    Log& with_context(ContextInfo context_info)
+    
+    template <typename... Args>
+    void formattedf(char const* fmt, Args... args)
     {
-        context_info_.update(std::move(context_info));
-        return *this;
+        if (stream_)
+        {
+            *stream_ << fmt::sprintf(fmt, args...);
+        }
     }
-
+    
     friend class Logger;
 
     TESTS_MOCK_CLASS(Log)

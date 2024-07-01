@@ -34,54 +34,54 @@ Channel& Logger::editable_logger_channel()
     return channel_view_.editable_channel();
 }
 
-Log Logger::trace(std::string_view extra_identifier) const
+Log Logger::trace(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::TRACE, extra_identifier, *this);
+    return Log(Log::LogLevel::TRACE, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::debug(std::string_view extra_identifier) const
+Log Logger::debug(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::DEBUG, extra_identifier, *this);
+    return Log(Log::LogLevel::DEBUG, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::info(std::string_view extra_identifier) const
+Log Logger::info(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::INFO, extra_identifier, *this);
+    return Log(Log::LogLevel::INFO, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::notice(std::string_view extra_identifier) const
+Log Logger::notice(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::NOTICE, extra_identifier, *this);
+    return Log(Log::LogLevel::NOTICE, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::warning(std::string_view extra_identifier) const
+Log Logger::warning(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::WARNING, extra_identifier, *this);
+    return Log(Log::LogLevel::WARNING, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::error(std::string_view extra_identifier) const
+Log Logger::error(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::ERROR, extra_identifier, *this);
+    return Log(Log::LogLevel::ERROR, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::log(Log::LogLevel level, std::string_view extra_identifier) const
+Log Logger::log(Log::LogLevel level, std::string_view extra_identifier, ContextInfo context_info) const
 {
     switch (level)
     {
         case Log::LogLevel::QUIET:
-            return Log(Log::LogLevel::QUIET, extra_identifier, *this);
+            return Log(Log::LogLevel::QUIET, extra_identifier, std::move(context_info), *this);
         case Log::LogLevel::TRACE:
-            return trace(extra_identifier);
+            return trace(extra_identifier, context_info);
         case Log::LogLevel::DEBUG:
-            return debug(extra_identifier);
+            return debug(extra_identifier, context_info);
         case Log::LogLevel::INFO:
-            return info(extra_identifier);
+            return info(extra_identifier, context_info);
         case Log::LogLevel::NOTICE:
-            return notice(extra_identifier);
+            return notice(extra_identifier, context_info);
         case Log::LogLevel::WARNING:
-            return warning(extra_identifier);
+            return warning(extra_identifier, context_info);
         case Log::LogLevel::ERROR:
-            return error(extra_identifier);
+            return error(extra_identifier, context_info);
     }
     throw std::runtime_error("No log level");
 }

@@ -41,13 +41,13 @@ class Logger
     explicit Logger(std::string_view channel);
     virtual ~Logger() = default;
 
-    Log trace(std::string_view extra_identifier = "") const;
-    Log debug(std::string_view extra_identifier = "") const;
-    Log info(std::string_view extra_identifier = "") const;
-    Log notice(std::string_view extra_identifier = "") const;
-    Log warning(std::string_view extra_identifier = "") const;
-    Log error(std::string_view extra_identifier = "") const;
-    Log log(Log::LogLevel level, std::string_view extra_identifier = "") const;
+    Log trace(std::string_view extra_identifier = "", ContextInfo context_info = {}) const;
+    Log debug(std::string_view extra_identifier = "", ContextInfo context_info = {}) const;
+    Log info(std::string_view extra_identifier = "", ContextInfo context_info = {}) const;
+    Log notice(std::string_view extra_identifier = "", ContextInfo context_info = {}) const;
+    Log warning(std::string_view extra_identifier = "", ContextInfo context_info = {}) const;
+    Log error(std::string_view extra_identifier = "", ContextInfo context_info = {}) const;
+    Log log(Log::LogLevel level, std::string_view extra_identifier = "", ContextInfo context_info = {}) const;
 
     void add_context_key(std::string_view key, std::string value);
     void add_context_keys(ContextInfo context_info);
