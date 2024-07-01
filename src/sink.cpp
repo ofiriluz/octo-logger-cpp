@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2022
  *
  */
+#include "octo-logger-cpp/compat.hpp"
 #include "octo-logger-cpp/sink.hpp"
 #include <fmt/format.h>
 #include <iomanip>
@@ -46,7 +47,8 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch());
     std::time_t time = std::chrono::duration_cast<std::chrono::seconds>(ms).count();
     auto fraction = ms.count() % 1000;
-    std::strftime(dtf, sizeof(dtf), "[%d/%m/%Y %H:%M:%S", std::localtime(&time));
+    struct tm timeinfo;
+    std::strftime(dtf, sizeof(dtf), "[%d/%m/%Y %H:%M:%S", compat::localtime(&time, &timeinfo));
     std::string extra_id;
     if (!log.extra_identifier().empty())
     {
@@ -126,7 +128,8 @@ std::string Sink::formatted_log_json(Log const& log,
     nlohmann::json j;
     std::stringstream ss;
     std::time_t log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
-    ss << std::put_time(std::localtime(&log_time_t), "%FT%T%z");
+    struct tm timeinfo;
+    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%FT%T%z");
     j["message"] = log.stream()->str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();

@@ -11,7 +11,9 @@
 
 #ifndef _WIN32
 
+#include "octo-logger-cpp/compat.hpp"
 #include "octo-logger-cpp/sinks/file-sink.hpp"
+#include "octo-logger-cpp/compat.hpp"
 #include <unistd.h>
 #include <ctime>
 
@@ -25,7 +27,8 @@ void FileSink::create_log_path()
 {
     char dtf[1024];
     std::time_t time_v = std::time(nullptr);
-    std::strftime(dtf, sizeof(dtf), "%d-%m-%Y", std::localtime(&time_v));
+    struct tm timeinfo;
+    std::strftime(dtf, sizeof(dtf), "%d-%m-%Y", compat::localtime(&time_v, &timeinfo));
 
     if (log_path_.data()[log_path_.size() - 1] != '/')
     {
@@ -70,7 +73,8 @@ void FileSink::switch_stream(const std::string& channel)
     if (!strftime_format_.empty())
     {
         std::time_t time_v = std::time(nullptr);
-        std::strftime(dtf, sizeof(dtf), strftime_format_.c_str(), std::localtime(&time_v));
+        struct tm timeinfo;
+        std::strftime(dtf, sizeof(dtf), strftime_format_.c_str(), compat::localtime(&time_v, &timeinfo));
     }
 
     std::stringstream ss;

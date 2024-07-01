@@ -11,6 +11,7 @@
 
 #ifdef OCTO_LOGGER_WITH_AWS
 
+#include "octo-logger-cpp/compat.hpp"
 #include "octo-logger-cpp/aws/cloudwatch-sink.hpp"
 #include <aws/logs/model/CreateLogGroupRequest.h>
 #include <aws/logs/model/CreateLogStreamRequest.h>
@@ -82,6 +83,22 @@ void CloudWatchSink::assert_and_create_log_stream(const std::string& log_stream_
     if (std::find(existing_log_streams_.begin(), existing_log_streams_.end(), log_stream_name) ==
         existing_log_streams_.end())
     {
+        Aws::CloudWatchLogs::Model::DescribeLogStreamsRequest describe_log_streams;
+        describe_log_streams.SetLogGroupName(log_group_name_.c_str());
+        describe_log_streams.SetLogStreamNamePrefix(log_stream_name.c_str());
+        auto const describe_outcome = aws_cloudwatch_client_->DescribeLogStreams(describe_log_streams);
+        if (describe_outcome.IsSuccess())
+        {
+            const auto& log_streams = describe_outcome.GetResult().GetLogStreams();
+            for (const auto& log_stream : log_streams)
+            {
+                if (log_stream.GetLogStreamName() == log_stream_name)
+                {
+                    existing_log_streams_.insert(log_stream_name);
+                    return;
+                }
+            }
+        }
         Aws::CloudWatchLogs::Model::CreateLogStreamRequest create_log_stream;
         create_log_stream.WithLogGroupName(log_group_name_.c_str()).WithLogStreamName(log_stream_name.c_str());
         auto const outcome = aws_cloudwatch_client_->CreateLogStream(create_log_stream);
@@ -192,9 +209,9 @@ void CloudWatchSink::cloudwatch_logs_thread()
     existing_log_streams_ = list_existing_log_streams();
     while (is_running_)
     {
-        std::unique_lock<std::mutex> lock(logs_mtx_.get());
         try
         {
+            std::unique_lock<std::mutex> lock(logs_mtx_.get());
             logs_cond_.wait_for(lock, THREAD_WAIT_DURATION, [&]() -> bool {
                 return logs_queue_.size() >= AWS_LOGS_PER_REQUEST_LIMIT || !is_running_;
             });
@@ -221,27 +238,36 @@ void CloudWatchSink::cloudwatch_logs_thread()
             report_logger_error("Encountered an error while sending log events", "", e.what());
         }
     }
-    // Send the remainder logs
-    while (!logs_queue_.empty())
+    try
     {
-        try
+        std::unique_lock<std::mutex> lock(logs_mtx_.get());
+        // Send the remainder logs
+        while (!logs_queue_.empty())
         {
-            std::multiset<CloudWatchLog, LogEventCmp> logs;
-            while (!logs_queue_.empty())
+            try
             {
-                for (std::size_t i = 0; i < AWS_LOGS_PER_REQUEST_LIMIT && !logs_queue_.empty(); ++i)
+                std::multiset<CloudWatchLog, LogEventCmp> logs;
+                while (!logs_queue_.empty())
                 {
-                    logs.insert(std::move(logs_queue_.front()));
-                    logs_queue_.pop_front();
+                    for (std::size_t i = 0; i < AWS_LOGS_PER_REQUEST_LIMIT && !logs_queue_.empty(); ++i)
+                    {
+                        logs.insert(std::move(logs_queue_.front()));
+                        logs_queue_.pop_front();
+                    }
+                    send_logs(std::move(logs));
                 }
-                send_logs(std::move(logs));
+            }
+            catch (std::exception const& e)
+            {
+                // Ignored, just so the thread itself will not die
+                report_logger_error("Encountered an error while flushing remaining logs", "", e.what());
             }
         }
-        catch (std::exception const& e)
-        {
-            // Ignored, just so the thread itself will not die
-            report_logger_error("Encountered an error while flushing remaining logs", "", e.what());
-        }
+    }
+    catch (std::exception const& e)
+    {
+        // Ignored, just so the thread itself will not die
+        report_logger_error("Encountered an error while flushing remaining logs", "", e.what());
     }
 }
 
@@ -306,7 +332,8 @@ std::string CloudWatchSink::formatted_json(Log const& log,
     nlohmann::json j;
     std::stringstream ss;
     std::time_t log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
-    ss << std::put_time(std::localtime(&log_time_t), "%FT%T%z");
+    struct tm timeinfo;
+    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%FT%T%z");
     j["message"] = log.stream()->str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
@@ -376,10 +403,16 @@ void CloudWatchSink::dump(Log const& log, Channel const& channel, ContextInfo co
     try
     {
         Aws::CloudWatchLogs::Model::InputLogEvent e;
+        auto message = formatted_json(log, channel, context_info);
+        auto log_name = log_stream_name(log, channel);
+        if (message.empty() || log_name.empty())
+        {
+            return;
+        }
         // Set the event and add it to the queue
         e.WithTimestamp(Aws::Utils::DateTime(log.time_created()).Millis())
-            .WithMessage(formatted_json(log, channel, context_info).c_str());
-        logs_queue_.push_back(CloudWatchLog{std::move(e), log_stream_name(log, channel)});
+            .WithMessage(std::move(message));
+        logs_queue_.push_back(CloudWatchLog{std::move(e), std::move(log_name)});
     }
     catch (const std::exception& e)
     {
@@ -393,22 +426,29 @@ void CloudWatchSink::stop_impl()
     {
         return;
     }
-    is_running_ = false;
-    if (started_by_current_process() && cloudwatch_logs_thread_ && cloudwatch_logs_thread_->joinable())
+    try
     {
-        cloudwatch_logs_thread_->join();
+        is_running_ = false;
+        if (started_by_current_process() && cloudwatch_logs_thread_ && cloudwatch_logs_thread_->joinable())
+        {
+            cloudwatch_logs_thread_->join();
+        }
+        else if (!started_by_current_process())
+        {
+            // We are in a forked process, calling `reset()` will hang the client.
+            cloudwatch_logs_thread_.release();
+            aws_cloudwatch_client_.release();
+            logs_mtx_.fork_reset();
+            sequence_tokens_mtx_.fork_reset();
+        }
+        cloudwatch_logs_thread_.reset();
+        aws_cloudwatch_client_.reset();
+        logs_queue_.clear();
     }
-    else if (!started_by_current_process())
+    catch (const std::exception& e)
     {
-        // We are in a forked process, calling `reset()` will hang the client.
-        cloudwatch_logs_thread_.release();
-        aws_cloudwatch_client_.release();
-        logs_mtx_.fork_reset();
-        sequence_tokens_mtx_.fork_reset();
+        // Ignored, just so the thread itself will not die
     }
-    cloudwatch_logs_thread_.reset();
-    aws_cloudwatch_client_.reset();
-    logs_queue_.clear();
 }
 
 void CloudWatchSink::restart_sink() noexcept
@@ -418,11 +458,19 @@ void CloudWatchSink::restart_sink() noexcept
         report_logger_error("Requested to restart sink but sink is not running!", log_group_name_, "");
         return;
     }
-    stop_impl();
-    is_running_ = true;
-    thread_pid_ = ::getpid();
-    aws_cloudwatch_client_ = Aws::MakeUnique<Aws::CloudWatchLogs::CloudWatchLogsClient>("cloudwatch");
-    cloudwatch_logs_thread_ = std::make_unique<std::thread>(&CloudWatchSink::cloudwatch_logs_thread, this);
+    try
+    {
+        stop_impl();
+        logs_queue_.clear();
+        is_running_ = true;
+        thread_pid_ = ::getpid();
+        aws_cloudwatch_client_ = Aws::MakeUnique<Aws::CloudWatchLogs::CloudWatchLogsClient>("cloudwatch");
+        cloudwatch_logs_thread_ = std::make_unique<std::thread>(&CloudWatchSink::cloudwatch_logs_thread, this);
+    }
+    catch (const std::exception& e)
+    {
+        // Ignored, just so the thread itself will not die
+    }
 }
 } // namespace octo::logger::aws
 
