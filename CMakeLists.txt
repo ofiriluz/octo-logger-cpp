@@ -22,6 +22,7 @@ ENDIF()
 # Library definition
 ADD_LIBRARY(octo-logger-cpp STATIC
     src/channel.cpp
+    src/context-info.cpp
     src/log.cpp
     src/logger.cpp
     src/fork-safe-mutex.cpp

@@ -15,8 +15,8 @@ namespace octo::logger
 class Log::LogMock : public Log
 {
   public:
-    LogMock(LogLevel const& log_level, std::string_view extra_identifier, Logger const& logger)
-        : Log(log_level, std::move(extra_identifier), logger)
+    LogMock(LogLevel const& log_level, std::string_view extra_identifier, ContextInfo&& context_info, Logger const& logger)
+        : Log(log_level, std::move(extra_identifier), std::move(context_info), logger)
     {
     }
 

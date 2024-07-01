@@ -10,6 +10,7 @@ namespace
 {
 using octo::logger::unittests::ContextInfoEquals;
 using octo::logger::unittests::LoggerMock;
+using octo::logger::ContextInfo;
 
 class LoggerTestsFixture
 {
@@ -55,24 +56,24 @@ TEST_CASE_METHOD(LoggerTestsFixture, "Logger ContextInfo Tests", "[logger]")
         REQUIRE_FALSE(logger.context_info().empty());
 
         REQUIRE_THAT(logger.context_info(),
-                     ContextInfoEquals(LoggerMock::ContextInfo({{"test_key_1", "test_value_1"}})));
+                     ContextInfoEquals(ContextInfo({{"test_key_1", "test_value_1"}})));
 
         logger.add_context_key("test_key_2", "test_value_2");
         REQUIRE_THAT(logger.context_info(),
                      ContextInfoEquals(
-                         LoggerMock::ContextInfo({{"test_key_1", "test_value_1"}, {"test_key_2", "test_value_2"}})));
+                         ContextInfo({{"test_key_1", "test_value_1"}, {"test_key_2", "test_value_2"}})));
 
         SECTION("Add Duplicate")
         {
             logger.add_context_key("test_key_3", "test_value_3");
             REQUIRE_THAT(
                 logger.context_info(),
-                ContextInfoEquals(LoggerMock::ContextInfo(
+                ContextInfoEquals(ContextInfo(
                     {{"test_key_1", "test_value_1"}, {"test_key_2", "test_value_2"}, {"test_key_3", "test_value_3"}})));
             logger.add_context_key("test_key_3", "test_value_3");
             REQUIRE_THAT(
                 logger.context_info(),
-                ContextInfoEquals(LoggerMock::ContextInfo(
+                ContextInfoEquals(ContextInfo(
                     {{"test_key_1", "test_value_1"}, {"test_key_2", "test_value_2"}, {"test_key_3", "test_value_3"}})));
         }
 
@@ -82,10 +83,10 @@ TEST_CASE_METHOD(LoggerTestsFixture, "Logger ContextInfo Tests", "[logger]")
 
             logger.add_context_key("test_key_1", "test_value_1");
             REQUIRE_THAT(logger.context_info(),
-                         ContextInfoEquals(LoggerMock::ContextInfo({{"test_key_1", "test_value_1"}})));
+                         ContextInfoEquals(ContextInfo({{"test_key_1", "test_value_1"}})));
             logger.add_context_key("test_key_1", "test_value_999");
             REQUIRE_THAT(logger.context_info(),
-                         ContextInfoEquals(LoggerMock::ContextInfo({{"test_key_1", "test_value_999"}})));
+                         ContextInfoEquals(ContextInfo({{"test_key_1", "test_value_999"}})));
         }
 
         SECTION("Add Bulk")
@@ -93,9 +94,9 @@ TEST_CASE_METHOD(LoggerTestsFixture, "Logger ContextInfo Tests", "[logger]")
             struct TestData
             {
                 std::string const test_id;
-                LoggerMock::ContextInfo const context_info;
-                LoggerMock::ContextInfo const existing_context_info;
-                LoggerMock::ContextInfo const expected_result;
+                ContextInfo const context_info;
+                ContextInfo const existing_context_info;
+                ContextInfo const expected_result;
             };
             std::vector<TestData> test_data{
                 {
@@ -171,16 +172,16 @@ TEST_CASE_METHOD(LoggerTestsFixture, "Logger ContextInfo Tests", "[logger]")
         logger.add_context_key("test_key_2", "test_value_2");
         REQUIRE_THAT(logger.context_info(),
                      ContextInfoEquals(
-                         LoggerMock::ContextInfo({{"test_key_1", "test_value_1"}, {"test_key_2", "test_value_2"}})));
+                         ContextInfo({{"test_key_1", "test_value_1"}, {"test_key_2", "test_value_2"}})));
 
         logger.remove_context_key("test_key_2");
         REQUIRE_THAT(logger.context_info(),
-                     ContextInfoEquals(LoggerMock::ContextInfo({{"test_key_1", "test_value_1"}})));
+                     ContextInfoEquals(ContextInfo({{"test_key_1", "test_value_1"}})));
 
         SECTION("Remove Last")
         {
             logger.remove_context_key("test_key_1");
-            REQUIRE_THAT(logger.context_info(), ContextInfoEquals(LoggerMock::ContextInfo({})));
+            REQUIRE_THAT(logger.context_info(), ContextInfoEquals(ContextInfo({})));
             REQUIRE(logger.context_info().empty());
         }
 
@@ -190,10 +191,10 @@ TEST_CASE_METHOD(LoggerTestsFixture, "Logger ContextInfo Tests", "[logger]")
             REQUIRE_FALSE(logger.context_info().empty());
 
             auto const test_key = "test_key_none_existing";
-            REQUIRE(logger.context_info().find(test_key) == logger.context_info().cend());
+            REQUIRE(!logger.context_info().contains(test_key));
 
             REQUIRE_NOTHROW(logger.remove_context_key(test_key));
-            REQUIRE(logger.context_info().find(test_key) == logger.context_info().cend());
+            REQUIRE(!logger.context_info().contains(test_key));
         }
 
         SECTION("Remove From Empty")
@@ -211,7 +212,7 @@ TEST_CASE_METHOD(LoggerTestsFixture, "Logger ContextInfo Tests", "[logger]")
         {
             std::string const test_id;
             std::string_view const key;
-            LoggerMock::ContextInfo const context_info;
+            ContextInfo const context_info;
             bool const expected_result;
         };
         std::vector<TestData> test_data{
@@ -264,5 +265,6 @@ TEST_CASE_METHOD(LoggerTestsFixture, "Logger ContextInfo Tests", "[logger]")
 
         logger.clear_context_info();
         REQUIRE(logger.context_info().empty());
+        
     }
 }

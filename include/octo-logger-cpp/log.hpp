@@ -12,6 +12,7 @@
 #ifndef LOG_HPP_
 #define LOG_HPP_
 
+#include "octo-logger-cpp/context-info.hpp"
 #include "octo-logger-cpp/logger-test-definitions.hpp"
 #include <fmt/format.h>
 #include <fmt/printf.h>
@@ -46,9 +47,10 @@ class Log
     const Logger& logger_;
     std::chrono::time_point<std::chrono::system_clock> time_created_;
     std::string extra_identifier_;
+    ContextInfo context_info_;
 
   private:
-    Log(const LogLevel& log_level, std::string_view extra_identifier, const Logger& logger);
+    Log(const LogLevel& log_level, std::string_view extra_identifier, ContextInfo&& context_info, const Logger& logger);
 
   public:
     virtual ~Log();
@@ -60,6 +62,11 @@ class Log
     const std::ostringstream* stream() const;
     const LogLevel& log_level() const;
     const std::string& extra_identifier() const;
+    ContextInfo const& context_info() const
+    {
+      return context_info_;
+    }
+    
     template <class T>
     Log& operator<<(const T& value)
     {
@@ -71,14 +78,15 @@ class Log
     }
 
     template <typename... T>
-    void formatted(fmt::format_string<T...> fmt, T&&... args)
+    Log& formatted(fmt::format_string<T...> fmt, T&&... args)
     {
         if (stream_)
         {
             *stream_ << fmt::format(fmt, std::forward<T>(args)...);
         }
+        return *this;
     }
-
+    
     template <typename... Args>
     void formattedf(char const* fmt, Args... args)
     {
@@ -87,7 +95,7 @@ class Log
             *stream_ << fmt::sprintf(fmt, args...);
         }
     }
-
+    
     friend class Logger;
 
     TESTS_MOCK_CLASS(Log)

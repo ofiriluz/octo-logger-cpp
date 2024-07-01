@@ -10,6 +10,7 @@ ADD_EXECUTABLE(${UT_EXECUTABLE}
     ${PROJECT_SOURCE_DIR}/src/manager.cpp
     src/log-tests.cpp
     src/logger-tests.cpp
+    src/logging-tests.cpp
     $<$<BOOL:${WITH_AWS}>:${PROJECT_SOURCE_DIR}/src/aws/cloudwatch-sink.cpp>
     $<$<BOOL:${WITH_AWS}>:src/cloudwatch-sink-tests.cpp>
     src/test.cpp

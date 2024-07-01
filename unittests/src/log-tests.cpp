@@ -55,25 +55,25 @@ TEST_CASE_METHOD(LogTestsFixture, "Log Initialization Tests", "[log]")
 {
     SECTION("Initialize LogLevel")
     {
-        LogMock const log_trace(LogLevel::TRACE, "log_trace", logger_trace_);
+        LogMock const log_trace(LogLevel::TRACE, "log_trace", {}, logger_trace_);
         REQUIRE_THAT(log_trace.log_level(), LogLevelEquals(LogLevel::TRACE));
 
-        LogMock const log_debug(LogLevel::DEBUG, "log_debug", logger_debug_);
+        LogMock const log_debug(LogLevel::DEBUG, "log_debug", {}, logger_debug_);
         REQUIRE_THAT(log_debug.log_level(), LogLevelEquals(LogLevel::DEBUG));
 
-        LogMock const log_info(LogLevel::INFO, "log_info", logger_info_);
+        LogMock const log_info(LogLevel::INFO, "log_info", {}, logger_info_);
         REQUIRE_THAT(log_info.log_level(), LogLevelEquals(LogLevel::INFO));
 
-        LogMock const log_notice(LogLevel::NOTICE, "log_notice", logger_notice_);
+        LogMock const log_notice(LogLevel::NOTICE, "log_notice", {}, logger_notice_);
         REQUIRE_THAT(log_notice.log_level(), LogLevelEquals(LogLevel::NOTICE));
 
-        LogMock const log_warning(LogLevel::WARNING, "log_warning", logger_warning_);
+        LogMock const log_warning(LogLevel::WARNING, "log_warning", {}, logger_warning_);
         REQUIRE_THAT(log_warning.log_level(), LogLevelEquals(LogLevel::WARNING));
 
-        LogMock const log_error(LogLevel::ERROR, "log_error", logger_error_);
+        LogMock const log_error(LogLevel::ERROR, "log_error", {}, logger_error_);
         REQUIRE_THAT(log_error.log_level(), LogLevelEquals(LogLevel::ERROR));
 
-        LogMock const log_quiet(LogLevel::QUIET, "log_quiet", logger_quiet_);
+        LogMock const log_quiet(LogLevel::QUIET, "log_quiet", {}, logger_quiet_);
         REQUIRE_THAT(log_quiet.log_level(), LogLevelEquals(LogLevel::QUIET));
     }
 }
