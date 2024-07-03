@@ -51,11 +51,11 @@ class DummySink : public Sink
     {
       dumped_logs_.push_front(DumpedLog{
         .message = log.stream()->str(),
+        .log_context_info = log.context_info(),
         .context_info = context_info,
         .context_info_addr = &context_info,
         .global_context_info = global_context_info,
         .global_context_info_addr = &global_context_info,
-        .log_context_info = log.context_info(),
         .channel_name = channel.channel_name(),
         .log_level = Log::level_to_string(log.log_level())
       });
