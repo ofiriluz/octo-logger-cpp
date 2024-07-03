@@ -33,8 +33,8 @@ class ContextInfo
 
   public:
     virtual ~ContextInfo() = default;
-
-    /* implicit */ ContextInfo(ContextInfoInitializerList init = {});
+    ContextInfo() = default;
+    /* implicit */ ContextInfo(ContextInfoInitializerList init);
 
     ContextInfo(ContextInfo&&) = default;
     ContextInfo& operator=(ContextInfo&&) = default;
