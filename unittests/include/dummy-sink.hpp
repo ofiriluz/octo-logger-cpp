@@ -19,7 +19,11 @@ class DummySink : public Sink
     struct DumpedLog
     {
       std::string message;
+      ContextInfo log_context_info;
       ContextInfo context_info;
+      const ContextInfo* context_info_addr;
+      ContextInfo global_context_info;
+      const ContextInfo* global_context_info_addr;
       std::string channel_name;
       std::string log_level;
     };
@@ -43,11 +47,15 @@ class DummySink : public Sink
     {
       dumped_logs_.clear();
     }
-    void dump(const Log& log, const Channel& channel, ContextInfo const& context_info) override
+    void dump(const Log& log, const Channel& channel, ContextInfo const& context_info, ContextInfo const& global_context_info) override
     {
       dumped_logs_.push_front(DumpedLog{
         .message = log.stream()->str(),
         .context_info = context_info,
+        .context_info_addr = &context_info,
+        .global_context_info = global_context_info,
+        .global_context_info_addr = &global_context_info,
+        .log_context_info = log.context_info(),
         .channel_name = channel.channel_name(),
         .log_level = Log::level_to_string(log.log_level())
       });

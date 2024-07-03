@@ -17,34 +17,29 @@
 #include <string_view>
 #include <sstream>
 
-
 namespace octo::logger
 {
 
 class ContextInfo
 {
-public:
+  public:
     typedef std::string_view ContextInfoKey;
     typedef std::string ContextInfoValue;
     typedef std::unordered_map<ContextInfoKey, ContextInfoValue> ContextInfoType;
     typedef std::initializer_list<ContextInfoType::value_type> ContextInfoInitializerList;
 
-private:
+  private:
     ContextInfoType context_info_;
 
-public:
-    ContextInfo() = default;
-
+  public:
     virtual ~ContextInfo() = default;
 
-    ContextInfo(ContextInfoInitializerList init);
+    /* implicit */ ContextInfo(ContextInfoInitializerList init = {});
 
     ContextInfo(ContextInfo&&) = default;
     ContextInfo& operator=(ContextInfo&&) = default;
     ContextInfo(ContextInfo const&) = default;
     ContextInfo& operator=(ContextInfo const&) = default;
-    [[nodiscard]] ContextInfo operator+(ContextInfo const& other) const;
-    ContextInfo& operator+=(ContextInfo const& other);
     [[nodiscard]] bool operator==(ContextInfo const& other) const;
     void update(ContextInfoKey key, ContextInfoValue value);
     void update(ContextInfo const& other);

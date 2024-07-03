@@ -394,7 +394,10 @@ nlohmann::json CloudWatchSink::init_context_info(Log const& log,
     return j;
 }
 
-void CloudWatchSink::dump(Log const& log, Channel const& channel, ContextInfo const& context_info)
+void CloudWatchSink::dump(Log const& log,
+                          Channel const& channel,
+                          ContextInfo const& context_info,
+                          ContextInfo const& global_context_info)
 {
     if (!is_running_)
     {
@@ -410,8 +413,7 @@ void CloudWatchSink::dump(Log const& log, Channel const& channel, ContextInfo co
             return;
         }
         // Set the event and add it to the queue
-        e.WithTimestamp(Aws::Utils::DateTime(log.time_created()).Millis())
-            .WithMessage(std::move(message));
+        e.WithTimestamp(Aws::Utils::DateTime(log.time_created()).Millis()).WithMessage(std::move(message));
         logs_queue_.push_back(CloudWatchLog{std::move(e), std::move(log_name)});
     }
     catch (const std::exception& e)

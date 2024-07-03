@@ -16,7 +16,7 @@ namespace octo::logger
 {
 void Logger::dump_log(const Log& log) const
 {
-    Manager::instance().dump(log, channel_view_.channel().channel_name(), log.context_info() + context_info_);
+    Manager::instance().dump(log, channel_view_.channel().channel_name(), context_info_);
 }
 
 Logger::Logger(std::string_view channel)
@@ -93,7 +93,7 @@ ContextInfo const& Logger::context_info() const
 
 void Logger::add_context_key(ContextInfo::ContextInfoKey key, ContextInfo::ContextInfoValue value)
 {
-    
+
     context_info_.update(key, std::move(value));
 }
 

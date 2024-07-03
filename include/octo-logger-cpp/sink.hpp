@@ -48,28 +48,30 @@ class Sink
     std::string formatted_log_plaintext_long(Log const& log,
                                              Channel const& channel,
                                              ContextInfo const& context_info,
+                                             ContextInfo const& global_context_info,
                                              bool disable_context_info) const;
     std::string formatted_log_plaintext_short(Log const& log, Channel const& channel) const;
 #ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
-    std::string formatted_log_json(Log const& log,
-                                   Channel const& channel,
-                                   ContextInfo const& context_info) const;
+    std::string formatted_log_json(Log const& log, Channel const& channel, ContextInfo const& context_info, 
+                                             ContextInfo const& global_context_info,
+    ) const;
 #endif
 
     inline std::string formatted_log(Log const& log,
                                      Channel const& channel,
                                      ContextInfo const& context_info,
+                                     ContextInfo const& global_context_info,
                                      bool disable_context_info) const
     {
         switch (line_format_)
         {
             case LineFormat::PLAINTEXT_LONG:
-                return formatted_log_plaintext_long(log, channel, context_info, disable_context_info);
+                return formatted_log_plaintext_long(log, channel, context_info, global_context_info, disable_context_info);
             case LineFormat::PLAINTEXT_SHORT:
                 return formatted_log_plaintext_short(log, channel);
 #ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
             case LineFormat::JSON:
-                return formatted_log_json(log, channel, context_info);
+                return formatted_log_json(log, channel, context_info, global_context_info);
 #endif
         }
         throw std::runtime_error("Unexpected Error Occurred");
@@ -83,23 +85,29 @@ class Sink
 
     [[nodiscard]] virtual std::string formatted_context_info(Log const& log,
                                                              Channel const& channel,
-                                                             ContextInfo const& context_info) const;
+                                                             ContextInfo const& context_info,
+                                                             ContextInfo const& global_context_info
+                                                             ) const;
 
     inline bool is_discarding() const
     {
         return is_discarding_;
     }
-    virtual void stop_impl() {}
+    virtual void stop_impl()
+    {
+    }
 
   public:
     explicit Sink(const SinkConfig& config, std::string const& origin, LineFormat format);
     virtual ~Sink() = default;
 
-    virtual void dump(const Log& log, const Channel& channel, ContextInfo const& context_info) = 0;
+    virtual void dump(const Log& log, const Channel& channel, ContextInfo const& context_info, ContextInfo const& global_context_info) = 0;
     const std::string& sink_name() const;
 
     void stop(bool discard);
-    virtual void restart_sink() noexcept {}
+    virtual void restart_sink() noexcept
+    {
+    }
 };
 typedef std::shared_ptr<Sink> SinkPtr;
 } // namespace octo::logger
@@ -108,10 +116,7 @@ typedef std::shared_ptr<Sink> SinkPtr;
 #include <nlohmann/json.hpp>
 namespace octo::logger::unittests
 {
-void init_context_info(nlohmann::json& dst,
-                       Log const& log,
-                       Channel const& channel,
-                       ContextInfo const& context_info);
+void init_context_info(nlohmann::json& dst, Log const& log, Channel const& channel, ContextInfo const& context_info);
 nlohmann::json init_context_info(Log const& log, Channel const& channel, ContextInfo const& context_info);
 } // namespace octo::logger::unittests
 #endif

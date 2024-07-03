@@ -22,11 +22,14 @@ SysLogSink::SysLogSink(const SinkConfig& config)
     sys_log_name_ = config.option_default(SinkConfig::SinkOption::SYSLOG_LOG_NAME, "octo-logger-cpp");
 }
 
-void SysLogSink::dump(const Log& log, const Channel& channel, ContextInfo const& context_info)
+void SysLogSink::dump(const Log& log,
+                      const Channel& channel,
+                      ContextInfo const& context_info,
+                      ContextInfo const& global_context_info)
 {
     if (log.stream())
     {
-        std::string line{formatted_log(log, channel, context_info, false)};
+        std::string line{formatted_log(log, channel, context_info, global_context_info, false)};
         openlog(sys_log_name_.c_str(), LOG_PID | LOG_CONS, LOG_AUTHPRIV);
         syslog(LOG_INFO | LOG_AUTHPRIV, "%s", line.c_str());
         closelog();

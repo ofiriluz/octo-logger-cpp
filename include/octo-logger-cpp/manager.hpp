@@ -46,7 +46,6 @@ class Manager
     Manager();
 
   public:
-
     Manager(const Manager& other) = delete;
     Manager& operator=(const Manager& other) = delete;
 
@@ -68,7 +67,6 @@ class Manager
     void clear_channels();
     void restart_sinks() noexcept;
     const Logger& global_logger() const;
-    // @brief get the global context info
     ContextInfo const& global_context_info() const;
     void set_global_context_info(ContextInfo const&& context_info);
     // @brief execute this function on child process after fork before logging anything

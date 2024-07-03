@@ -9,7 +9,6 @@
  *
  */
 
-
 #include "octo-logger-cpp/context-info.hpp"
 
 namespace octo::logger
@@ -17,21 +16,6 @@ namespace octo::logger
 
 ContextInfo::ContextInfo(ContextInfoInitializerList init) : context_info_(std::move(init))
 {
-}
-
-ContextInfo& ContextInfo::operator+=(ContextInfo const& other)
-{
-    for (const auto& [key, value] : other.context_info_)
-    {
-        context_info_[key] = value;
-    }
-    return *this;
-}
-ContextInfo ContextInfo::operator+(ContextInfo const& other) const
-{
-    ContextInfo result = *this;
-    result += other;
-    return result;
 }
 
 [[nodiscard]] bool ContextInfo::operator==(ContextInfo const& other) const
@@ -72,7 +56,7 @@ void ContextInfo::clear()
     return context_info_.clear();
 }
 
-ContextInfo::ContextInfoType::iterator ContextInfo::begin() 
+ContextInfo::ContextInfoType::iterator ContextInfo::begin()
 {
     return context_info_.begin();
 }
@@ -82,12 +66,12 @@ ContextInfo::ContextInfoType::const_iterator ContextInfo::begin() const
     return context_info_.begin();
 }
 
-ContextInfo::ContextInfoType::const_iterator ContextInfo::cbegin() const 
+ContextInfo::ContextInfoType::const_iterator ContextInfo::cbegin() const
 {
     return context_info_.cbegin();
 }
 
-ContextInfo::ContextInfoType::iterator ContextInfo::end() 
+ContextInfo::ContextInfoType::iterator ContextInfo::end()
 {
     return context_info_.end();
 }
@@ -97,10 +81,9 @@ ContextInfo::ContextInfoType::const_iterator ContextInfo::end() const
     return context_info_.end();
 }
 
-ContextInfo::ContextInfoType::const_iterator ContextInfo::cend() const 
+ContextInfo::ContextInfoType::const_iterator ContextInfo::cend() const
 {
     return context_info_.cend();
 }
-
 
 } // namespace octo::logger

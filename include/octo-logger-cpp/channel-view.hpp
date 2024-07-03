@@ -19,10 +19,10 @@ namespace octo::logger
 
 class ChannelView
 {
-private:
+  private:
     ChannelPtr channel_;
 
-public:
+  public:
     explicit ChannelView(ChannelPtr channel) : channel_(std::move(channel))
     {
     }
@@ -32,7 +32,6 @@ public:
     ChannelView(ChannelView&&) = default;
     ChannelView& operator=(const ChannelView&) = default;
     ChannelView& operator=(ChannelView&&) = default;
-    
 
     [[nodiscard]] const Channel& channel() const
     {

@@ -32,13 +32,13 @@ class AwsLogSystem : public Aws::Utils::Logging::LogSystemInterface
   public:
     enum class SanitizerTags : uint8_t
     {
-      ALL_TAG,
-      AUTHV4_TAG,
-      AWSCLIENT_TAG,
-      CONFIG_FILE_PROFILE_TAG,
-      CURL_HTTP_CLIENT_TAG,
-      CURL_TAG,
-      ERROR_MARSHALLER_TAG
+        ALL_TAG,
+        AUTHV4_TAG,
+        AWSCLIENT_TAG,
+        CONFIG_FILE_PROFILE_TAG,
+        CURL_HTTP_CLIENT_TAG,
+        CURL_TAG,
+        ERROR_MARSHALLER_TAG
     };
 
   public:

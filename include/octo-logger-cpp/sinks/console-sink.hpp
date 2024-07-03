@@ -39,7 +39,10 @@ class ConsoleSink : public Sink
     explicit ConsoleSink(const SinkConfig& config);
     ~ConsoleSink() override = default;
 
-    void dump(const Log& log, const Channel& channel, ContextInfo const& context_info) override;
+    void dump(const Log& log,
+              const Channel& channel,
+              ContextInfo const& context_info,
+              ContextInfo const& global_context_info) override;
 };
 } // namespace octo::logger
 

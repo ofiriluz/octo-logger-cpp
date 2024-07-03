@@ -16,7 +16,10 @@ namespace octo::logger
 std::shared_ptr<Manager> Manager::manager_;
 std::mutex Manager::manager_init_mutex_;
 
-Manager::Manager() : config_(std::make_shared<ManagerConfig>()), default_log_level_(Log::LogLevel::INFO), global_context_info_(std::make_unique<ContextInfo>())
+Manager::Manager()
+    : config_(std::make_shared<ManagerConfig>()),
+      default_log_level_(Log::LogLevel::INFO),
+      global_context_info_(std::make_unique<ContextInfo>())
 {
 }
 
@@ -53,7 +56,8 @@ Manager::~Manager()
 
 ChannelView Manager::create_channel(std::string_view name)
 {
-    return ChannelView((channels_.try_emplace(std::string(name), std::make_shared<Channel>(name, default_log_level_)).first->second));
+    return ChannelView(
+        (channels_.try_emplace(std::string(name), std::make_shared<Channel>(name, default_log_level_)).first->second));
 }
 
 const Channel& Manager::channel(const std::string& name) const
@@ -134,7 +138,7 @@ void Manager::dump(const Log& log, const std::string& channel_name, ContextInfo 
     std::lock_guard<std::mutex> lock(sinks_mutex_.get());
     for (auto& sink : sinks_)
     {
-        sink->dump(log, channel(channel_name), *context_info_handle + context_info);
+        sink->dump(log, channel(channel_name), context_info, *context_info_handle);
     }
 }
 
@@ -197,7 +201,6 @@ void Manager::set_global_context_info(ContextInfo const&& context_info)
 {
     global_context_info_ = std::make_shared<ContextInfo const>(std::move(context_info));
 }
-
 
 void Manager::restart_sinks() noexcept
 {

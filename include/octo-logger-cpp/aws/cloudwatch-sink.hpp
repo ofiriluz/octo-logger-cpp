@@ -105,9 +105,7 @@ class CloudWatchSink : public Sink
                            Log const& log,
                            Channel const& channel,
                            ContextInfo const& context_info) const;
-    nlohmann::json init_context_info(Log const& log,
-                                     Channel const& channel,
-                                     ContextInfo const& context_info) const;
+    nlohmann::json init_context_info(Log const& log, Channel const& channel, ContextInfo const& context_info) const;
 
     void report_logger_error(std::string_view message,
                              std::string const& name,

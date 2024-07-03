@@ -27,10 +27,7 @@
 // We always want to compile these functions, which expose our internals to the unit tests.
 namespace octo::logger::unittests
 {
-void init_context_info(nlohmann::json& dst,
-                       Log const& log,
-                       Channel const& channel,
-                       ContextInfo const& context_info);
+void init_context_info(nlohmann::json& dst, Log const& log, Channel const& channel, ContextInfo const& context_info);
 nlohmann::json init_context_info(Log const& log, Channel const& channel, ContextInfo const& context_info);
 } // namespace octo::logger::unittests
 #endif
@@ -40,6 +37,7 @@ namespace octo::logger
 std::string Sink::formatted_log_plaintext_long(Log const& log,
                                                Channel const& channel,
                                                ContextInfo const& context_info,
+                                               ContextInfo const& global_context_info,
                                                bool disable_context_info) const
 {
     char dtf[1024];
@@ -59,9 +57,9 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
        << Log::level_to_string(log.log_level())[0] << "][" << channel.channel_name() << "][PID(" << getpid()
        << ")][TID(" << std::this_thread::get_id() << ")]" << extra_id << ": " << log.stream()->str();
 
-    if (!disable_context_info && !context_info.empty())
+    if (!disable_context_info && !(context_info.empty() && log.context_info().empty() && global_context_info.empty()))
     {
-        ss << "\n" << formatted_context_info(log, channel, context_info);
+        ss << "\n" << formatted_context_info(log, channel, context_info, global_context_info);
     }
 
     return ss.str();
@@ -71,7 +69,9 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
 static void init_context_info_impl(nlohmann::json& dst,
                                    Log const& log,
                                    Channel const& channel,
-                                   ContextInfo const& context_info)
+                                   ContextInfo const& context_info,
+                                   ContextInfo const& global_context_info,
+                                   )
 {
     switch (dst.type())
     {
@@ -83,13 +83,17 @@ static void init_context_info_impl(nlohmann::json& dst,
             throw std::runtime_error(fmt::format("Wrong context_info destination type {}", dst.type_name()));
     }
 
-    for (auto const& itr : context_info)
+    for (auto const& context_info : {log.context_info(), context_info, global_context_info})
     {
-        if (!dst.contains(itr.first))
+        for (auto const& itr : context_info)
         {
-            dst[itr.first.data()] = itr.second;
+            if (!dst.contains(itr.first))
+            {
+                dst[itr.first.data()] = itr.second;
+            }
         }
     }
+
 
     if (!log.extra_identifier().empty())
     {
@@ -97,33 +101,33 @@ static void init_context_info_impl(nlohmann::json& dst,
     }
 }
 
-static nlohmann::json init_context_info_impl(Log const& log,
-                                             Channel const& channel,
-                                             ContextInfo const& context_info)
+static nlohmann::json init_context_info_impl(Log const& log, Channel const& channel, ContextInfo const& context_info, ContextInfo const& global_context_info)
 {
     nlohmann::json j(nlohmann::json::value_t::object);
-    init_context_info_impl(j, log, channel, context_info);
+    init_context_info_impl(j, log, channel, context_info, global_context_info);
     return std::move(j);
 }
 
 void octo::logger::unittests::init_context_info(nlohmann::json& dst,
                                                 Log const& log,
                                                 Channel const& channel,
-                                                ContextInfo const& context_info)
+                                                ContextInfo const& context_info,
+                                                ContextInfo const& global_context_info
+                                                )
 {
-    init_context_info_impl(dst, log, channel, context_info);
+    init_context_info_impl(dst, log, channel, context_info, global_context_info);
 }
 
 nlohmann::json octo::logger::unittests::init_context_info(Log const& log,
                                                           Channel const& channel,
-                                                          ContextInfo const& context_info)
+                                                          ContextInfo const& context_info,
+                                                          ContextInfo const& global_context_info,
+                                                          )
 {
-    return init_context_info_impl(log, channel, context_info);
+    return init_context_info_impl(log, channel, context_info, global_context_info);
 }
 
-std::string Sink::formatted_log_json(Log const& log,
-                                     Channel const& channel,
-                                     ContextInfo const& context_info) const
+std::string Sink::formatted_log_json(Log const& log, Channel const& channel, ContextInfo const& context_info, ContextInfo const& global_context_info) const
 {
     nlohmann::json j;
     std::stringstream ss;
@@ -139,7 +143,7 @@ std::string Sink::formatted_log_json(Log const& log,
     j["log_level"] = log_level_str;
     j["origin_func_name"] = "";
 
-    j["context_info"] = init_context_info_impl(log, channel, context_info);
+    j["context_info"] = init_context_info_impl(log, channel, context_info, global_context_info);
 
     return j.dump();
 }
@@ -161,14 +165,15 @@ std::string Sink::formatted_log_plaintext_short(Log const& log, Channel const& c
     return ss.str();
 }
 
-std::string Sink::formatted_context_info(Log const& log,
-                                         Channel const& channel,
-                                         ContextInfo const& context_info) const
+std::string Sink::formatted_context_info(Log const& log, Channel const& channel, ContextInfo const& context_info, ContextInfo const& global_context_info) const
 {
     std::string context_info_str("context_info: ");
-    for (auto const& itr : context_info)
+    for (auto const& itr : {log.context_info(), context_info, global_context_info})
     {
-        context_info_str += fmt::format(FMT_STRING("[{:s}:{:s}]"), itr.first.data(), itr.second);
+        for (auto const& itr : itr)
+        {
+            context_info_str += fmt::format(FMT_STRING("[{:s}:{:s}]"), itr.first.data(), itr.second);
+        }
     }
     return std::move(context_info_str);
 }

@@ -64,9 +64,9 @@ class Log
     const std::string& extra_identifier() const;
     ContextInfo const& context_info() const
     {
-      return context_info_;
+        return context_info_;
     }
-    
+
     template <class T>
     Log& operator<<(const T& value)
     {
@@ -86,7 +86,7 @@ class Log
         }
         return *this;
     }
-    
+
     template <typename... Args>
     void formattedf(char const* fmt, Args... args)
     {
@@ -95,7 +95,7 @@ class Log
             *stream_ << fmt::sprintf(fmt, args...);
         }
     }
-    
+
     friend class Logger;
 
     TESTS_MOCK_CLASS(Log)

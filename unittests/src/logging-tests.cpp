@@ -10,7 +10,7 @@ namespace
 {
 using octo::logger::unittests::ContextInfoEquals;
 using octo::logger::unittests::DummySink;
-using octo::logger::ContextInfo;
+using octo::logger::ContextInfo;    
 using octo::logger::Logger;
 
 class LoggingTestsFixture
@@ -92,7 +92,8 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
         REQUIRE_FALSE(manager.global_context_info().empty());
         REQUIRE(manager.global_context_info().contains("key1"));
         REQUIRE(manager.global_context_info().contains("key2"));
-        REQUIRE(dummy_sink_->last_log().context_info == ci);
+        REQUIRE(dummy_sink_->last_log().global_context_info == ci);
+        REQUIRE(dummy_sink_->last_log().global_context_info_addr == &manager.global_context_info());
     }
 
     SECTION("With Logger Context Info")
@@ -102,9 +103,11 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
         Logger logger("logging-tests");
         logger.add_context_keys({{"key3", "value3"}});
         logger.info("Test log");
-        REQUIRE(dummy_sink_->last_log().context_info.contains("key1"));
-        REQUIRE(dummy_sink_->last_log().context_info.contains("key2"));
+        REQUIRE(dummy_sink_->last_log().global_context_info.contains("key1"));
+        REQUIRE(dummy_sink_->last_log().global_context_info.contains("key2"));
         REQUIRE(dummy_sink_->last_log().context_info.contains("key3"));
+        REQUIRE(dummy_sink_->last_log().context_info_addr == &logger.context_info());
+        REQUIRE(dummy_sink_->last_log().global_context_info_addr == &manager.global_context_info());
     }
 
     SECTION("With Log Context Info")
@@ -114,13 +117,13 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
         Logger logger("logging-tests");
         logger.add_context_keys({{"key3", "value3"}, {"key4", "value4"}});
         logger.info("Test log", {{"key5", "value5"}});
-        REQUIRE_THAT(dummy_sink_->last_log().context_info, 
-        ContextInfoEquals(ContextInfo({{ {"key1", "value1"}, {"key2", "value2"}, {"key3", "value3"}, {"key4", "value4"}, {"key5", "value5"} }})));
-        logger.info("Test log");
-
-        REQUIRE_THAT(dummy_sink_->last_log().context_info, 
-        ContextInfoEquals(ContextInfo({{ {"key1", "value1"}, {"key2", "value2"}, {"key3", "value3"}, {"key4", "value4"} }})));
-
+        REQUIRE(dummy_sink_->last_log().global_context_info.contains("key1"));
+        REQUIRE(dummy_sink_->last_log().global_context_info.contains("key2"));
+        REQUIRE(dummy_sink_->last_log().global_context_info_addr == &manager.global_context_info());
+        REQUIRE(dummy_sink_->last_log().context_info.contains("key3"));
+        REQUIRE(dummy_sink_->last_log().context_info.contains("key4"));
+        REQUIRE(dummy_sink_->last_log().context_info_addr == &logger.context_info());
+        REQUIRE(dummy_sink_->last_log().log_context_info.contains("key5"));
     }
 
     SECTION("With New Context Info")
@@ -131,11 +134,12 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
         Logger logger("logging-tests");
         logger.add_context_keys({{"key3", "value3"}});
         logger.info("Test log", {{"key4", "value4"}});
-        REQUIRE_FALSE(dummy_sink_->last_log().context_info.contains("key1"));
-        REQUIRE_FALSE(dummy_sink_->last_log().context_info.contains("key2"));
+        REQUIRE_FALSE(dummy_sink_->last_log().global_context_info.contains("key1"));
+        REQUIRE_FALSE(dummy_sink_->last_log().global_context_info.contains("key2"));
+        REQUIRE(dummy_sink_->last_log().global_context_info.contains("key5"));
+        REQUIRE(dummy_sink_->last_log().global_context_info_addr == &manager.global_context_info());
         REQUIRE(dummy_sink_->last_log().context_info.contains("key3"));
-        REQUIRE(dummy_sink_->last_log().context_info.contains("key4"));
-        REQUIRE(dummy_sink_->last_log().context_info.contains("key5"));
+        REQUIRE(dummy_sink_->last_log().log_context_info.contains("key4"));
         manager.set_global_context_info(std::move(old_ci));
     }
 
@@ -147,10 +151,10 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
         Logger logger("logging-tests");
         logger.add_context_keys({{"key3", "value3"}});
         logger.info("Test log", {{"key4", "value4"}});
-        REQUIRE_FALSE(dummy_sink_->last_log().context_info.contains("key1"));
-        REQUIRE_FALSE(dummy_sink_->last_log().context_info.contains("key2"));
+        REQUIRE_FALSE(dummy_sink_->last_log().global_context_info.contains("key1"));
+        REQUIRE_FALSE(dummy_sink_->last_log().global_context_info.contains("key2"));
         REQUIRE(dummy_sink_->last_log().context_info.contains("key3"));
-        REQUIRE(dummy_sink_->last_log().context_info.contains("key4"));
-        REQUIRE(dummy_sink_->last_log().context_info.contains("key5"));
+        REQUIRE(dummy_sink_->last_log().log_context_info.contains("key4"));
+        REQUIRE(dummy_sink_->last_log().global_context_info.contains("key5"));
     }
 }
