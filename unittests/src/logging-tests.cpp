@@ -86,7 +86,7 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
     SECTION("Update Global Context Info")
     {
         ContextInfo ci{{"key1", "value1"}, {"key2", "value2"}};
-        manager.set_global_context_info(std::move(ci));
+        manager.set_global_context_info(ci);
         Logger logger("logging-tests");
         logger.info("Test log");
         REQUIRE_FALSE(manager.global_context_info().empty());
@@ -99,7 +99,7 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
     SECTION("With Logger Context Info")
     {
         ContextInfo ci{{"key1", "value1"}, {"key2", "value2"}};
-        manager.set_global_context_info(std::move(ci));
+        manager.set_global_context_info(ci);
         Logger logger("logging-tests");
         logger.add_context_keys({{"key3", "value3"}});
         logger.info("Test log");
@@ -113,7 +113,7 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
     SECTION("With Log Context Info")
     {
         ContextInfo ci{{"key1", "value1"}, {"key2", "value2"}};
-        manager.set_global_context_info(std::move(ci));
+        manager.set_global_context_info(ci);
         Logger logger("logging-tests");
         logger.add_context_keys({{"key3", "value3"}, {"key4", "value4"}});
         logger.info("Test log", {{"key5", "value5"}});
@@ -130,7 +130,7 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
     {
         auto old_ci = manager.global_context_info();
         ContextInfo ci{{"key5", "value5"}};
-        manager.set_global_context_info(std::move(ci));
+        manager.set_global_context_info(ci);
         Logger logger("logging-tests");
         logger.add_context_keys({{"key3", "value3"}});
         logger.info("Test log", {{"key4", "value4"}});
@@ -147,7 +147,7 @@ TEST_CASE_METHOD(LoggingTestsFixture, "Logger Manager Global Context Info Tests"
     {
         ContextInfo ci{manager.global_context_info()};
         ci.update("key5", "value5");
-        manager.set_global_context_info(std::move(ci));
+        manager.set_global_context_info(ci);
         Logger logger("logging-tests");
         logger.add_context_keys({{"key3", "value3"}});
         logger.info("Test log", {{"key4", "value4"}});

@@ -40,7 +40,7 @@ class Manager
     ManagerConfigPtr config_;
     Log::LogLevel default_log_level_;
     std::shared_ptr<Logger> global_logger_;
-    // Shared Pointer to avoid use after free upon re-setting the global context info
+    // Shared Pointer in order to allow thread safe usage on the 'dump' method
     std::shared_ptr<ContextInfo const> global_context_info_;
 
   private:
@@ -69,7 +69,7 @@ class Manager
     void restart_sinks() noexcept;
     const Logger& global_logger() const;
     ContextInfo const& global_context_info() const;
-    void set_global_context_info(ContextInfo const&& context_info);
+    void set_global_context_info(ContextInfo const context_info);
     // @brief execute this function on child process after fork before logging anything
     void child_on_fork() noexcept;
 
