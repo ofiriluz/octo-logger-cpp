@@ -133,7 +133,7 @@ void Manager::stop(bool discard)
 
 void Manager::dump(const Log& log, const std::string& channel_name, ContextInfo const& context_info)
 {
-    // Copy shared pointer in order to allow update without locking on set_global_context_info
+    // Copy shared pointer in order to allow update without locking on replace_global_context_info
     auto context_info_handle(global_context_info_);
     std::lock_guard<std::mutex> lock(sinks_mutex_.get());
     for (auto& sink : sinks_)
@@ -197,9 +197,15 @@ ContextInfo const& Manager::global_context_info() const
     return *global_context_info_;
 }
 
-void Manager::set_global_context_info(ContextInfo const context_info)
+void Manager::replace_global_context_info(ContextInfo const context_info)
 {
     global_context_info_ = std::make_shared<ContextInfo const>(std::move(context_info));
+}
+
+void Manager::update_global_context_info(ContextInfo context_info)
+{
+    context_info.update(*global_context_info_);
+    replace_global_context_info(std::move(context_info));
 }
 
 void Manager::restart_sinks() noexcept
