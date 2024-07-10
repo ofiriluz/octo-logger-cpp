@@ -168,9 +168,9 @@ std::string Sink::formatted_log_plaintext_short(Log const& log, Channel const& c
 std::string Sink::formatted_context_info(Log const& log, Channel const& channel, ContextInfo const& context_info, ContextInfo const& global_context_info) const
 {
     std::string context_info_str("context_info: ");
-    for (auto const& itr : {log.context_info(), context_info, global_context_info})
+    for (auto const& context_info : {log.context_info(), context_info, global_context_info})
     {
-        for (auto const& itr : itr)
+        for (auto const& itr : context_info)
         {
             context_info_str += fmt::format(FMT_STRING("[{:s}:{:s}]"), itr.first.data(), itr.second);
         }

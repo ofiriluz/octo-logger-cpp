@@ -40,6 +40,7 @@ class Manager
     ManagerConfigPtr config_;
     Log::LogLevel default_log_level_;
     std::shared_ptr<Logger> global_logger_;
+    // Shared Pointer to avoid use after free upon re-setting the global context info
     std::shared_ptr<ContextInfo const> global_context_info_;
 
   private:

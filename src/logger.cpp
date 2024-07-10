@@ -71,17 +71,17 @@ Log Logger::log(Log::LogLevel level, std::string_view extra_identifier, ContextI
         case Log::LogLevel::QUIET:
             return Log(Log::LogLevel::QUIET, extra_identifier, std::move(context_info), *this);
         case Log::LogLevel::TRACE:
-            return trace(extra_identifier, context_info);
+            return trace(extra_identifier, std::move(context_info));
         case Log::LogLevel::DEBUG:
-            return debug(extra_identifier, context_info);
+            return debug(extra_identifier, std::move(context_info));
         case Log::LogLevel::INFO:
-            return info(extra_identifier, context_info);
+            return info(extra_identifier, std::move(context_info));
         case Log::LogLevel::NOTICE:
-            return notice(extra_identifier, context_info);
+            return notice(extra_identifier, std::move(context_info));
         case Log::LogLevel::WARNING:
-            return warning(extra_identifier, context_info);
+            return warning(extra_identifier, std::move(context_info));
         case Log::LogLevel::ERROR:
-            return error(extra_identifier, context_info);
+            return error(extra_identifier, std::move(context_info));
     }
     throw std::runtime_error("No log level");
 }
