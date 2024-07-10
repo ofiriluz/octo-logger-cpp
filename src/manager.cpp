@@ -197,7 +197,7 @@ ContextInfo const& Manager::global_context_info() const
     return *global_context_info_;
 }
 
-void Manager::replace_global_context_info(ContextInfo const context_info)
+void Manager::replace_global_context_info(ContextInfo context_info)
 {
     global_context_info_ = std::make_shared<ContextInfo const>(std::move(context_info));
 }

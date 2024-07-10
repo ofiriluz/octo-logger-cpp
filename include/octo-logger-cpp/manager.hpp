@@ -69,7 +69,7 @@ class Manager
     void restart_sinks() noexcept;
     const Logger& global_logger() const;
     ContextInfo const& global_context_info() const;
-    void replace_global_context_info(ContextInfo const context_info);
+    void replace_global_context_info(ContextInfo context_info);
     void update_global_context_info(ContextInfo context_info);
     // @brief execute this function on child process after fork before logging anything
     void child_on_fork() noexcept;

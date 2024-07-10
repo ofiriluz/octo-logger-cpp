@@ -82,9 +82,9 @@ static void init_context_info_impl(nlohmann::json& dst,
             throw std::runtime_error(fmt::format("Wrong context_info destination type {}", dst.type_name()));
     }
 
-    for (auto const& context_info : {log.context_info(), context_info, global_context_info})
+    for (auto const& ci_itr : {log.context_info(), context_info, global_context_info})
     {
-        for (auto const& itr : context_info)
+        for (auto const& itr : ci_itr)
         {
             if (!dst.contains(itr.first))
             {
@@ -173,9 +173,9 @@ std::string Sink::formatted_context_info(Log const& log,
                                          ContextInfo const& global_context_info) const
 {
     std::string context_info_str("context_info: ");
-    for (auto const& context_info : {log.context_info(), context_info, global_context_info})
+    for (auto const& ci_itr : {log.context_info(), context_info, global_context_info})
     {
-        for (auto const& itr : context_info)
+        for (auto const& itr : ci_itr)
         {
             context_info_str += fmt::format(FMT_STRING("[{:s}:{:s}]"), itr.first.data(), itr.second);
         }
