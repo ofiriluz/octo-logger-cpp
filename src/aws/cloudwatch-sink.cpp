@@ -327,7 +327,7 @@ std::string CloudWatchSink::log_stream_name(const Log& log, const Channel& chann
 
 std::string CloudWatchSink::formatted_json(Log const& log,
                                            Channel const& channel,
-                                           Logger::ContextInfo const& context_info) const
+                                           ContextInfo const& context_info) const
 {
     nlohmann::json j;
     std::stringstream ss;
@@ -351,7 +351,7 @@ std::string CloudWatchSink::formatted_json(Log const& log,
 void CloudWatchSink::init_context_info(nlohmann::json& dst,
                                        Log const& log,
                                        [[maybe_unused]] Channel const& channel,
-                                       Logger::ContextInfo const& context_info) const
+                                       ContextInfo const& context_info) const
 {
     switch (dst.type())
     {
@@ -387,14 +387,17 @@ void CloudWatchSink::report_logger_error(std::string_view message,
 
 nlohmann::json CloudWatchSink::init_context_info(Log const& log,
                                                  Channel const& channel,
-                                                 Logger::ContextInfo const& context_info) const
+                                                 ContextInfo const& context_info) const
 {
     nlohmann::json j(nlohmann::json::value_t::object);
     init_context_info(j, log, channel, context_info);
     return j;
 }
 
-void CloudWatchSink::dump(Log const& log, Channel const& channel, Logger::ContextInfo const& context_info)
+void CloudWatchSink::dump(Log const& log,
+                          Channel const& channel,
+                          ContextInfo const& context_info,
+                          ContextInfo const& global_context_info)
 {
     if (!is_running_)
     {
@@ -410,8 +413,7 @@ void CloudWatchSink::dump(Log const& log, Channel const& channel, Logger::Contex
             return;
         }
         // Set the event and add it to the queue
-        e.WithTimestamp(Aws::Utils::DateTime(log.time_created()).Millis())
-            .WithMessage(std::move(message));
+        e.WithTimestamp(Aws::Utils::DateTime(log.time_created()).Millis()).WithMessage(std::move(message));
         logs_queue_.push_back(CloudWatchLog{std::move(e), std::move(log_name)});
     }
     catch (const std::exception& e)

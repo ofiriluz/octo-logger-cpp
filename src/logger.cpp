@@ -34,84 +34,82 @@ Channel& Logger::editable_logger_channel()
     return channel_view_.editable_channel();
 }
 
-Log Logger::trace(std::string_view extra_identifier) const
+Log Logger::trace(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::TRACE, extra_identifier, *this);
+    return Log(Log::LogLevel::TRACE, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::debug(std::string_view extra_identifier) const
+Log Logger::debug(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::DEBUG, extra_identifier, *this);
+    return Log(Log::LogLevel::DEBUG, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::info(std::string_view extra_identifier) const
+Log Logger::info(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::INFO, extra_identifier, *this);
+    return Log(Log::LogLevel::INFO, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::notice(std::string_view extra_identifier) const
+Log Logger::notice(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::NOTICE, extra_identifier, *this);
+    return Log(Log::LogLevel::NOTICE, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::warning(std::string_view extra_identifier) const
+Log Logger::warning(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::WARNING, extra_identifier, *this);
+    return Log(Log::LogLevel::WARNING, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::error(std::string_view extra_identifier) const
+Log Logger::error(std::string_view extra_identifier, ContextInfo context_info) const
 {
-    return Log(Log::LogLevel::ERROR, extra_identifier, *this);
+    return Log(Log::LogLevel::ERROR, extra_identifier, std::move(context_info), *this);
 }
 
-Log Logger::log(Log::LogLevel level, std::string_view extra_identifier) const
+Log Logger::log(Log::LogLevel level, std::string_view extra_identifier, ContextInfo context_info) const
 {
     switch (level)
     {
         case Log::LogLevel::QUIET:
-            return Log(Log::LogLevel::QUIET, extra_identifier, *this);
+            return Log(Log::LogLevel::QUIET, extra_identifier, std::move(context_info), *this);
         case Log::LogLevel::TRACE:
-            return trace(extra_identifier);
+            return trace(extra_identifier, std::move(context_info));
         case Log::LogLevel::DEBUG:
-            return debug(extra_identifier);
+            return debug(extra_identifier, std::move(context_info));
         case Log::LogLevel::INFO:
-            return info(extra_identifier);
+            return info(extra_identifier, std::move(context_info));
         case Log::LogLevel::NOTICE:
-            return notice(extra_identifier);
+            return notice(extra_identifier, std::move(context_info));
         case Log::LogLevel::WARNING:
-            return warning(extra_identifier);
+            return warning(extra_identifier, std::move(context_info));
         case Log::LogLevel::ERROR:
-            return error(extra_identifier);
+            return error(extra_identifier, std::move(context_info));
     }
     throw std::runtime_error("No log level");
 }
 
-Logger::ContextInfo const& Logger::context_info() const
+ContextInfo const& Logger::context_info() const
 {
     return context_info_;
 }
 
-void Logger::add_context_key(std::string_view key, std::string value)
+void Logger::add_context_key(ContextInfo::ContextInfoKey key, ContextInfo::ContextInfoValue value)
 {
-    context_info_[key] = std::move(value);
+
+    context_info_.update(key, std::move(value));
 }
 
 void Logger::add_context_keys(ContextInfo context_info)
 {
-    for (auto& itr : context_info)
-    {
-        add_context_key(itr.first, std::move(itr.second));
-    }
+    context_info_.update(std::move(context_info));
 }
 
-void Logger::remove_context_key(std::string_view key)
+void Logger::remove_context_key(ContextInfo::ContextInfoKey key)
 {
     context_info_.erase(key);
 }
 
-bool Logger::has_context_key(std::string_view const& key) const
+bool Logger::has_context_key(ContextInfo::ContextInfoKey const& key) const
 {
-    return context_info_.find(key) != context_info_.cend();
+    return context_info_.contains(key);
 }
 
 void Logger::clear_context_info()

@@ -38,7 +38,7 @@ class SinkConfig
     {
         CONSOLE_DISABLE_COLOR,
         CONSOLE_DISABLE_CONTEXT_INFO,
-        
+
         LINE_FORMAT,
 
 #ifndef _WIN32

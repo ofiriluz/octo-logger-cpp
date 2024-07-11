@@ -22,9 +22,7 @@
 namespace octo::logger
 {
 
-ForkSafeMutex::ForkSafeMutex():
-mutex_(std::make_unique<std::mutex>()), 
-mutex_pid_(getpid())
+ForkSafeMutex::ForkSafeMutex() : mutex_(std::make_unique<std::mutex>()), mutex_pid_(getpid())
 {
 }
 
@@ -40,15 +38,17 @@ std::mutex& ForkSafeMutex::get()
 
 void ForkSafeMutex::fork_reset()
 {
-    if (mutex_pid_ == getpid()) {
+    if (mutex_pid_ == getpid())
+    {
         // Still on parent process, no need to reset
         return;
     }
-    if (mutex_->try_lock()) {
+    if (mutex_->try_lock())
+    {
         // Mutex state is good
         mutex_->unlock();
     }
-    else 
+    else
     {
         // Mutex owned by parent only thread, best solution for bad state.
         mutex_.release();
@@ -58,4 +58,3 @@ void ForkSafeMutex::fork_reset()
 }
 
 } // namespace octo::logger
-

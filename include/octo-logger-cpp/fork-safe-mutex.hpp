@@ -20,19 +20,19 @@ namespace octo::logger
 
 class ForkSafeMutex
 {
-private:
+  private:
     std::unique_ptr<std::mutex> mutex_;
 #ifdef _WIN32
     typedef std::uint32_t pid_t;
 #endif
     pid_t mutex_pid_;
 
-public:
+  public:
     ForkSafeMutex();
     virtual ~ForkSafeMutex();
-    ForkSafeMutex(ForkSafeMutex&&)            = delete;
+    ForkSafeMutex(ForkSafeMutex&&) = delete;
     ForkSafeMutex& operator=(ForkSafeMutex&&) = delete;
-    ForkSafeMutex(const ForkSafeMutex&)            = delete;
+    ForkSafeMutex(const ForkSafeMutex&) = delete;
     ForkSafeMutex& operator=(const ForkSafeMutex&) = delete;
 
     std::mutex& get();

@@ -37,7 +37,10 @@ class SysLogSink : public Sink
     explicit SysLogSink(const SinkConfig& config);
     ~SysLogSink() override = default;
 
-    void dump(const Log& log, const Channel& channel, Logger::ContextInfo const& context_info) override;
+    void dump(const Log& log,
+              const Channel& channel,
+              ContextInfo const& context_info,
+              ContextInfo const& global_context_info) override;
 };
 } // namespace octo::logger
 

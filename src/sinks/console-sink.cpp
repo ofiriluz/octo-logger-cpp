@@ -66,7 +66,10 @@ ConsoleSink::ConsoleSink(const SinkConfig& config)
         Sink::config().option_default(SinkConfig::SinkOption::CONSOLE_DISABLE_CONTEXT_INFO, true);
 }
 
-void ConsoleSink::dump(const Log& log, const Channel& channel, Logger::ContextInfo const& context_info)
+void ConsoleSink::dump(const Log& log,
+                       const Channel& channel,
+                       ContextInfo const& context_info,
+                       ContextInfo const& global_context_info)
 {
     if (log.stream())
     {
@@ -74,7 +77,7 @@ void ConsoleSink::dump(const Log& log, const Channel& channel, Logger::ContextIn
         {
             configure_log_color(log.log_level());
         }
-        std::cout << formatted_log(log, channel, context_info, disable_console_context_info_);
+        std::cout << formatted_log(log, channel, context_info, global_context_info, disable_console_context_info_);
 
         if (!disable_console_color_)
         {

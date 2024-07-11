@@ -27,7 +27,7 @@ class Logger::LoggerMock : public Logger
         return Logger::channel_view_.channel().channel_name();
     }
 
-    Logger::ContextInfo& context_info_getter()
+    ContextInfo& context_info_getter()
     {
         return Logger::context_info_;
     }

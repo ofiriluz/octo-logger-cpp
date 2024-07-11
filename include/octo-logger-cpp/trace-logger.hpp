@@ -4,7 +4,8 @@
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/manager.hpp"
 
-#define METHOD_LOG_TRACE_GLOBAL ::octo::logger::TraceLogger const _trace_logger(__FUNCTION__, ::octo::logger::Manager::instance().global_logger());
+#define METHOD_LOG_TRACE_GLOBAL                                                                                        \
+    ::octo::logger::TraceLogger const _trace_logger(__FUNCTION__, ::octo::logger::Manager::instance().global_logger());
 
 #define METHOD_LOG_TRACE ::octo::logger::TraceLogger const _trace_logger(__FUNCTION__, logger_);
 

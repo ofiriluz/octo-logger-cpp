@@ -241,7 +241,8 @@ bool AwsLogSystem::allowed_sanitizer_tag(SanitizerTags tag) const
 {
     auto all_tags = std::find(allowed_sanitizer_tags_.begin(), allowed_sanitizer_tags_.end(), SanitizerTags::ALL_TAG);
     return all_tags != std::end(allowed_sanitizer_tags_) ||
-           std::find(allowed_sanitizer_tags_.begin(), allowed_sanitizer_tags_.end(), tag) != std::end(allowed_sanitizer_tags_);
+           std::find(allowed_sanitizer_tags_.begin(), allowed_sanitizer_tags_.end(), tag) !=
+               std::end(allowed_sanitizer_tags_);
 }
 
 bool AwsLogSystem::process_tag(char const* tag, std::string& message) const

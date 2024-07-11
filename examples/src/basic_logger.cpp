@@ -36,6 +36,19 @@ int main(int argc, char** argv)
     logger.warning("ID5") << "HI5 WITH ID";
     logger.error("ID6") << "HI6 WITH ID";
 
+    auto context_info = octo::logger::Manager::instance().global_context_info();
+    context_info.update("global_context", "I'm Global Context");
+    octo::logger::Manager::instance().update_global_context_info(
+        {{"global_context", "I'm Global Context"}, {"global_context2", "I'm Global Context 2"}});
+
+    logger.add_context_key("logger_context", "I'm Logger Context");
+    logger.trace("ID1", {{"log_context", "I'm Log Context"}}) << "HI1 WITH ID";
+    logger.debug("ID2", {{"log_context", "I'm Log Context"}}) << "HI2 WITH ID";
+    logger.info("ID3", {{"log_context", "I'm Log Context"}}) << "HI3 WITH ID";
+    logger.notice("ID4", {{"log_context", "I'm Log Context"}}) << "HI4 WITH ID";
+    logger.warning("ID5", {{"log_context", "I'm Log Context"}}) << "HI5 WITH ID";
+    logger.error("ID6", {{"log_context", "I'm Log Context"}}) << "HI6 WITH ID";
+
     logger.log(octo::logger::Log::LogLevel::ERROR, "BLA") << "BLA LOG";
 
     octo::logger::Manager::instance().global_logger().info() << "WTF IS GLOBAL";

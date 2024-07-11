@@ -213,7 +213,10 @@ FileSink::~FileSink()
     }
 }
 
-void FileSink::dump(const Log& log, const Channel& channel, Logger::ContextInfo const& context_info)
+void FileSink::dump(const Log& log,
+                    const Channel& channel,
+                    ContextInfo const& context_info,
+                    ContextInfo const& global_context_info)
 {
     std::shared_ptr<File> file;
     std::string channel_name;
@@ -248,7 +251,7 @@ void FileSink::dump(const Log& log, const Channel& channel, Logger::ContextInfo 
         return;
     }
 
-    file->stream << formatted_log(log, channel, context_info, disable_file_context_info_);
+    file->stream << formatted_log(log, channel, context_info, global_context_info, disable_file_context_info_);
     file->stream << std::endl;
 }
 } // namespace octo::logger
