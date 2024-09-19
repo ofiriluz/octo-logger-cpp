@@ -128,7 +128,10 @@ class CloudWatchSink : public Sink
                    LogGroupTags log_group_tags = {});
     ~CloudWatchSink() override;
 
-    void dump(Log const& log, Channel const& channel, ContextInfo const& context_info) override;
+    void dump(Log const& log,
+              Channel const& channel,
+              ContextInfo const& context_info,
+              ContextInfo const& global_context_info) override;
     void restart_sink() noexcept override;
 
     TESTS_MOCK_CLASS(CloudWatchSink)

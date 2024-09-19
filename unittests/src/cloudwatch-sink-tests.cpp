@@ -3,6 +3,7 @@
 #include "cloudwatch-sink-mock.hpp"
 #include "catch2-matchers.hpp"
 #include "octo-logger-cpp/channel.hpp"
+#include "octo-logger-cpp/context-info.hpp"
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/log.hpp"
 #include "octo-logger-cpp/manager.hpp"
@@ -23,6 +24,7 @@ using SinkConfig = octo::logger::SinkConfig;
 using Log = octo::logger::Log;
 using Logger = octo::logger::Logger;
 using Channel = octo::logger::Channel;
+using ContextInfoInitializerList = octo::logger::ContextInfo::ContextInfoInitializerList;
 
 class CloudWatchSinkTestsFixture
 {
@@ -152,7 +154,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
         {
             std::string const session_id;
             nlohmann::json dst;
-            nlohmann::json const context_info;
+            ContextInfoInitializerList const context_info;
             nlohmann::json const expected_result;
         };
         std::vector<TestData> test_data{
