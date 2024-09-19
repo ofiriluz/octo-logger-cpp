@@ -327,13 +327,18 @@ std::string CloudWatchSink::log_stream_name(const Log& log, const Channel& chann
 
 std::string CloudWatchSink::formatted_json(Log const& log,
                                            Channel const& channel,
-                                           ContextInfo const& context_info) const
+                                           ContextInfo const& context_info,
+                                           ContextInfo const& global_context_info
+                                           ) const
 {
     nlohmann::json j;
     std::stringstream ss;
     std::time_t log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
     struct tm timeinfo;
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch());
+    auto fraction = ms.count() % 1000;
     ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%FT%T%z");
+    ss << "." << std::setfill('0') << std::setw(3) << fraction;
     j["message"] = log.stream()->str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
@@ -343,7 +348,7 @@ std::string CloudWatchSink::formatted_json(Log const& log,
     j["log_level"] = log_level_str;
     j["origin_func_name"] = "";
 
-    j["context_info"] = init_context_info(log, channel, context_info);
+    j["context_info"] = init_context_info(log, channel, context_info, global_context_info);
 
     return j.dump();
 }
@@ -351,7 +356,9 @@ std::string CloudWatchSink::formatted_json(Log const& log,
 void CloudWatchSink::init_context_info(nlohmann::json& dst,
                                        Log const& log,
                                        [[maybe_unused]] Channel const& channel,
-                                       ContextInfo const& context_info) const
+                                       ContextInfo const& context_info,
+                                       ContextInfo const& global_context_info
+                                       ) const
 {
     switch (dst.type())
     {
@@ -363,11 +370,14 @@ void CloudWatchSink::init_context_info(nlohmann::json& dst,
             throw std::runtime_error(fmt::format("Wrong context_info destination type {}", dst.type_name()));
     }
 
-    for (auto const& itr : context_info)
+    for (auto const& ci_itr : {log.context_info(), context_info, global_context_info})
     {
-        if (!dst.contains(itr.first))
+        for (auto const& itr : ci_itr)
         {
-            dst[itr.first.data()] = itr.second;
+            if (!dst.contains(itr.first))
+            {
+                dst[itr.first.data()] = itr.second;
+            }
         }
     }
 
@@ -387,10 +397,11 @@ void CloudWatchSink::report_logger_error(std::string_view message,
 
 nlohmann::json CloudWatchSink::init_context_info(Log const& log,
                                                  Channel const& channel,
-                                                 ContextInfo const& context_info) const
+                                                 ContextInfo const& context_info,
+                                                 ContextInfo const& global_context_info) const
 {
     nlohmann::json j(nlohmann::json::value_t::object);
-    init_context_info(j, log, channel, context_info);
+    init_context_info(j, log, channel, context_info, global_context_info);
     return j;
 }
 
@@ -406,7 +417,7 @@ void CloudWatchSink::dump(Log const& log,
     try
     {
         Aws::CloudWatchLogs::Model::InputLogEvent e;
-        auto message = formatted_json(log, channel, context_info);
+        auto message = formatted_json(log, channel, context_info, global_context_info);
         auto log_name = log_stream_name(log, channel);
         if (message.empty() || log_name.empty())
         {

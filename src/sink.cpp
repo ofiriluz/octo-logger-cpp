@@ -142,7 +142,10 @@ std::string Sink::formatted_log_json(Log const& log,
     std::stringstream ss;
     std::time_t log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
     struct tm timeinfo;
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch());
+    auto fraction = ms.count() % 1000;
     ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%FT%T%z");
+    ss << "." << std::setfill('0') << std::setw(3) << fraction;
     j["message"] = log.stream()->str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
