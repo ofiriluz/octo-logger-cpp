@@ -70,7 +70,10 @@ class Manager
     const Logger& global_logger() const;
     ContextInfo const& global_context_info() const;
     void replace_global_context_info(ContextInfo context_info);
-    void update_global_context_info(ContextInfo context_info);
+    // @brief replace the global context info with an rvalue to avoid extra copying
+    // It is not named 'replace_global_context_info' to avoid ambiguity with the lvalue version
+    void replace_global_context_info_rvalue(ContextInfo&& context_info);
+    void update_global_context_info(ContextInfo const& new_context_info);
     // @brief execute this function on child process after fork before logging anything
     void child_on_fork() noexcept;
 

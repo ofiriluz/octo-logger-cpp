@@ -202,10 +202,17 @@ void Manager::replace_global_context_info(ContextInfo context_info)
     global_context_info_ = std::make_shared<ContextInfo const>(std::move(context_info));
 }
 
-void Manager::update_global_context_info(ContextInfo context_info)
+void Manager::replace_global_context_info_rvalue(ContextInfo&& context_info)
 {
-    context_info.update(*global_context_info_);
-    replace_global_context_info(std::move(context_info));
+    global_context_info_ = std::make_shared<ContextInfo const>(context_info);
+}
+
+
+void Manager::update_global_context_info(ContextInfo const& new_context_info)
+{
+    auto copy_of_current = *global_context_info_;
+    copy_of_current.update(new_context_info);
+    replace_global_context_info_rvalue(std::move(copy_of_current));
 }
 
 void Manager::restart_sinks() noexcept
