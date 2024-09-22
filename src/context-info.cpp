@@ -51,6 +51,11 @@ void ContextInfo::erase(ContextInfoKey const& key)
     return context_info_.find(key) != context_info_.cend();
 }
 
+[[nodiscard]] ContextInfo::ContextInfoValue ContextInfo::at(ContextInfoKey const& key) const
+{
+    return context_info_.at(key);
+}
+
 void ContextInfo::clear()
 {
     return context_info_.clear();

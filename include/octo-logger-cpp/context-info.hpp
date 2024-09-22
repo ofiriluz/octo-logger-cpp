@@ -46,6 +46,7 @@ class ContextInfo
     void erase(ContextInfoKey const& key);
     [[nodiscard]] bool empty() const;
     [[nodiscard]] bool contains(ContextInfoKey const& key) const;
+    [[nodiscard]] ContextInfoValue at(ContextInfoKey const& key) const;
     void clear();
     [[nodiscard]] ContextInfoType::iterator begin();
     [[nodiscard]] ContextInfoType::iterator end();
