@@ -64,6 +64,7 @@ class Manager
     void terminate();
     void stop(bool discard = false);
     void dump(const Log& log, const std::string& channel_name, ContextInfo const& context_info);
+    void dump(const Log& log, const Channel& channel, ContextInfo const& context_info);
     void clear_sinks();
     void clear_channels();
     void restart_sinks() noexcept;

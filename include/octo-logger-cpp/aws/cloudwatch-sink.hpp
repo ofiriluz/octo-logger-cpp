@@ -100,12 +100,19 @@ class CloudWatchSink : public Sink
     void send_logs(std::multiset<CloudWatchLog, LogEventCmp>&& logs) noexcept;
     bool send_log_events(std::string const& stream_name, AwsLogEventVector&& log_events) noexcept;
     std::string log_stream_name(const Log& log, const Channel& channel) const;
-    std::string formatted_json(Log const& log, Channel const& channel, ContextInfo const& context_info) const;
+    std::string formatted_json(Log const& log,
+                               Channel const& channel,
+                               ContextInfo const& context_info,
+                               ContextInfo const& global_context_info) const;
     void init_context_info(nlohmann::json& dst,
                            Log const& log,
                            Channel const& channel,
-                           ContextInfo const& context_info) const;
-    nlohmann::json init_context_info(Log const& log, Channel const& channel, ContextInfo const& context_info) const;
+                           ContextInfo const& context_info,
+                           ContextInfo const& global_context_info) const;
+    nlohmann::json init_context_info(Log const& log,
+                                     Channel const& channel,
+                                     ContextInfo const& context_info,
+                                     ContextInfo const& global_context_info) const;
 
     void report_logger_error(std::string_view message,
                              std::string const& name,
