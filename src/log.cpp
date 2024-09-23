@@ -20,7 +20,7 @@ Log::Log(const Log::LogLevel& log_level,
          std::string_view extra_identifier,
          ContextInfo&& context_info,
          const Logger& logger)
-    : stream_(nullptr),
+    : stream_(std::nullopt),
       log_level_(log_level),
       logger_(logger),
       extra_identifier_(extra_identifier),
@@ -28,7 +28,7 @@ Log::Log(const Log::LogLevel& log_level,
 {
     if (log_level_ >= logger.logger_channel().log_level() && log_level_ != LogLevel::QUIET)
     {
-        stream_ = std::make_unique<std::ostringstream>();
+        stream_.emplace();
     }
 }
 
@@ -108,9 +108,9 @@ const std::chrono::time_point<std::chrono::system_clock>& Log::time_created() co
     return time_created_;
 }
 
-const std::ostringstream* Log::stream() const
+const std::optional<std::ostringstream>& Log::stream() const
 {
-    return stream_.get();
+    return stream_;
 }
 
 const Log::LogLevel& Log::log_level() const

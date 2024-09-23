@@ -20,12 +20,12 @@ class Log::LogMock : public Log
     {
     }
 
-    std::unique_ptr<std::ostringstream> const& stream_wrapper() const
+    std::optional<std::ostringstream> const& stream_wrapper() const
     {
         return Log::stream_;
     }
 
-    std::unique_ptr<std::ostringstream>& stream_wrapper()
+    std::optional<std::ostringstream>& stream_wrapper()
     {
         return Log::stream_;
     }
