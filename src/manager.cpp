@@ -19,7 +19,7 @@ std::mutex Manager::manager_init_mutex_;
 Manager::Manager()
     : config_(std::make_shared<ManagerConfig>()),
       default_log_level_(Log::LogLevel::INFO),
-      global_context_info_(std::make_unique<ContextInfo>())
+      global_context_info_(std::make_shared<ContextInfo>())
 {
 }
 
