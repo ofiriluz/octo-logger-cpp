@@ -132,7 +132,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
     SECTION("Init Basic Info")
     {
         Log const test_log(get_log(Log::LogLevel::QUIET, "408aa391-a07e-4692-a02b-a17e8950fa24"));
-        auto const context_info_json(sink.init_context_info_wrapper(test_log, channel, {}));
+        auto const context_info_json(sink.init_context_info_wrapper(test_log, channel, {}, {}));
         nlohmann::json const expected_json({
             {"session_id", "408aa391-a07e-4692-a02b-a17e8950fa24"},
         });
@@ -143,7 +143,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
     {
         Log const test_log(get_log(Log::LogLevel::QUIET, ""));
         nlohmann::json dst(nlohmann::json::value_t::null);
-        REQUIRE_NOTHROW(sink.init_context_info_wrapper(dst, test_log, channel, {}));
+        REQUIRE_NOTHROW(sink.init_context_info_wrapper(dst, test_log, channel, {}, {}));
         REQUIRE(dst.is_object());
         REQUIRE(dst.empty());
     }
@@ -154,7 +154,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
         {
             std::string const session_id;
             nlohmann::json dst;
-            ContextInfoInitializerList const context_info;
+            octo::logger::ContextInfo const context_info;
             nlohmann::json const expected_result;
         };
         std::vector<TestData> test_data{
@@ -244,8 +244,8 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
 
             Log const test_log(get_log(Log::LogLevel::QUIET, itr_context_info.session_id));
 
-            REQUIRE_NOTHROW(
-                sink.init_context_info_wrapper(itr_context_info.dst, test_log, channel, itr_context_info.context_info));
+            REQUIRE_NOTHROW(sink.init_context_info_wrapper(
+                itr_context_info.dst, test_log, channel, itr_context_info.context_info, {}));
             REQUIRE_THAT(itr_context_info.dst, JSONEquals(itr_context_info.expected_result));
         }
     }
@@ -275,7 +275,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
         {
             CAPTURE(itr_context_info.dst.type_name());
 
-            REQUIRE_THROWS_WITH(sink.init_context_info_wrapper(itr_context_info.dst, test_log, channel, {}),
+            REQUIRE_THROWS_WITH(sink.init_context_info_wrapper(itr_context_info.dst, test_log, channel, {}, {}),
                                 Catch::Matchers::Equals(itr_context_info.expected_error));
         }
     }
