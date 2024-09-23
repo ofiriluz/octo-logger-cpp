@@ -71,7 +71,7 @@ class Manager
     void clear_channels();
     void restart_sinks() noexcept;
     const Logger& global_logger() const;
-    ContextInfo const& global_context_info() const;
+    std::shared_ptr<ContextInfo const> global_context_info() const;
     void replace_global_context_info(ContextInfo context_info);
     // @brief replace the global context info with an rvalue to avoid extra copying
     // It is not named 'replace_global_context_info' to avoid ambiguity with the lvalue version

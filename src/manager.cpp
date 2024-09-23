@@ -198,9 +198,9 @@ bool Manager::mute_channel(std::string const& name)
     return true;
 }
 
-ContextInfo const& Manager::global_context_info() const
+std::shared_ptr<ContextInfo const> Manager::global_context_info() const
 {
-    return *global_context_info_;
+    return std::atomic_load(&global_context_info_);
 }
 
 void Manager::replace_global_context_info(ContextInfo context_info)
