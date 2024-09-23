@@ -41,6 +41,8 @@ class Manager
     Log::LogLevel default_log_level_;
     std::shared_ptr<Logger> global_logger_;
     // Shared Pointer in order to allow thread safe usage on the 'dump' method
+    // All access to this shared_ptr should be done through atomic_store/atomic_load functions
+    // In the future we should switch to std::atomic_shared_ptr (c++20)
     std::shared_ptr<ContextInfo const> global_context_info_;
 
   private:
