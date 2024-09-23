@@ -375,11 +375,11 @@ void CloudWatchSink::init_context_info(nlohmann::json& dst,
     // This determines the precedence of the different contexts - the most local context_info has the highest precedence
     for (auto const& ci_itr : {log.context_info(), context_info, global_context_info})
     {
-        for (auto const& itr : ci_itr)
+        for (auto const& [key, value] : ci_itr)
         {
-            if (!dst.contains(itr.first))
+            if (!dst.contains(key))
             {
-                dst[itr.first.data()] = itr.second;
+                dst[key.data()] = value;
             }
         }
     }

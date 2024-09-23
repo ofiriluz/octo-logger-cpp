@@ -92,11 +92,11 @@ static void init_context_info_impl(nlohmann::json& dst,
     // This determines the precedence of the different contexts - the most local context_info has the highest precedence
     for (auto const& ci_itr : {log.context_info(), context_info, global_context_info})
     {
-        for (auto const& itr : ci_itr)
+        for (auto const& [key, value] : ci_itr)
         {
-            if (!dst.contains(itr.first))
+            if (!dst.contains(key))
             {
-                dst[itr.first.data()] = itr.second;
+                dst[key.data()] = value;
             }
         }
     }
@@ -189,9 +189,9 @@ std::string Sink::formatted_context_info(Log const& log,
     // Note that if the same key is present in multiple context_infos, it will be logged multiple times
     for (auto const& ci_itr : {log.context_info(), context_info, global_context_info})
     {
-        for (auto const& itr : ci_itr)
+        for (auto const& [key, value] : ci_itr)
         {
-            context_info_str += fmt::format(FMT_STRING("[{:s}:{:s}]"), itr.first.data(), itr.second);
+            context_info_str += fmt::format(FMT_STRING("[{:s}:{:s}]"), key.data(), value);
         }
     }
     return std::move(context_info_str);
