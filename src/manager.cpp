@@ -210,6 +210,7 @@ void Manager::replace_global_context_info(ContextInfo context_info)
 
 void Manager::replace_global_context_info_rvalue(ContextInfo&& context_info)
 {
+    // First allocate the new ContextInfo, and then atomically replace the pointer held in global_context_info_
     auto new_context_info = std::make_shared<ContextInfo const>(context_info);
     std::atomic_store(&global_context_info_, new_context_info);
 }
