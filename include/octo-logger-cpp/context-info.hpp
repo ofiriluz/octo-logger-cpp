@@ -32,7 +32,7 @@ class ContextInfo
     ContextInfoType context_info_;
 
   public:
-    virtual ~ContextInfo() = default;
+    ~ContextInfo() = default;
     ContextInfo() = default;
     /* implicit */ ContextInfo(ContextInfoInitializerList init);
 
