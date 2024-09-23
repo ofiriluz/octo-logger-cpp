@@ -89,6 +89,7 @@ static void init_context_info_impl(nlohmann::json& dst,
             throw std::runtime_error(fmt::format("Wrong context_info destination type {}", dst.type_name()));
     }
 
+    // This determines the precedence of the different contexts - the most local context_info has the highest precedence
     for (auto const& ci_itr : {log.context_info(), context_info, global_context_info})
     {
         for (auto const& itr : ci_itr)
@@ -185,6 +186,7 @@ std::string Sink::formatted_context_info(Log const& log,
                                          ContextInfo const& global_context_info) const
 {
     std::string context_info_str("context_info: ");
+    // Note that if the same key is present in multiple context_infos, it will be logged multiple times
     for (auto const& ci_itr : {log.context_info(), context_info, global_context_info})
     {
         for (auto const& itr : ci_itr)
