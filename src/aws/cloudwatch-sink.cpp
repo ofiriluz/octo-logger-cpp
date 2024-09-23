@@ -372,6 +372,7 @@ void CloudWatchSink::init_context_info(nlohmann::json& dst,
             throw std::runtime_error(fmt::format("Wrong context_info destination type {}", dst.type_name()));
     }
 
+    // This determines the precedence of the different contexts - the most local context_info has the highest precedence
     for (auto const& ci_itr : {log.context_info(), context_info, global_context_info})
     {
         for (auto const& itr : ci_itr)
