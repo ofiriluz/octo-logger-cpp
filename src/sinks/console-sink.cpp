@@ -71,7 +71,7 @@ void ConsoleSink::dump(const Log& log,
                        ContextInfo const& context_info,
                        ContextInfo const& global_context_info)
 {
-    if (log.stream())
+    if (log.has_stream())
     {
         if (!disable_console_color_)
         {

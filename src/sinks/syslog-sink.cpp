@@ -27,7 +27,7 @@ void SysLogSink::dump(const Log& log,
                       ContextInfo const& context_info,
                       ContextInfo const& global_context_info)
 {
-    if (log.stream())
+    if (log.has_stream())
     {
         std::string line{formatted_log(log, channel, context_info, global_context_info, false)};
         openlog(sys_log_name_.c_str(), LOG_PID | LOG_CONS, LOG_AUTHPRIV);

@@ -50,7 +50,7 @@ class DummySink : public Sink
     void dump(const Log& log, const Channel& channel, ContextInfo const& context_info, ContextInfo const& global_context_info) override
     {
       dumped_logs_.push_front(DumpedLog{
-        .message = log.stream()->str(),
+        .message = log.str(),
         .log_context_info = log.context_info(),
         .context_info = context_info,
         .context_info_addr = &context_info,
