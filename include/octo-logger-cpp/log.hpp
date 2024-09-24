@@ -59,7 +59,9 @@ class Log
     static LogLevel string_to_level(const std::string& level_str);
 
     const std::chrono::time_point<std::chrono::system_clock>& time_created() const;
-    const std::optional<std::ostringstream>& stream() const;
+    [[nodiscard]] bool has_stream() const;
+    // @brief Get the string representation of the log message. Caller must first check if the log has a stream.
+    [[nodiscard]] std::string str() const;
     const LogLevel& log_level() const;
     const std::string& extra_identifier() const;
     ContextInfo const& context_info() const

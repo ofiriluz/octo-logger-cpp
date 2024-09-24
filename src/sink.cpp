@@ -62,7 +62,7 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
 
     ss << dtf << "." << std::setfill('0') << std::setw(3) << fraction << "]["
        << Log::level_to_string(log.log_level())[0] << "][" << channel.channel_name() << "][PID(" << getpid()
-       << ")][TID(" << std::this_thread::get_id() << ")]" << extra_id << ": " << log.stream()->str();
+       << ")][TID(" << std::this_thread::get_id() << ")]" << extra_id << ": " << log.str();
 
     if (!disable_context_info && !(context_info.empty() && log.context_info().empty() && global_context_info.empty()))
     {
@@ -149,7 +149,7 @@ std::string Sink::formatted_log_json(Log const& log,
     ss << "." << std::setfill('0') << std::setw(3) << ms.count();
     // Put timezone as offset from UTC: ±HHMM
     ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%z");
-    j["message"] = log.stream()->str();
+    j["message"] = log.str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
     j["timestamp"] = ss.str(); // ISO 8601
@@ -176,7 +176,7 @@ std::string Sink::formatted_log_plaintext_short(Log const& log, Channel const& c
     }
     ss << "[MS(" << std::setfill('0') << std::setw(3) << fraction << ")][" << Log::level_to_string(log.log_level())[0]
        << "][" << channel.channel_name() << "][TID(" << std::this_thread::get_id() << ")]" << extra_id << ": "
-       << log.stream()->str();
+       << log.str();
     return ss.str();
 }
 

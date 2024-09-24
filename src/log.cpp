@@ -108,9 +108,14 @@ const std::chrono::time_point<std::chrono::system_clock>& Log::time_created() co
     return time_created_;
 }
 
-const std::optional<std::ostringstream>& Log::stream() const
+bool Log::has_stream() const
 {
-    return stream_;
+    return stream_.has_value();
+}
+
+std::string Log::str() const
+{
+    return stream_->str();
 }
 
 const Log::LogLevel& Log::log_level() const

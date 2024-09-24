@@ -246,7 +246,7 @@ void FileSink::dump(const Log& log,
         switch_stream(channel_name);
     }
 
-    if (!log.stream())
+    if (!log.has_stream())
     {
         return;
     }
