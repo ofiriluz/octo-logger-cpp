@@ -20,7 +20,7 @@
 namespace octo::logger
 {
 
-class ContextInfo
+class ContextInfo final
 {
   public:
     typedef std::string_view ContextInfoKey;
