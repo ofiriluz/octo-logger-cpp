@@ -36,8 +36,6 @@ int main(int argc, char** argv)
     logger.warning("ID5") << "HI5 WITH ID";
     logger.error("ID6") << "HI6 WITH ID";
 
-    auto context_info = octo::logger::Manager::instance().global_context_info();
-    context_info.update("global_context", "I'm Global Context");
     octo::logger::Manager::instance().update_global_context_info(
         {{"global_context", "I'm Global Context"}, {"global_context2", "I'm Global Context 2"}});
 

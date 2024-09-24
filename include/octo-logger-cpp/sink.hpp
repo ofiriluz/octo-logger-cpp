@@ -55,7 +55,7 @@ class Sink
     std::string formatted_log_json(Log const& log,
                                    Channel const& channel,
                                    ContextInfo const& context_info,
-                                   ContextInfo const& global_context_info, ) const;
+                                   ContextInfo const& global_context_info) const;
 #endif
 
     inline std::string formatted_log(Log const& log,
@@ -120,8 +120,15 @@ typedef std::shared_ptr<Sink> SinkPtr;
 #include <nlohmann/json.hpp>
 namespace octo::logger::unittests
 {
-void init_context_info(nlohmann::json& dst, Log const& log, Channel const& channel, ContextInfo const& context_info);
-nlohmann::json init_context_info(Log const& log, Channel const& channel, ContextInfo const& context_info);
+void init_context_info(nlohmann::json& dst,
+                       Log const& log,
+                       Channel const& channel,
+                       ContextInfo const& context_info,
+                       ContextInfo const& global_context_info);
+nlohmann::json init_context_info(Log const& log,
+                                 Channel const& channel,
+                                 ContextInfo const& context_info,
+                                 ContextInfo const& global_context_info);
 } // namespace octo::logger::unittests
 #endif
 

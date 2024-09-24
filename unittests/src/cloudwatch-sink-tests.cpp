@@ -3,6 +3,7 @@
 #include "cloudwatch-sink-mock.hpp"
 #include "catch2-matchers.hpp"
 #include "octo-logger-cpp/channel.hpp"
+#include "octo-logger-cpp/context-info.hpp"
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/log.hpp"
 #include "octo-logger-cpp/manager.hpp"
@@ -23,6 +24,8 @@ using SinkConfig = octo::logger::SinkConfig;
 using Log = octo::logger::Log;
 using Logger = octo::logger::Logger;
 using Channel = octo::logger::Channel;
+using ContextInfo = octo::logger::ContextInfo;
+using ContextInfoInitializerList = octo::logger::ContextInfo::ContextInfoInitializerList;
 
 class CloudWatchSinkTestsFixture
 {
@@ -49,9 +52,11 @@ class CloudWatchSinkTestsFixture
         return {sink_name.data(), SinkConfig::SinkType::CUSTOM_SINK};
     }
 
-    Log get_log(Log::LogLevel const& log_level, std::string_view extra_identifier) const
+    Log get_log(Log::LogLevel const& log_level,
+                std::string_view extra_identifier,
+                ContextInfo log_context_info = {}) const
     {
-        return logger_.log(log_level, extra_identifier);
+        return logger_.log(log_level, extra_identifier, std::move(log_context_info));
     }
 
     Channel get_channel(std::string const& channel_name)
@@ -85,6 +90,21 @@ class CloudWatchSinkTestsFixture
                 sink_config.set_option(itr.first, std::get<uint8_t>(itr.second));
             }
         }
+    }
+
+    void replace_global_context_info(ContextInfo context_info)
+    {
+        manager_.replace_global_context_info(context_info);
+    }
+
+    void update_global_context_info(ContextInfo const& context_info)
+    {
+        manager_.update_global_context_info(context_info);
+    }
+
+    ContextInfo global_context_info() const
+    {
+        return *(manager_.global_context_info());
     }
 };
 
@@ -130,7 +150,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
     SECTION("Init Basic Info")
     {
         Log const test_log(get_log(Log::LogLevel::QUIET, "408aa391-a07e-4692-a02b-a17e8950fa24"));
-        auto const context_info_json(sink.init_context_info_wrapper(test_log, channel, {}));
+        auto const context_info_json(sink.init_context_info_wrapper(test_log, channel, {}, {}));
         nlohmann::json const expected_json({
             {"session_id", "408aa391-a07e-4692-a02b-a17e8950fa24"},
         });
@@ -141,7 +161,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
     {
         Log const test_log(get_log(Log::LogLevel::QUIET, ""));
         nlohmann::json dst(nlohmann::json::value_t::null);
-        REQUIRE_NOTHROW(sink.init_context_info_wrapper(dst, test_log, channel, {}));
+        REQUIRE_NOTHROW(sink.init_context_info_wrapper(dst, test_log, channel, {}, {}));
         REQUIRE(dst.is_object());
         REQUIRE(dst.empty());
     }
@@ -152,7 +172,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
         {
             std::string const session_id;
             nlohmann::json dst;
-            nlohmann::json const context_info;
+            octo::logger::ContextInfo const context_info;
             nlohmann::json const expected_result;
         };
         std::vector<TestData> test_data{
@@ -242,8 +262,197 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
 
             Log const test_log(get_log(Log::LogLevel::QUIET, itr_context_info.session_id));
 
+            REQUIRE_NOTHROW(sink.init_context_info_wrapper(
+                itr_context_info.dst, test_log, channel, itr_context_info.context_info, {}));
+            REQUIRE_THAT(itr_context_info.dst, JSONEquals(itr_context_info.expected_result));
+        }
+    }
+
+    SECTION("Init With Log, Logger and Global ContextInfos")
+    {
+        struct TestData
+        {
+            std::string const session_id;
+            nlohmann::json dst;
+            octo::logger::ContextInfo const log_context_info;
+            octo::logger::ContextInfo const logger_context_info;
+            octo::logger::ContextInfo const global_context_info;
+            nlohmann::json const expected_result;
+        };
+        std::vector<TestData> test_data{
+            {"52c1fdd2-5987-49e9-8e30-6fbaf08b40dc",
+             nlohmann::json::value_t::null,
+             {{"property_1", "log_property 1 value"}},
+             {{"property_2", "logger_property 2 value"}},
+             {{"property_3", "global_property 3 value"}},
+             {{"session_id", "52c1fdd2-5987-49e9-8e30-6fbaf08b40dc"},
+              {"property_1", "log_property 1 value"},
+              {"property_2", "logger_property 2 value"},
+              {"property_3", "global_property 3 value"}}},
+            {// Test log_context overrides logger_context.
+             "3c261af5-db38-4b5f-81d8-9f7cb9003fee",
+             nlohmann::json::value_t::null,
+             {{"property_1", "log_property 1 value    (overrides)"}, {"property_2", "log_property 2 value"}},
+             {{"property_1", "logger_property 1 value (overriden)"}, {"property_3", "logger_property 3 value"}},
+             {{"property_4", "global_property 4 value"}},
+             {{"session_id", "3c261af5-db38-4b5f-81d8-9f7cb9003fee"},
+              {"property_1", "log_property 1 value    (overrides)"},
+              {"property_2", "log_property 2 value"},
+              {"property_3", "logger_property 3 value"},
+              {"property_4", "global_property 4 value"}}},
+            {// Test logger_context overrides global_context.
+             "69426e8b-83a8-47f1-9e09-87857819db75",
+             nlohmann::json::value_t::null,
+             {{"property_1", "log_property 1 value"}},
+             {{"property_2", "logger_property 2 value (overrides)"}, {"property_3", "logger_property 3 value"}},
+             {{"property_2", "global_property 2 value (overriden)"}, {"property_4", "global_property 4 value"}},
+             {{"session_id", "69426e8b-83a8-47f1-9e09-87857819db75"},
+              {"property_1", "log_property 1 value"},
+              {"property_2", "logger_property 2 value (overrides)"},
+              {"property_3", "logger_property 3 value"},
+              {"property_4", "global_property 4 value"}}},
+            {// Test log_context overrides global_context.
+             "5e761af5-db38-4b5f-81d8-9f7cb9003fe6",
+             nlohmann::json::value_t::null,
+             {{"property_1", "log_property 1 value    (overrides)"}, {"property_2", "log_property 2 value"}},
+             {{"property_4", "logger_property 4 value"}},
+             {{"property_1", "global_property 1 value (overriden)"}, {"property_3", "global_property 3 value"}},
+             {{"session_id", "5e761af5-db38-4b5f-81d8-9f7cb9003fe6"},
+              {"property_1", "log_property 1 value    (overrides)"},
+              {"property_2", "log_property 2 value"},
+              {"property_3", "global_property 3 value"},
+              {"property_4", "logger_property 4 value"}}},
+            {// Test get SessionID from Global ContextInfo even if empty.
+             "",
+             {{"property_1", "dst_property 1 value"}},
+             {{"property_2", "log_property 2 value"}},
+             {{"property_3", "logger_property 3 value"}},
+             {{"session_id", ""}, {"property_4", "global_property 4 value"}},
+             {{"session_id", ""},
+              {"property_1", "dst_property 1 value"},
+              {"property_2", "log_property 2 value"},
+              {"property_3", "logger_property 3 value"},
+              {"property_4", "global_property 4 value"}}},
+            {// Test keep SessionID from dst over Global ContextInfo.
+             "",
+             {{"session_id", "6101ce70-2b03-4d0d-9b4e-7bf646da14b7"}, {"property_1", "property 1 value"}},
+             {},
+             {},
+             {{"session_id", "b89354d6-7784-4917-a5a0-10dddd27d6de"}, {"property_2", "property 2 value"}},
+             {{"session_id", "6101ce70-2b03-4d0d-9b4e-7bf646da14b7"},
+              {"property_1", "property 1 value"},
+              {"property_2", "property 2 value"}}},
+            {// Test keep SessionID from dst over Global ContextInfo even if empty.
+             "",
+             {{"session_id", ""}, {"property_1", "property 1 value"}},
+             {},
+             {},
+             {{"session_id", "b89354d6-7784-4917-a5a0-10dddd27d6de"}, {"property_2", "property 2 value"}},
+             {{"session_id", ""}, {"property_1", "property 1 value"}, {"property_2", "property 2 value"}}},
+            {// Test get SessionID from ExtraIdentifier over dst and Global ContextInfo.
+             "70205245-99bd-458d-b27a-59c41db99665",
+             {{"session_id", ""}, {"property_1", "property 1 value"}},
+             {},
+             {},
+             {{"session_id", "c8f3e777-dcbc-4522-b63d-ec7635e30eb3"}, {"property_2", "property 2 value"}},
+             {{"session_id", "70205245-99bd-458d-b27a-59c41db99665"},
+              {"property_1", "property 1 value"},
+              {"property_2", "property 2 value"}}},
+            {// Test no SessionID.
+             "",
+             {{"property_1", "property 1 value"}},
+             {{"property_2", "property 2 value"}},
+             {{"property_3", "property 3 value"}},
+             {{"property_4", "property 4 value"}},
+             {{"property_1", "property 1 value"},
+              {"property_2", "property 2 value"},
+              {"property_3", "property 3 value"},
+              {"property_4", "property 4 value"}}},
+        };
+
+        for (auto& itr_context_info : test_data)
+        {
+            CAPTURE(itr_context_info.session_id,
+                    itr_context_info.dst,
+                    itr_context_info.log_context_info,
+                    itr_context_info.logger_context_info,
+                    itr_context_info.global_context_info);
+
+            replace_global_context_info(itr_context_info.global_context_info);
+            Log const test_log(
+                get_log(Log::LogLevel::QUIET, itr_context_info.session_id, itr_context_info.log_context_info));
+
+            REQUIRE_NOTHROW(sink.init_context_info_wrapper(itr_context_info.dst,
+                                                           test_log,
+                                                           channel,
+                                                           itr_context_info.logger_context_info,
+                                                           itr_context_info.global_context_info));
+            REQUIRE_THAT(itr_context_info.dst, JSONEquals(itr_context_info.expected_result));
+        }
+    }
+
+    SECTION("Update Global ContextInfos")
+    {
+        struct TestData
+        {
+            std::string const session_id;
+            nlohmann::json dst;
+            octo::logger::ContextInfo const initial_global_context_info;
+            octo::logger::ContextInfo const update_global_context_info;
+            nlohmann::json const expected_result;
+        };
+        std::vector<TestData> test_data{
+            {// Test update adds new key without removing existing keys.
+             "52c1fdd2-5987-49e9-8e30-6fbaf08b40dc",
+             nlohmann::json::value_t::null,
+             {{"property_1", "property 1 value"}},
+             {{"property_2", "property 2 value"}},
+             {{"session_id", "52c1fdd2-5987-49e9-8e30-6fbaf08b40dc"},
+              {"property_1", "property 1 value"},
+              {"property_2", "property 2 value"}}},
+            {// Test update overrides existing keys.
+             "3c261af5-db38-4b5f-81d8-9f7cb9003fee",
+             nlohmann::json::value_t::null,
+             {{"property_1", "property 1 value (overriden)"}, {"property_2", "property 2 value"}},
+             {{"property_1", "property 1 value (overrides)"}, {"property_3", "property 3 value"}},
+             {{"session_id", "3c261af5-db38-4b5f-81d8-9f7cb9003fee"},
+              {"property_1", "property 1 value (overrides)"},
+              {"property_2", "property 2 value"},
+              {"property_3", "property 3 value"}}},
+            {// Test empty update does nothing.
+             "69426e8b-83a8-47f1-9e09-87857819db75",
+             nlohmann::json::value_t::null,
+             {{"property_1", "property 1 value"}, {"property_2", "property 2 value"}},
+             {},
+             {{"session_id", "69426e8b-83a8-47f1-9e09-87857819db75"},
+              {"property_1", "property 1 value"},
+              {"property_2", "property 2 value"}}},
+            {// Test updating an empty global context info.
+             "5e761af5-db38-4b5f-81d8-9f7cb9003fe6",
+             nlohmann::json::value_t::null,
+             {},
+             {{"property_1", "property 1 value"}, {"property_2", "property 2 value"}},
+             {{"session_id", "5e761af5-db38-4b5f-81d8-9f7cb9003fe6"},
+              {"property_1", "property 1 value"},
+              {"property_2", "property 2 value"}}},
+        };
+
+        for (auto& itr_context_info : test_data)
+        {
+            CAPTURE(itr_context_info.session_id,
+                    itr_context_info.dst,
+                    itr_context_info.initial_global_context_info,
+                    itr_context_info.update_global_context_info);
+
+            // Set the initial global_context_info
+            replace_global_context_info(itr_context_info.initial_global_context_info);
+            // Update the global_context_info
+            update_global_context_info(itr_context_info.update_global_context_info);
+            Log const test_log(get_log(Log::LogLevel::QUIET, itr_context_info.session_id));
+
+            // Init context_info using the global_context_info taken from the global Manager
             REQUIRE_NOTHROW(
-                sink.init_context_info_wrapper(itr_context_info.dst, test_log, channel, itr_context_info.context_info));
+                sink.init_context_info_wrapper(itr_context_info.dst, test_log, channel, {}, global_context_info()));
             REQUIRE_THAT(itr_context_info.dst, JSONEquals(itr_context_info.expected_result));
         }
     }
@@ -273,7 +482,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
         {
             CAPTURE(itr_context_info.dst.type_name());
 
-            REQUIRE_THROWS_WITH(sink.init_context_info_wrapper(itr_context_info.dst, test_log, channel, {}),
+            REQUIRE_THROWS_WITH(sink.init_context_info_wrapper(itr_context_info.dst, test_log, channel, {}, {}),
                                 Catch::Matchers::Equals(itr_context_info.expected_error));
         }
     }

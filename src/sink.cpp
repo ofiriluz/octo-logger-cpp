@@ -27,8 +27,15 @@
 // We always want to compile these functions, which expose our internals to the unit tests.
 namespace octo::logger::unittests
 {
-void init_context_info(nlohmann::json& dst, Log const& log, Channel const& channel, ContextInfo const& context_info);
-nlohmann::json init_context_info(Log const& log, Channel const& channel, ContextInfo const& context_info);
+void init_context_info(nlohmann::json& dst,
+                       Log const& log,
+                       Channel const& channel,
+                       ContextInfo const& context_info,
+                       ContextInfo const& global_context_info);
+nlohmann::json init_context_info(Log const& log,
+                                 Channel const& channel,
+                                 ContextInfo const& context_info,
+                                 ContextInfo const& global_context_info);
 } // namespace octo::logger::unittests
 #endif
 
@@ -70,7 +77,7 @@ static void init_context_info_impl(nlohmann::json& dst,
                                    Log const& log,
                                    Channel const& channel,
                                    ContextInfo const& context_info,
-                                   ContextInfo const& global_context_info, )
+                                   ContextInfo const& global_context_info)
 {
     switch (dst.type())
     {
@@ -82,13 +89,14 @@ static void init_context_info_impl(nlohmann::json& dst,
             throw std::runtime_error(fmt::format("Wrong context_info destination type {}", dst.type_name()));
     }
 
+    // This determines the precedence of the different contexts - the most local context_info has the highest precedence
     for (auto const& ci_itr : {log.context_info(), context_info, global_context_info})
     {
-        for (auto const& itr : ci_itr)
+        for (auto const& [key, value] : ci_itr)
         {
-            if (!dst.contains(itr.first))
+            if (!dst.contains(key))
             {
-                dst[itr.first.data()] = itr.second;
+                dst[key.data()] = value;
             }
         }
     }
@@ -121,7 +129,7 @@ void octo::logger::unittests::init_context_info(nlohmann::json& dst,
 nlohmann::json octo::logger::unittests::init_context_info(Log const& log,
                                                           Channel const& channel,
                                                           ContextInfo const& context_info,
-                                                          ContextInfo const& global_context_info, )
+                                                          ContextInfo const& global_context_info)
 {
     return init_context_info_impl(log, channel, context_info, global_context_info);
 }
@@ -133,9 +141,14 @@ std::string Sink::formatted_log_json(Log const& log,
 {
     nlohmann::json j;
     std::stringstream ss;
-    std::time_t log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
+    std::time_t const log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
     struct tm timeinfo;
-    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%FT%T%z");
+    auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch()) % 1000;
+    // Put datetime with milliseconds: YYYY-MM-DDTHH:MM:SS.mmm
+    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%FT%T");
+    ss << "." << std::setfill('0') << std::setw(3) << ms.count();
+    // Put timezone as offset from UTC: ±HHMM
+    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%z");
     j["message"] = log.stream()->str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
@@ -173,11 +186,12 @@ std::string Sink::formatted_context_info(Log const& log,
                                          ContextInfo const& global_context_info) const
 {
     std::string context_info_str("context_info: ");
+    // Note that if the same key is present in multiple context_infos, it will be logged multiple times
     for (auto const& ci_itr : {log.context_info(), context_info, global_context_info})
     {
-        for (auto const& itr : ci_itr)
+        for (auto const& [key, value] : ci_itr)
         {
-            context_info_str += fmt::format(FMT_STRING("[{:s}:{:s}]"), itr.first.data(), itr.second);
+            context_info_str += fmt::format(FMT_STRING("[{:s}:{:s}]"), key.data(), value);
         }
     }
     return std::move(context_info_str);

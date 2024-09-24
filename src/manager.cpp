@@ -19,7 +19,7 @@ std::mutex Manager::manager_init_mutex_;
 Manager::Manager()
     : config_(std::make_shared<ManagerConfig>()),
       default_log_level_(Log::LogLevel::INFO),
-      global_context_info_(std::make_unique<ContextInfo>())
+      global_context_info_(std::make_shared<ContextInfo>())
 {
 }
 
@@ -133,15 +133,21 @@ void Manager::stop(bool discard)
 
 void Manager::dump(const Log& log, const std::string& channel_name, ContextInfo const& context_info)
 {
+    dump(log, channel(channel_name), context_info);
+}
+
+void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& context_info)
+{
     // Copy shared pointer in order to allow update without locking on replace_global_context_info
-    auto context_info_handle(global_context_info_);
+    // The local copy increments the ref-count and guarantees that the pointed-at context_info will not be deleted
+    // while we're working on it, even if the global_context_info_ is replaced with a new context_info pointer
+    auto context_info_handle(std::atomic_load(&global_context_info_));
     std::lock_guard<std::mutex> lock(sinks_mutex_.get());
     for (auto& sink : sinks_)
     {
-        sink->dump(log, channel(channel_name), context_info, *context_info_handle);
+        sink->dump(log, channel, context_info, *context_info_handle);
     }
 }
-
 void Manager::clear_sinks()
 {
     sinks_.clear();
@@ -192,20 +198,32 @@ bool Manager::mute_channel(std::string const& name)
     return true;
 }
 
-ContextInfo const& Manager::global_context_info() const
+std::shared_ptr<ContextInfo const> Manager::global_context_info() const
 {
-    return *global_context_info_;
+    return std::atomic_load(&global_context_info_);
 }
 
 void Manager::replace_global_context_info(ContextInfo context_info)
 {
-    global_context_info_ = std::make_shared<ContextInfo const>(std::move(context_info));
+    replace_global_context_info_rvalue(std::move(context_info));
 }
 
-void Manager::update_global_context_info(ContextInfo context_info)
+void Manager::replace_global_context_info_rvalue(ContextInfo&& context_info)
 {
-    context_info.update(*global_context_info_);
-    replace_global_context_info(std::move(context_info));
+    // First allocate the new ContextInfo, and then atomically replace the pointer held in global_context_info_
+    auto new_context_info = std::make_shared<ContextInfo const>(context_info);
+    std::atomic_store(&global_context_info_, new_context_info);
+}
+
+// Calling this method concurrently from multiple threads could result in loss of context info (one of the calls could
+// be lost)
+void Manager::update_global_context_info(ContextInfo const& new_context_info)
+{
+    // First make a local copy of the current context info, update it and then replace the global context info
+    auto context_info_handle(std::atomic_load(&global_context_info_));
+    auto copy_of_current = *context_info_handle;
+    copy_of_current.update(new_context_info);
+    replace_global_context_info_rvalue(std::move(copy_of_current));
 }
 
 void Manager::restart_sinks() noexcept
