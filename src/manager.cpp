@@ -174,7 +174,6 @@ void Manager::set_log_level(Log::LogLevel log_level)
     {
         return;
     }
-    std::lock_guard<std::mutex> lock(sinks_mutex_.get());
     default_log_level_ = log_level;
     for (auto& channel : channels_)
     {
