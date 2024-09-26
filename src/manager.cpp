@@ -95,21 +95,22 @@ void Manager::configure(const ManagerConfigPtr& config, bool clear_old_sinks)
             default_log_level_ = static_cast<Log::LogLevel>(default_level);
         }
     }
-
-    // Create all the sinks
-    for (auto& sink_config : config_->sinks())
     {
-        SinkPtr sink = SinkFactory::instance().create_sink(sink_config);
-        if (sink)
+        std::lock_guard<std::mutex> lock(manager_init_mutex_);
+        // Create all the sinks
+        for (auto& sink_config : config_->sinks())
+        {
+            SinkPtr sink = SinkFactory::instance().create_sink(sink_config);
+            if (sink)
+            {
+                sinks_.push_back(sink);
+            }
+        }
+        for (auto& sink : config_->custom_sinks())
         {
             sinks_.push_back(sink);
         }
     }
-    for (auto& sink : config_->custom_sinks())
-    {
-        sinks_.push_back(sink);
-    }
-
     for (auto& channel : channels_)
     {
         channel.second->set_log_level(default_log_level_);
@@ -125,6 +126,7 @@ void Manager::terminate()
 
 void Manager::stop(bool discard)
 {
+    std::lock_guard<std::mutex> lock(sinks_mutex_.get());
     for (auto& sink : sinks_)
     {
         sink->stop(discard);
@@ -150,6 +152,7 @@ void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& co
 }
 void Manager::clear_sinks()
 {
+    std::lock_guard<std::mutex> lock(sinks_mutex_.get());
     sinks_.clear();
 }
 
@@ -227,6 +230,7 @@ void Manager::update_global_context_info(ContextInfo const& new_context_info)
 
 void Manager::restart_sinks() noexcept
 {
+    std::lock_guard<std::mutex> lock(sinks_mutex_.get());
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
 }
 
