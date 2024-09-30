@@ -43,6 +43,9 @@
 
 namespace octo::logger::aws
 {
+constexpr const auto AWS_LAMBDA_LOG_STREAM_NAME_ENV_VAR = "AWS_LAMBDA_LOG_STREAM_NAME";
+constexpr const auto AWS_LAMBDA_LOG_GROUP_NAME_ENV_VAR = "AWS_LAMBDA_LOG_GROUP_NAME";
+
 class CloudWatchSink : public Sink
 {
   private:
@@ -92,8 +95,10 @@ class CloudWatchSink : public Sink
     ForkSafeMutex logs_mtx_, sequence_tokens_mtx_;
     LogGroupTags const log_group_tags_;
     pid_t thread_pid_;
+    bool allow_overriding_by_aws_lambda_log_env_;
 
   private:
+    bool using_aws_lambda_logging() const;
     void assert_and_create_log_stream(const std::string& log_stream_name);
     std::set<std::string> list_existing_log_streams();
     void assert_and_create_log_group();
@@ -132,7 +137,8 @@ class CloudWatchSink : public Sink
                    LogStreamType log_stream_type = DEFAULT_LOG_STREAM_TYPE,
                    bool include_date_on_log_stream = DEFAULT_INCLUDE_DATE_ON_LOG_STREAM,
                    std::string const& log_group_name = DEFAULT_LOG_GROUP_NAME,
-                   LogGroupTags log_group_tags = {});
+                   LogGroupTags log_group_tags = {},
+                   bool allow_overriding_by_aws_lambda_log_env = false);
     ~CloudWatchSink() override;
 
     void dump(Log const& log,
