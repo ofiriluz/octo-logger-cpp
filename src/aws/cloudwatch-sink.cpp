@@ -40,8 +40,17 @@ constexpr std::size_t AWS_LOGS_PER_REQUEST_LIMIT = 50;
 
 namespace octo::logger::aws
 {
+bool CloudWatchSink::using_aws_lambda_logging() const
+{
+    return allow_overriding_by_aws_lambda_log_env_  && std::getenv(AWS_LAMBDA_LOG_GROUP_NAME_ENV_VAR) && std::getenv(AWS_LAMBDA_LOG_STREAM_NAME_ENV_VAR);
+}
+
 void CloudWatchSink::assert_and_create_log_group()
 {
+    if (using_aws_lambda_logging())
+    {
+        return;
+    }
     Aws::CloudWatchLogs::Model::DescribeLogGroupsRequest describe_log_grps;
     describe_log_grps.SetLogGroupNamePrefix(log_group_name_.c_str());
     auto desc_outcome = aws_cloudwatch_client_->DescribeLogGroups(describe_log_grps);
@@ -80,6 +89,10 @@ void CloudWatchSink::assert_and_create_log_group()
 
 void CloudWatchSink::assert_and_create_log_stream(const std::string& log_stream_name)
 {
+    if (using_aws_lambda_logging())
+    {
+        return;
+    }
     if (std::find(existing_log_streams_.begin(), existing_log_streams_.end(), log_stream_name) ==
         existing_log_streams_.end())
     {
@@ -120,6 +133,10 @@ void CloudWatchSink::assert_and_create_log_stream(const std::string& log_stream_
 
 std::set<std::string> CloudWatchSink::list_existing_log_streams()
 {
+    if (using_aws_lambda_logging())
+    {
+        return {std::getenv(AWS_LAMBDA_LOG_STREAM_NAME_ENV_VAR)};
+    }
     Aws::CloudWatchLogs::Model::DescribeLogStreamsRequest describe_log_streams;
     describe_log_streams.SetLogGroupName(log_group_name_.c_str());
     auto outcome = aws_cloudwatch_client_->DescribeLogStreams(describe_log_streams);
@@ -276,14 +293,16 @@ CloudWatchSink::CloudWatchSink(SinkConfig const& config,
                                LogStreamType log_stream_type,
                                bool include_date_on_log_stream,
                                std::string const& log_group_name,
-                               LogGroupTags log_group_tags)
+                               LogGroupTags log_group_tags,
+                               bool allow_overriding_by_aws_lambda_log_env)
     : Sink(config, std::move(origin), LineFormat::JSON),
       log_stream_type_(log_stream_type),
       include_date_on_log_stream_(include_date_on_log_stream),
       log_group_name_(log_group_name),
       is_running_(true),
       log_group_tags_(std::move(log_group_tags)),
-      thread_pid_(::getpid())
+      thread_pid_(::getpid()),
+      allow_overriding_by_aws_lambda_log_env_(allow_overriding_by_aws_lambda_log_env)
 {
 #ifndef UNIT_TESTS
     // Create the AWS client
@@ -292,6 +311,10 @@ CloudWatchSink::CloudWatchSink(SinkConfig const& config,
     // Create the cloudwatch logs queue thread
     cloudwatch_logs_thread_ = std::make_unique<std::thread>(&CloudWatchSink::cloudwatch_logs_thread, this);
 #endif
+    if (using_aws_lambda_logging())
+    {
+        log_group_name_ = std::getenv(AWS_LAMBDA_LOG_GROUP_NAME_ENV_VAR);
+    }
 }
 
 CloudWatchSink::~CloudWatchSink()
@@ -301,6 +324,10 @@ CloudWatchSink::~CloudWatchSink()
 
 std::string CloudWatchSink::log_stream_name(const Log& log, const Channel& channel) const
 {
+    if (using_aws_lambda_logging())
+    {
+        return std::getenv(AWS_LAMBDA_LOG_STREAM_NAME_ENV_VAR);
+    }
     switch (log_stream_type_)
     {
         case LogStreamType::BY_CHANNEL:
