@@ -368,7 +368,7 @@ std::string CloudWatchSink::formatted_json(Log const& log,
     ss << "." << std::setfill('0') << std::setw(3) << ms.count();
     // Put timezone as offset from UTC: ±HHMM
     ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%z");
-    j["message"] = log.stream()->str();
+    j["message"] = log.str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
     j["timestamp"] = ss.str(); // ISO 8601
