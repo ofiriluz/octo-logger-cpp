@@ -58,26 +58,11 @@ class Sink
                                    ContextInfo const& global_context_info) const;
 #endif
 
-    inline std::string formatted_log(Log const& log,
-                                     Channel const& channel,
-                                     ContextInfo const& context_info,
-                                     ContextInfo const& global_context_info,
-                                     bool disable_context_info) const
-    {
-        switch (line_format_)
-        {
-            case LineFormat::PLAINTEXT_LONG:
-                return formatted_log_plaintext_long(
-                    log, channel, context_info, global_context_info, disable_context_info);
-            case LineFormat::PLAINTEXT_SHORT:
-                return formatted_log_plaintext_short(log, channel);
-#ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
-            case LineFormat::JSON:
-                return formatted_log_json(log, channel, context_info, global_context_info);
-#endif
-        }
-        throw std::runtime_error("Unexpected Error Occurred");
-    }
+    std::string formatted_log(Log const& log,
+                              Channel const& channel,
+                              ContextInfo const& context_info,
+                              ContextInfo const& global_context_info,
+                              bool disable_context_info) const;
 
     inline static LineFormat extract_format_with_default(const SinkConfig& config, LineFormat default_format)
     {

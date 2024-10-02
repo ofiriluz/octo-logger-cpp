@@ -6,6 +6,7 @@ SET(UT_EXECUTABLE ${PROJECT_NAME}-tests)
 # UT definition
 ADD_EXECUTABLE(${UT_EXECUTABLE}
     ${PROJECT_SOURCE_DIR}/src/logger.cpp
+    ${PROJECT_SOURCE_DIR}/src/sink.cpp
     ${PROJECT_SOURCE_DIR}/src/manager-config.cpp
     ${PROJECT_SOURCE_DIR}/src/manager.cpp
     src/log-tests.cpp

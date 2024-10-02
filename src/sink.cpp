@@ -197,6 +197,44 @@ std::string Sink::formatted_context_info(Log const& log,
     return std::move(context_info_str);
 }
 
+std::string Sink::formatted_log(Log const& log,
+                                Channel const& channel,
+                                ContextInfo const& context_info,
+                                ContextInfo const& global_context_info,
+                                bool disable_context_info) const
+{
+    switch (line_format_)
+    {
+        case LineFormat::PLAINTEXT_LONG:
+            return formatted_log_plaintext_long(
+                log, channel, context_info, global_context_info, disable_context_info);
+        case LineFormat::PLAINTEXT_SHORT:
+            return formatted_log_plaintext_short(log, channel);
+#ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
+        case LineFormat::JSON:
+        {
+            try
+            {
+                return formatted_log_json(log, channel, context_info, global_context_info);
+            }
+            catch(const nlohmann::json::exception & ex)
+            {
+                // Fallback to default upon exception
+                return formatted_log_plaintext_long(
+                    log, channel, context_info, global_context_info, disable_context_info);
+            }
+            catch(const std::exception & ex)
+            {
+                // Fallback to default upon exception
+                return formatted_log_plaintext_long(
+                    log, channel, context_info, global_context_info, disable_context_info);
+            }
+        }
+#endif
+    }
+    throw std::runtime_error("Unexpected Error Occurred");
+}
+
 const SinkConfig& Sink::config() const
 {
     return config_;
