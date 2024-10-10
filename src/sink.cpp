@@ -117,23 +117,6 @@ static nlohmann::json init_context_info_impl(Log const& log,
     return std::move(j);
 }
 
-void octo::logger::unittests::init_context_info(nlohmann::json& dst,
-                                                Log const& log,
-                                                Channel const& channel,
-                                                ContextInfo const& context_info,
-                                                ContextInfo const& global_context_info)
-{
-    init_context_info_impl(dst, log, channel, context_info, global_context_info);
-}
-
-nlohmann::json octo::logger::unittests::init_context_info(Log const& log,
-                                                          Channel const& channel,
-                                                          ContextInfo const& context_info,
-                                                          ContextInfo const& global_context_info)
-{
-    return init_context_info_impl(log, channel, context_info, global_context_info);
-}
-
 std::string Sink::formatted_log_json(Log const& log,
                                      Channel const& channel,
                                      ContextInfo const& context_info,

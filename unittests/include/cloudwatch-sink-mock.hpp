@@ -75,7 +75,7 @@ class CloudWatchSink::CloudWatchSinkMock : public CloudWatchSink
                                    ContextInfo const& context_info,
                                    ContextInfo const& global_context_info) const
     {
-        return octo::logger::unittests::init_context_info(dst, log, channel, context_info, global_context_info);
+        return init_context_info(dst, log, channel, context_info, global_context_info);
     }
 
     nlohmann::json init_context_info_wrapper(Log const& log,
@@ -83,7 +83,7 @@ class CloudWatchSink::CloudWatchSinkMock : public CloudWatchSink
                                              ContextInfo const& context_info,
                                              ContextInfo const& global_context_info) const
     {
-        return octo::logger::unittests::init_context_info(log, channel, context_info, global_context_info);
+        return init_context_info(log, channel, context_info, global_context_info);
     }
 };
 
