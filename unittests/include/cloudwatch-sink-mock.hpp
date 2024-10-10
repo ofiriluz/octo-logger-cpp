@@ -24,8 +24,8 @@ class CloudWatchSink::CloudWatchSinkMock : public CloudWatchSink
                        bool include_date_on_log_stream = DEFAULT_INCLUDE_DATE_ON_LOG_STREAM,
                        std::string const& log_group_name = DEFAULT_LOG_GROUP_NAME,
                        LogGroupTags log_group_tags = {},
-                       allow_overriding_by_aws_lambda_log_env = false,
-                       log_thread_id = false)
+                       bool allow_overriding_by_aws_lambda_log_env = false,
+                       bool log_thread_id = false)
         : CloudWatchSink(config,
                          std::move(origin),
                          log_stream_type,
