@@ -96,6 +96,7 @@ class CloudWatchSink : public Sink
     LogGroupTags const log_group_tags_;
     pid_t thread_pid_;
     bool allow_overriding_by_aws_lambda_log_env_;
+    bool log_thread_id_;
 
   private:
     bool using_aws_lambda_logging() const;
@@ -138,7 +139,9 @@ class CloudWatchSink : public Sink
                    bool include_date_on_log_stream = DEFAULT_INCLUDE_DATE_ON_LOG_STREAM,
                    std::string const& log_group_name = DEFAULT_LOG_GROUP_NAME,
                    LogGroupTags log_group_tags = {},
-                   bool allow_overriding_by_aws_lambda_log_env = false);
+                   bool allow_overriding_by_aws_lambda_log_env = false,
+                   bool log_thread_id = false
+                   );
     ~CloudWatchSink() override;
 
     void dump(Log const& log,

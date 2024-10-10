@@ -294,7 +294,8 @@ CloudWatchSink::CloudWatchSink(SinkConfig const& config,
                                bool include_date_on_log_stream,
                                std::string const& log_group_name,
                                LogGroupTags log_group_tags,
-                               bool allow_overriding_by_aws_lambda_log_env)
+                               bool allow_overriding_by_aws_lambda_log_env,
+                               bool log_thread_id)
     : Sink(config, std::move(origin), LineFormat::JSON),
       log_stream_type_(log_stream_type),
       include_date_on_log_stream_(include_date_on_log_stream),
@@ -303,6 +304,7 @@ CloudWatchSink::CloudWatchSink(SinkConfig const& config,
       log_group_tags_(std::move(log_group_tags)),
       thread_pid_(::getpid()),
       allow_overriding_by_aws_lambda_log_env_(allow_overriding_by_aws_lambda_log_env)
+      log_thread_id_(log_thread_id)
 {
 #ifndef UNIT_TESTS
     // Create the AWS client
@@ -315,6 +317,7 @@ CloudWatchSink::CloudWatchSink(SinkConfig const& config,
     {
         log_group_name_ = std::getenv(AWS_LAMBDA_LOG_GROUP_NAME_ENV_VAR);
     }
+
 }
 
 CloudWatchSink::~CloudWatchSink()
@@ -414,6 +417,10 @@ void CloudWatchSink::init_context_info(nlohmann::json& dst,
     if (!log.extra_identifier().empty())
     {
         dst["session_id"] = log.extra_identifier();
+    }
+    if (log_thread_id_)
+    {
+        dst["thread_id"] = std::this_thread::get_id();
     }
 }
 
