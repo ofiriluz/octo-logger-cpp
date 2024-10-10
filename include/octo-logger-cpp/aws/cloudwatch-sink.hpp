@@ -140,8 +140,7 @@ class CloudWatchSink : public Sink
                    std::string const& log_group_name = DEFAULT_LOG_GROUP_NAME,
                    LogGroupTags log_group_tags = {},
                    bool allow_overriding_by_aws_lambda_log_env = false,
-                   bool log_thread_id = false
-                   );
+                   bool log_thread_id = false);
     ~CloudWatchSink() override;
 
     void dump(Log const& log,

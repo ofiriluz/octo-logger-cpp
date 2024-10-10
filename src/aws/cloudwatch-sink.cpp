@@ -303,7 +303,7 @@ CloudWatchSink::CloudWatchSink(SinkConfig const& config,
       is_running_(true),
       log_group_tags_(std::move(log_group_tags)),
       thread_pid_(::getpid()),
-      allow_overriding_by_aws_lambda_log_env_(allow_overriding_by_aws_lambda_log_env)
+      allow_overriding_by_aws_lambda_log_env_(allow_overriding_by_aws_lambda_log_env),
       log_thread_id_(log_thread_id)
 {
 #ifndef UNIT_TESTS
@@ -317,7 +317,6 @@ CloudWatchSink::CloudWatchSink(SinkConfig const& config,
     {
         log_group_name_ = std::getenv(AWS_LAMBDA_LOG_GROUP_NAME_ENV_VAR);
     }
-
 }
 
 CloudWatchSink::~CloudWatchSink()
@@ -418,6 +417,7 @@ void CloudWatchSink::init_context_info(nlohmann::json& dst,
     {
         dst["session_id"] = log.extra_identifier();
     }
+    
     if (log_thread_id_)
     {
         dst["thread_id"] = std::this_thread::get_id();
