@@ -417,10 +417,12 @@ void CloudWatchSink::init_context_info(nlohmann::json& dst,
     {
         dst["session_id"] = log.extra_identifier();
     }
-    
+
     if (log_thread_id_)
     {
-        dst["thread_id"] = std::this_thread::get_id();
+        std::stringstream ss;
+        ss << std::this_thread::get_id();
+        dst["thread_id"] = ss.str();
     }
 }
 
