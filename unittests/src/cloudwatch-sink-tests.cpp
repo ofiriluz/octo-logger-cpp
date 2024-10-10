@@ -462,6 +462,9 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
 
     SECTION("With thread id")
     {
+        std::stringstream ss;
+        ss << std::this_thread::get_id();
+
         struct TestData
         {
             std::string const session_id;
@@ -479,7 +482,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
              {{"session_id", "52c1fdd2-5987-49e9-8e30-6fbaf08b40dc"},
               {"property_1", "property 1 value"},
               {"property_2", "property 2 value"},
-              {"thread_id", std::to_string(std::this_thread::get_id())}}
+              {"thread_id", ss.str()}}
             }
         };
 
