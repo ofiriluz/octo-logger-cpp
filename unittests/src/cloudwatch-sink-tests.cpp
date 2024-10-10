@@ -146,7 +146,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
     SinkConfig const sink_config(get_sink_config("TestSinkConfig"));
     CloudWatchSinkMock const sink(sink_config, "test_origin");
     CloudWatchSinkMock const sink_with_thread_id(
-            sink_config, "test_origin", CloudWatchSinkMock::LogStreamType::BY_EXTRA_ID, false, "test_group_name", false, true);
+            sink_config, "test_origin", CloudWatchSinkMock::LogStreamType::BY_EXTRA_ID, false, "test_group_name", {}, false, true);
 
     Channel const channel(get_channel("test_channel"));
 
