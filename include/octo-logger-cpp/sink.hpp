@@ -101,20 +101,4 @@ class Sink
 typedef std::shared_ptr<Sink> SinkPtr;
 } // namespace octo::logger
 
-#if defined(OCTO_LOGGER_WITH_JSON_FORMATTING) && defined(UNIT_TESTS)
-#include <nlohmann/json.hpp>
-namespace octo::logger::unittests
-{
-void init_context_info(nlohmann::json& dst,
-                       Log const& log,
-                       Channel const& channel,
-                       ContextInfo const& context_info,
-                       ContextInfo const& global_context_info);
-nlohmann::json init_context_info(Log const& log,
-                                 Channel const& channel,
-                                 ContextInfo const& context_info,
-                                 ContextInfo const& global_context_info);
-} // namespace octo::logger::unittests
-#endif
-
 #endif
