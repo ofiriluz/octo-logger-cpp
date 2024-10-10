@@ -498,7 +498,7 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
 
             // Init context_info using the global_context_info taken from the global Manager
             REQUIRE_NOTHROW(
-                sink_with_context_data.init_context_info_wrapper(itr_context_info.dst, test_log, channel, {}, global_context_info()));
+                sink_with_thread_id.init_context_info_wrapper(itr_context_info.dst, test_log, channel, {}, global_context_info()));
             REQUIRE_THAT(itr_context_info.dst, JSONEquals(itr_context_info.expected_result));
         }
     }
