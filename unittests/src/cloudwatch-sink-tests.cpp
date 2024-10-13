@@ -145,6 +145,9 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
 {
     SinkConfig const sink_config(get_sink_config("TestSinkConfig"));
     CloudWatchSinkMock const sink(sink_config, "test_origin");
+    CloudWatchSinkMock const sink_with_thread_id(
+            sink_config, "test_origin", CloudWatchSinkMock::LogStreamType::BY_EXTRA_ID, false, "test_group_name", {}, false, true);
+
     Channel const channel(get_channel("test_channel"));
 
     SECTION("Init Basic Info")
@@ -453,6 +456,52 @@ TEST_CASE_METHOD(CloudWatchSinkTestsFixture, "CloudWatchSink InitContextInfo Tes
             // Init context_info using the global_context_info taken from the global Manager
             REQUIRE_NOTHROW(
                 sink.init_context_info_wrapper(itr_context_info.dst, test_log, channel, {}, global_context_info()));
+            REQUIRE_THAT(itr_context_info.dst, JSONEquals(itr_context_info.expected_result));
+        }
+    }
+
+    SECTION("With thread id")
+    {
+        std::stringstream ss;
+        ss << std::this_thread::get_id();
+
+        struct TestData
+        {
+            std::string const session_id;
+            nlohmann::json dst;
+            octo::logger::ContextInfo const initial_global_context_info;
+            octo::logger::ContextInfo const update_global_context_info;
+            nlohmann::json const expected_result;
+        };
+        std::vector<TestData> test_data{
+            {// Test update adds new key without removing existing keys.
+             "52c1fdd2-5987-49e9-8e30-6fbaf08b40dc",
+             nlohmann::json::value_t::null,
+             {{"property_1", "property 1 value"}},
+             {{"property_2", "property 2 value"}},
+             {{"session_id", "52c1fdd2-5987-49e9-8e30-6fbaf08b40dc"},
+              {"property_1", "property 1 value"},
+              {"property_2", "property 2 value"},
+              {"thread_id", ss.str()}}
+            }
+        };
+
+        for (auto& itr_context_info : test_data)
+        {
+            CAPTURE(itr_context_info.session_id,
+                    itr_context_info.dst,
+                    itr_context_info.initial_global_context_info,
+                    itr_context_info.update_global_context_info);
+
+            // Set the initial global_context_info
+            replace_global_context_info(itr_context_info.initial_global_context_info);
+            // Update the global_context_info
+            update_global_context_info(itr_context_info.update_global_context_info);
+            Log const test_log(get_log(Log::LogLevel::QUIET, itr_context_info.session_id));
+
+            // Init context_info using the global_context_info taken from the global Manager
+            REQUIRE_NOTHROW(
+                sink_with_thread_id.init_context_info_wrapper(itr_context_info.dst, test_log, channel, {}, global_context_info()));
             REQUIRE_THAT(itr_context_info.dst, JSONEquals(itr_context_info.expected_result));
         }
     }

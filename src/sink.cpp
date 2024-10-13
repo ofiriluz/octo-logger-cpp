@@ -23,22 +23,6 @@
 #define getpid GetCurrentProcessId
 #endif
 
-#if defined(OCTO_LOGGER_WITH_JSON_FORMATTING) && !defined(UNIT_TESTS)
-// We always want to compile these functions, which expose our internals to the unit tests.
-namespace octo::logger::unittests
-{
-void init_context_info(nlohmann::json& dst,
-                       Log const& log,
-                       Channel const& channel,
-                       ContextInfo const& context_info,
-                       ContextInfo const& global_context_info);
-nlohmann::json init_context_info(Log const& log,
-                                 Channel const& channel,
-                                 ContextInfo const& context_info,
-                                 ContextInfo const& global_context_info);
-} // namespace octo::logger::unittests
-#endif
-
 namespace octo::logger
 {
 std::string Sink::formatted_log_plaintext_long(Log const& log,
@@ -115,23 +99,6 @@ static nlohmann::json init_context_info_impl(Log const& log,
     nlohmann::json j(nlohmann::json::value_t::object);
     init_context_info_impl(j, log, channel, context_info, global_context_info);
     return std::move(j);
-}
-
-void octo::logger::unittests::init_context_info(nlohmann::json& dst,
-                                                Log const& log,
-                                                Channel const& channel,
-                                                ContextInfo const& context_info,
-                                                ContextInfo const& global_context_info)
-{
-    init_context_info_impl(dst, log, channel, context_info, global_context_info);
-}
-
-nlohmann::json octo::logger::unittests::init_context_info(Log const& log,
-                                                          Channel const& channel,
-                                                          ContextInfo const& context_info,
-                                                          ContextInfo const& global_context_info)
-{
-    return init_context_info_impl(log, channel, context_info, global_context_info);
 }
 
 std::string Sink::formatted_log_json(Log const& log,
