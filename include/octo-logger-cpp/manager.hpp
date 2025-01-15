@@ -70,7 +70,7 @@ class Manager
     void dump(const Log& log, const Channel& channel, ContextInfo const& context_info);
     void clear_sinks();
     void clear_channels();
-    void restart_sinks() noexcept;
+    void restart_sinks() const noexcept;
     const Logger& global_logger() const;
     std::shared_ptr<ContextInfo const> global_context_info() const;
     void replace_global_context_info(ContextInfo context_info);
