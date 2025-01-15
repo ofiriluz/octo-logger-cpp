@@ -13,6 +13,7 @@
 #define MANAGER_CONFIG_HPP_
 
 #include "octo-logger-cpp/config-utils.hpp"
+#include "octo-logger-cpp/log.hpp"
 #include "octo-logger-cpp/sink-config.hpp"
 #include <map>
 #include <vector>
@@ -74,6 +75,8 @@ typedef std::shared_ptr<ManagerConfig> ManagerConfigPtr;
 typedef std::shared_ptr<ManagerConfig> ManagerConfigPtr;
 template <>
 void ManagerConfig::set_option<std::string>(LoggerOption option, std::string value);
+template <>
+void ManagerConfig::set_option<Log::LogLevel>(LoggerOption option, Log::LogLevel value);
 template <>
 bool ManagerConfig::option<std::string>(LoggerOption option, std::string& value) const;
 } // namespace octo::logger

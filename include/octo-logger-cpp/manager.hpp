@@ -12,10 +12,11 @@
 #ifndef MANAGER_HPP_
 #define MANAGER_HPP_
 
-#include "octo-logger-cpp/channel.hpp"
 #include "octo-logger-cpp/channel-view.hpp"
+#include "octo-logger-cpp/channel.hpp"
 #include "octo-logger-cpp/context-info.hpp"
 #include "octo-logger-cpp/fork-safe-mutex.hpp"
+#include "octo-logger-cpp/log.hpp"
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/manager-config.hpp"
 #include "octo-logger-cpp/sink-factory.hpp"
