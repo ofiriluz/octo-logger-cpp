@@ -14,10 +14,24 @@
 
 namespace octo::logger
 {
-template <>
-void ManagerConfig::set_option(ManagerConfig::LoggerOption option, std::string value)
+void ManagerConfig::set_option(const ManagerConfig::LoggerOption& option, const std::string& value)
 {
-    logger_options_.insert_or_assign(option, std::move(value));
+    logger_options_[option] = value;
+}
+
+void ManagerConfig::set_option(const ManagerConfig::LoggerOption& option, int value)
+{
+    set_option(option, convert_from<int>(value));
+}
+
+void ManagerConfig::set_option(const ManagerConfig::LoggerOption& option, double value)
+{
+    set_option(option, convert_from<double>(value));
+}
+
+void ManagerConfig::set_option(const ManagerConfig::LoggerOption& option, uint8_t value)
+{
+    set_option(option, convert_from<uint8_t>(value));
 }
 
 bool ManagerConfig::has_sink(const std::string& sink_name) const
@@ -67,12 +81,44 @@ bool ManagerConfig::has_option(const LoggerOption& option) const
     return logger_options_.find(option) != logger_options_.end();
 }
 
-template <>
-bool ManagerConfig::option(LoggerOption option, std::string& value) const
+bool ManagerConfig::option(const LoggerOption& option, std::string& value) const
 {
     if (has_option(option))
     {
         value = logger_options_.at(option);
+        return true;
+    }
+    return false;
+}
+
+bool ManagerConfig::option(const LoggerOption& opt, int& value) const
+{
+    std::string s;
+    if (option(opt, s))
+    {
+        value = convert_to<int>(s);
+        return true;
+    }
+    return false;
+}
+
+bool ManagerConfig::option(const LoggerOption& opt, double& value) const
+{
+    std::string s;
+    if (option(opt, s))
+    {
+        value = convert_to<double>(s);
+        return true;
+    }
+    return false;
+}
+
+bool ManagerConfig::option(const LoggerOption& opt, uint8_t& value) const
+{
+    std::string s;
+    if (option(opt, s))
+    {
+        value = convert_to<uint8_t>(s);
         return true;
     }
     return false;

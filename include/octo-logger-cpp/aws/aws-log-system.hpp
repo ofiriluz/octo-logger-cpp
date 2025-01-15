@@ -30,7 +30,7 @@ namespace octo::logger::aws
 class AwsLogSystem : public Aws::Utils::Logging::LogSystemInterface
 {
   public:
-    enum class SanitizerTags : std::uint8_t
+    enum class SanitizerTags : uint8_t
     {
         ALL_TAG,
         AUTHV4_TAG,

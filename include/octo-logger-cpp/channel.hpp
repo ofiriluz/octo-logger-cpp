@@ -1,5 +1,5 @@
 /**
- * @file channel.hpp
+ * @file channel.h
  * @author ofir iluz (iluzofir@gmail.com)
  * @brief
  * @version 0.1
@@ -27,11 +27,11 @@ class Channel
     Log::LogLevel channel_level_;
 
   public:
-    Channel(std::string_view channel_name, Log::LogLevel channel_level);
+    Channel(std::string_view channel_name, const Log::LogLevel& channel_level);
     virtual ~Channel() = default;
 
     Log::LogLevel log_level() const;
-    void set_log_level(Log::LogLevel channel_level);
+    void set_log_level(const Log::LogLevel& channel_level);
     const std::string& channel_name() const;
     friend class Manager;
 };
