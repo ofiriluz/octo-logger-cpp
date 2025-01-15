@@ -99,6 +99,9 @@ class Sink
     }
 };
 typedef std::shared_ptr<Sink> SinkPtr;
+
+template <>
+void SinkConfig::set_option<Sink::LineFormat>(SinkOption option, Sink::LineFormat value);
 } // namespace octo::logger
 
 #endif

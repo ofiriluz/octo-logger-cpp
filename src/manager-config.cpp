@@ -20,6 +20,12 @@ void ManagerConfig::set_option(ManagerConfig::LoggerOption option, std::string v
     logger_options_.insert_or_assign(option, std::move(value));
 }
 
+template <>
+void ManagerConfig::set_option<Log::LogLevel>(LoggerOption option, Log::LogLevel value)
+{
+    set_option(option, static_cast<int>(value));
+}
+
 bool ManagerConfig::has_sink(const std::string& sink_name) const
 {
     for (auto& sink : sink_configs_)

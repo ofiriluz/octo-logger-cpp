@@ -42,15 +42,10 @@ class ManagerConfig
     ManagerConfig() = default;
     virtual ~ManagerConfig() = default;
 
-    template <typename T, typename std::enable_if_t<!std::is_enum_v<T>, bool> = true>
+    template <typename T>
     void set_option(LoggerOption option, T value)
     {
         set_option(option, ConfigUtils::convert_from<T>(value));
-    }
-    template <typename T, typename std::enable_if_t<std::is_enum_v<T>, bool> = true>
-    void set_option(LoggerOption option, T value)
-    {
-        set_option(option, static_cast<int>(value));
     }
     template <typename T>
     bool option(LoggerOption option, T& value) const
@@ -80,6 +75,8 @@ typedef std::shared_ptr<ManagerConfig> ManagerConfigPtr;
 typedef std::shared_ptr<ManagerConfig> ManagerConfigPtr;
 template <>
 void ManagerConfig::set_option<std::string>(LoggerOption option, std::string value);
+template <>
+void ManagerConfig::set_option<Log::LogLevel>(LoggerOption option, Log::LogLevel value);
 template <>
 bool ManagerConfig::option<std::string>(LoggerOption option, std::string& value) const;
 } // namespace octo::logger
