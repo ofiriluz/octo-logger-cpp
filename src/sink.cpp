@@ -221,10 +221,4 @@ Sink::Sink(const SinkConfig& config, std::string const& origin, LineFormat forma
     : config_(config), origin_(std::move(origin)), line_format_(format), is_discarding_(false)
 {
 }
-
-template <>
-void SinkConfig::set_option<Sink::LineFormat>(SinkOption option, Sink::LineFormat value)
-{
-    set_option(option, static_cast<int>(value));
-}
 } // namespace octo::logger

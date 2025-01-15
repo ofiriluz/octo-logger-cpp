@@ -13,10 +13,11 @@
 #define SINK_CONFIG_HPP_
 
 #include "octo-logger-cpp/config-utils.hpp"
-#include <string>
-#include <unordered_map>
-#include <sstream>
 #include <cstdint>
+#include <sstream>
+#include <string>
+#include <type_traits>
+#include <unordered_map>
 
 namespace octo::logger
 {
@@ -65,11 +66,17 @@ class SinkConfig
     SinkConfig(std::string sink_name, SinkType sink_type);
     virtual ~SinkConfig() = default;
 
-    template <typename T>
+    template <typename T, typename std::enable_if_t<!std::is_enum_v<T>, bool> = true>
     void set_option(SinkOption option, T value)
     {
         set_option(option, ConfigUtils::convert_from<T>(value));
     }
+    template <typename T, typename std::enable_if_t<std::is_enum_v<T>, bool> = true>
+    void set_option(SinkOption option, T value)
+    {
+        set_option(option, static_cast<int>(value));
+    }
+
     template <typename T>
     bool option(SinkOption option, T& value) const
     {
