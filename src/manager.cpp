@@ -226,7 +226,7 @@ void Manager::update_global_context_info(ContextInfo const& new_context_info)
     replace_global_context_info_rvalue(std::move(copy_of_current));
 }
 
-void Manager::restart_sinks() const noexcept
+void Manager::restart_sinks() noexcept
 {
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
 }

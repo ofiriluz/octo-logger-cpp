@@ -59,7 +59,7 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
 #ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
 static void init_context_info_impl(nlohmann::json& dst,
                                    Log const& log,
-                                   Channel const&,
+                                   Channel const& channel,
                                    ContextInfo const& context_info,
                                    ContextInfo const& global_context_info)
 {
@@ -173,7 +173,8 @@ std::string Sink::formatted_log(Log const& log,
     switch (line_format_)
     {
         case LineFormat::PLAINTEXT_LONG:
-            return formatted_log_plaintext_long(log, channel, context_info, global_context_info, disable_context_info);
+            return formatted_log_plaintext_long(
+                log, channel, context_info, global_context_info, disable_context_info);
         case LineFormat::PLAINTEXT_SHORT:
             return formatted_log_plaintext_short(log, channel);
 #ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
@@ -183,13 +184,13 @@ std::string Sink::formatted_log(Log const& log,
             {
                 return formatted_log_json(log, channel, context_info, global_context_info);
             }
-            catch (nlohmann::json::exception const&)
+            catch(const nlohmann::json::exception & ex)
             {
                 // Fallback to default upon exception
                 return formatted_log_plaintext_long(
                     log, channel, context_info, global_context_info, disable_context_info);
             }
-            catch (std::exception const&)
+            catch(const std::exception & ex)
             {
                 // Fallback to default upon exception
                 return formatted_log_plaintext_long(
@@ -220,11 +221,5 @@ void Sink::stop(bool discard)
 Sink::Sink(const SinkConfig& config, std::string const& origin, LineFormat format)
     : config_(config), origin_(std::move(origin)), line_format_(format), is_discarding_(false)
 {
-}
-
-template <>
-void SinkConfig::set_option<Sink::LineFormat>(SinkOption option, Sink::LineFormat value)
-{
-    set_option(option, static_cast<int>(value));
 }
 } // namespace octo::logger
