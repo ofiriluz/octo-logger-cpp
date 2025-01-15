@@ -59,7 +59,7 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
 #ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
 static void init_context_info_impl(nlohmann::json& dst,
                                    Log const& log,
-                                   Channel const& channel,
+                                   Channel const&,
                                    ContextInfo const& context_info,
                                    ContextInfo const& global_context_info)
 {
@@ -173,8 +173,7 @@ std::string Sink::formatted_log(Log const& log,
     switch (line_format_)
     {
         case LineFormat::PLAINTEXT_LONG:
-            return formatted_log_plaintext_long(
-                log, channel, context_info, global_context_info, disable_context_info);
+            return formatted_log_plaintext_long(log, channel, context_info, global_context_info, disable_context_info);
         case LineFormat::PLAINTEXT_SHORT:
             return formatted_log_plaintext_short(log, channel);
 #ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
@@ -184,13 +183,13 @@ std::string Sink::formatted_log(Log const& log,
             {
                 return formatted_log_json(log, channel, context_info, global_context_info);
             }
-            catch(const nlohmann::json::exception & ex)
+            catch (nlohmann::json::exception const&)
             {
                 // Fallback to default upon exception
                 return formatted_log_plaintext_long(
                     log, channel, context_info, global_context_info, disable_context_info);
             }
-            catch(const std::exception & ex)
+            catch (std::exception const&)
             {
                 // Fallback to default upon exception
                 return formatted_log_plaintext_long(
