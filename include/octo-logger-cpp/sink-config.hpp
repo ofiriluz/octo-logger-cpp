@@ -12,10 +12,9 @@
 #ifndef SINK_CONFIG_HPP_
 #define SINK_CONFIG_HPP_
 
+#include "octo-logger-cpp/config-utils.hpp"
 #include <string>
-#include <vector>
-#include <map>
-#include <thread>
+#include <unordered_map>
 #include <sstream>
 #include <cstdint>
 
@@ -46,11 +45,11 @@ class SinkConfig
         FILE_SIZE_PER_LOG_FILE,
         FILE_MAX_LOG_FILES,
         FILE_LOG_FOLDER_PREFIX,
-        FILE_SEPERATE_CHANNEL_FILES,
+        FILE_SEPARATE_CHANNEL_FILES,
         FILE_COMBINED_CHANNEL_PREFIX,
         FILE_NO_TIME_ON_NAME,
         FILE_NO_DATE_ON_NAME,
-        FILE_LOG_FOLDER_NO_SEPERATE_BY_DATE,
+        FILE_LOG_FOLDER_NO_SEPARATE_BY_DATE,
         FILE_DISABLE_CONTEXT_INFO,
 
         SYSLOG_LOG_NAME
@@ -58,34 +57,64 @@ class SinkConfig
     };
 
   private:
-    std::map<SinkOption, std::string> options_;
+    std::unordered_map<SinkOption, std::string> options_;
     SinkType sink_type_;
     std::string sink_name_;
 
   public:
-    SinkConfig(const std::string& sink_name, const SinkType& sink_type);
+    SinkConfig(std::string sink_name, SinkType sink_type);
     virtual ~SinkConfig() = default;
 
-    void set_option(const SinkOption& option, const std::string& value);
-    void set_option(const SinkOption& option, int value);
-    void set_option(const SinkOption& option, double value);
-    void set_option(const SinkOption& option, uint8_t value);
-    void set_option(const SinkOption& option, bool value);
-    bool remove_option(const SinkOption& option);
-    bool has_option(const SinkOption& option) const;
-    bool option(const SinkOption& option, std::string& value) const;
-    bool option(const SinkOption& opt, int& value) const;
-    bool option(const SinkOption& opt, double& value) const;
-    bool option(const SinkOption& opt, uint8_t& value) const;
-    bool option(const SinkOption& opt, bool& value) const;
-    std::string option_default(const SinkOption& option, const std::string& default_value) const;
-    int option_default(const SinkOption& option, int default_value) const;
-    double option_default(const SinkOption& option, double default_value) const;
-    uint8_t option_default(const SinkOption& option, uint8_t default_value) const;
-    bool option_default(const SinkOption& option, bool default_value) const;
-    const std::string& sink_name() const;
+    template <typename T>
+    void set_option(SinkOption option, T value)
+    {
+        set_option(option, ConfigUtils::convert_from<T>(value));
+    }
+    template <typename T>
+    bool option(SinkOption option, T& value) const
+    {
+        std::string s;
+        if (SinkConfig::option(option, s))
+        {
+            try
+            {
+                value = std::move(ConfigUtils::convert_to<T>(s));
+                return true;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+        return false;
+    }
+    template <typename T>
+    T option_default(SinkOption option, T default_value) const
+    {
+        std::string s(option_default(option, ConfigUtils::convert_from<T>(default_value).c_str()));
+        try
+        {
+            T value = ConfigUtils::convert_to<T>(s);
+            return value;
+        }
+        catch (...)
+        {
+            return default_value;
+        }
+    }
+
+    bool remove_option(SinkOption option);
+    bool has_option(SinkOption option) const;
+    std::string const& sink_name() const;
     SinkType sink_type() const;
 };
+
+template <>
+void SinkConfig::set_option<std::string>(SinkOption option, std::string value);
+template <>
+bool SinkConfig::option<std::string>(SinkOption option, std::string& value) const;
+template <>
+char const* SinkConfig::option_default<char const*>(SinkOption option, char const* default_value) const;
 } // namespace octo::logger
 
 #endif
