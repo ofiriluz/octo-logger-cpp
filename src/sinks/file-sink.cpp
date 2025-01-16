@@ -14,7 +14,6 @@
 #include "octo-logger-cpp/sinks/file-sink.hpp"
 
 #include "octo-logger-cpp/compat.hpp"
-#include "octo-logger-cpp/compat.hpp"
 #include <cstring>
 #include <ctime>
 #include <ctime>
@@ -22,6 +21,11 @@
 #include <libgen.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+namespace
+{
+std::size_t constexpr TIME_FORMAT_SIZE = 1024;
+}
 
 namespace octo::logger
 {
@@ -31,22 +35,21 @@ FileSink::File::File() : index(0)
 
 void FileSink::create_log_path()
 {
-    char dtf[1024];
-    std::time_t const time_v = std::time(nullptr);
-    struct tm timeinfo;
-    std::strftime(dtf, sizeof(dtf), "%d-%m-%Y", compat::localtime(&time_v, &timeinfo));
-
     if (log_path_.data()[log_path_.size() - 1] != '/')
     {
         log_path_ += '/';
     }
     log_path_ += prefix_folder_name_;
-    if (prefix_folder_name_ != "")
+    if (!prefix_folder_name_.empty())
     {
         log_path_ += "_";
     }
     if (separate_logs_by_date_folder_)
     {
+        char dtf[TIME_FORMAT_SIZE];
+        std::time_t const time_v = std::time(nullptr);
+        struct tm timeinfo;
+        std::strftime(dtf, sizeof(dtf), "%d-%m-%Y", compat::localtime(&time_v, &timeinfo));
         log_path_ += std::string(dtf);
     }
 }
@@ -74,15 +77,7 @@ int FileSink::recursive_folder_creation(const char* dir, mode_t mode)
 
 void FileSink::switch_stream(const std::string& channel)
 {
-    char dtf[1024] = {0};
     std::shared_ptr<File> file;
-    if (!strftime_format_.empty())
-    {
-        std::time_t const time_v = std::time(nullptr);
-        struct tm timeinfo;
-        std::strftime(dtf, sizeof(dtf), strftime_format_.c_str(), compat::localtime(&time_v, &timeinfo));
-    }
-
     std::stringstream ss;
     if (separate_channels_to_files_)
     {
@@ -94,6 +89,10 @@ void FileSink::switch_stream(const std::string& channel)
     }
     if (!strftime_format_.empty())
     {
+        char dtf[TIME_FORMAT_SIZE] = {};
+        std::time_t const time_v = std::time(nullptr);
+        struct tm timeinfo;
+        std::strftime(dtf, sizeof(dtf), strftime_format_.c_str(), compat::localtime(&time_v, &timeinfo));
         ss << "_" << dtf;
     }
     // If Channel file exists, close it and move to the index for this channel

@@ -8,8 +8,11 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include "octo-logger-cpp/compat.hpp"
+
 #include "octo-logger-cpp/sink.hpp"
+
+#include "octo-logger-cpp/compat.hpp"
+#include "octo-logger-cpp/log-level.hpp"
 #include <fmt/format.h>
 #include <iomanip>
 #include <thread>
@@ -45,8 +48,8 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
     }
 
     ss << dtf << "." << std::setfill('0') << std::setw(3) << fraction << "]["
-       << Log::level_to_string(log.log_level())[0] << "][" << channel.channel_name() << "][PID(" << getpid()
-       << ")][TID(" << std::this_thread::get_id() << ")]" << extra_id << ": " << log.str();
+       << LogLevelUtils::level_to_string_short(log.log_level()) << "][" << channel.channel_name() << "][PID("
+       << getpid() << ")][TID(" << std::this_thread::get_id() << ")]" << extra_id << ": " << log.str();
 
     if (!disable_context_info && !(context_info.empty() && log.context_info().empty() && global_context_info.empty()))
     {
@@ -120,9 +123,7 @@ std::string Sink::formatted_log_json(Log const& log,
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
     j["timestamp"] = ss.str(); // ISO 8601
-    auto log_level_str = Log::level_to_string(log.log_level());
-    std::transform(log_level_str.begin(), log_level_str.end(), log_level_str.begin(), ::toupper);
-    j["log_level"] = log_level_str;
+    j["log_level"] = LogLevelUtils::level_to_string_upper(log.log_level());
     j["origin_func_name"] = "";
 
     j["context_info"] = init_context_info_impl(log, channel, context_info, global_context_info);
@@ -141,9 +142,9 @@ std::string Sink::formatted_log_plaintext_short(Log const& log, Channel const& c
     {
         extra_id = "[" + log.extra_identifier() + "]";
     }
-    ss << "[MS(" << std::setfill('0') << std::setw(3) << fraction << ")][" << Log::level_to_string(log.log_level())[0]
-       << "][" << channel.channel_name() << "][TID(" << std::this_thread::get_id() << ")]" << extra_id << ": "
-       << log.str();
+    ss << "[MS(" << std::setfill('0') << std::setw(3) << fraction << ")]["
+       << LogLevelUtils::level_to_string_short(log.log_level()) << "][" << channel.channel_name() << "][TID("
+       << std::this_thread::get_id() << ")]" << extra_id << ": " << log.str();
     return ss.str();
 }
 
@@ -218,7 +219,7 @@ void Sink::stop(bool discard)
 }
 
 Sink::Sink(const SinkConfig& config, std::string const& origin, LineFormat format)
-    : config_(config), origin_(std::move(origin)), line_format_(format), is_discarding_(false)
+    : config_(config), is_discarding_(false), origin_(origin), line_format_(format)
 {
 }
 } // namespace octo::logger
