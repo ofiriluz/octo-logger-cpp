@@ -10,8 +10,10 @@
  */
 
 #include "octo-logger-cpp/sink-factory.hpp"
-#include "octo-logger-cpp/sinks/file-sink.hpp"
+
+#include "octo-logger-cpp/sinks/console-json-sink.hpp"
 #include "octo-logger-cpp/sinks/console-sink.hpp"
+#include "octo-logger-cpp/sinks/file-sink.hpp"
 #include "octo-logger-cpp/sinks/syslog-sink.hpp"
 
 namespace octo::logger
@@ -26,18 +28,25 @@ SinkPtr SinkFactory::create_sink(const SinkConfig& sink_config)
 {
     if (sink_config.sink_type() == SinkConfig::SinkType::CONSOLE_SINK)
     {
-        return SinkPtr(new ConsoleSink(sink_config));
+        return std::make_shared<ConsoleSink>(sink_config);
     }
 #ifndef _WIN32
-    else if (sink_config.sink_type() == SinkConfig::SinkType::FILE_SINK)
+    if (sink_config.sink_type() == SinkConfig::SinkType::FILE_SINK)
     {
-        return SinkPtr(new FileSink(sink_config));
+        return std::make_shared<FileSink>(sink_config);
     }
-    else if (sink_config.sink_type() == SinkConfig::SinkType::SYSLOG_SINK)
+    if (sink_config.sink_type() == SinkConfig::SinkType::SYSLOG_SINK)
     {
-        return SinkPtr(new SysLogSink(sink_config));
+        return std::make_shared<SysLogSink>(sink_config);
     }
 #endif
-    return SinkPtr();
+#ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
+    if (sink_config.sink_type() == SinkConfig::SinkType::CONSOLE_JSON_SINK)
+    {
+        return std::make_shared<ConsoleJSONSink>(sink_config);
+    }
+#endif // OCTO_LOGGER_WITH_JSON_FORMATTING
+
+    return nullptr;
 }
 } // namespace octo::logger

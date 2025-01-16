@@ -36,6 +36,7 @@ ADD_LIBRARY(octo-logger-cpp STATIC
     $<$<NOT:$<PLATFORM_ID:Windows>>:src/sinks/syslog-sink.cpp>
     $<$<BOOL:${WITH_AWS}>:src/aws/cloudwatch-sink.cpp>
     $<$<BOOL:${WITH_AWS}>:src/aws/aws-log-system.cpp>
+    $<$<BOOL:${JSON_ENABLED}>:src/sinks/console-json-sink.cpp>
 )
 
 # Alias

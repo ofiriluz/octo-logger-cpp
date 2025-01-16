@@ -16,9 +16,6 @@
 #include <fmt/format.h>
 #include <iomanip>
 #include <thread>
-#ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
-#include <nlohmann/json.hpp>
-#endif
 #ifndef _WIN32
 #include <unistd.h>
 #else
@@ -104,10 +101,10 @@ static nlohmann::json init_context_info_impl(Log const& log,
     return std::move(j);
 }
 
-std::string Sink::formatted_log_json(Log const& log,
-                                     Channel const& channel,
-                                     ContextInfo const& context_info,
-                                     ContextInfo const& global_context_info) const
+nlohmann::json Sink::construct_log_json(Log const& log,
+                                        Channel const& channel,
+                                        ContextInfo const& context_info,
+                                        ContextInfo const& global_context_info) const
 {
     nlohmann::json j;
     std::stringstream ss;
@@ -128,7 +125,15 @@ std::string Sink::formatted_log_json(Log const& log,
 
     j["context_info"] = init_context_info_impl(log, channel, context_info, global_context_info);
 
-    return j.dump();
+    return j;
+}
+
+std::string Sink::formatted_log_json(Log const& log,
+                                     Channel const& channel,
+                                     ContextInfo const& context_info,
+                                     ContextInfo const& global_context_info) const
+{
+    return construct_log_json(log, channel, context_info, global_context_info).dump();
 }
 #endif
 

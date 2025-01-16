@@ -12,7 +12,7 @@
 #ifndef CHANNEL_HPP_
 #define CHANNEL_HPP_
 
-#include "log.hpp"
+#include "octo-logger-cpp/log.hpp"
 #include <memory>
 #include <string_view>
 #include <thread>

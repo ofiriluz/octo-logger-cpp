@@ -31,7 +31,10 @@ class SinkConfig
         FILE_SINK,
         SYSLOG_SINK,
 #endif
-        CUSTOM_SINK
+#ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
+        CONSOLE_JSON_SINK,
+#endif // OCTO_LOGGER_WITH_JSON_FORMATTING
+        CUSTOM_SINK,
     };
 
     enum class SinkOption : std::uint8_t
@@ -53,8 +56,14 @@ class SinkConfig
         FILE_LOG_FOLDER_NO_SEPARATE_BY_DATE,
         FILE_DISABLE_CONTEXT_INFO,
 
-        SYSLOG_LOG_NAME
+        SYSLOG_LOG_NAME,
 #endif
+
+#ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
+        CONSOLE_JSON_ORIGIN,
+        CONSOLE_JSON_HOST,
+        CONSOLE_JSON_SERVICE,
+#endif // OCTO_LOGGER_WITH_JSON_FORMATTING
     };
 
   private:
