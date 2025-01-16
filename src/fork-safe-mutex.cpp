@@ -22,7 +22,7 @@
 namespace octo::logger
 {
 
-ForkSafeMutex::ForkSafeMutex() : mutex_(std::make_unique<std::mutex>()), mutex_pid_(getpid())
+ForkSafeMutex::ForkSafeMutex() : mutex_(std::make_unique<MutexType>()), mutex_pid_(getpid())
 {
 }
 
@@ -47,7 +47,7 @@ void ForkSafeMutex::fork_reset()
     {
         // Mutex owned by parent only thread, best solution for bad state.
         mutex_.release();
-        mutex_ = std::make_unique<std::mutex>();
+        mutex_ = std::make_unique<MutexType>();
     }
     mutex_pid_ = getpid();
 }

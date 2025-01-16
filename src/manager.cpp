@@ -123,7 +123,7 @@ void Manager::terminate()
 
 void Manager::stop(bool discard)
 {
-    std::lock_guard<std::mutex> lock(sinks_mutex_);
+    std::lock_guard<std::mutex> lock(*sinks_mutex_);
     for (auto const& sink : sinks_)
     {
         sink->stop(discard);
@@ -141,7 +141,7 @@ void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& co
     // The local copy increments the ref-count and guarantees that the pointed-at context_info will not be deleted
     // while we're working on it, even if the global_context_info_ is replaced with a new context_info pointer
     auto context_info_handle(std::atomic_load(&global_context_info_));
-    std::lock_guard<std::mutex> lock(sinks_mutex_);
+    std::lock_guard<std::mutex> lock(*sinks_mutex_);
     for (auto& sink : sinks_)
     {
         sink->dump(log, channel, context_info, *context_info_handle);
@@ -149,7 +149,7 @@ void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& co
 }
 void Manager::clear_sinks()
 {
-    std::lock_guard<std::mutex> lock(sinks_mutex_);
+    std::lock_guard<std::mutex> lock(*sinks_mutex_);
     sinks_.clear();
 }
 
@@ -227,7 +227,7 @@ void Manager::update_global_context_info(ContextInfo const& new_context_info)
 
 void Manager::restart_sinks() const noexcept
 {
-    std::lock_guard<std::mutex> lock(sinks_mutex_);
+    std::lock_guard<std::mutex> lock(*sinks_mutex_);
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
 }
 

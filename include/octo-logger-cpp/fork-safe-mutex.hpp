@@ -20,8 +20,11 @@ namespace octo::logger
 
 class ForkSafeMutex
 {
+  public:
+    using MutexType = std::mutex;
+
   private:
-    std::unique_ptr<std::mutex> mutex_;
+    std::unique_ptr<MutexType> mutex_;
 #ifdef _WIN32
     typedef std::uint32_t pid_t;
 #endif
@@ -35,12 +38,12 @@ class ForkSafeMutex
     ForkSafeMutex(const ForkSafeMutex&) = delete;
     ForkSafeMutex& operator=(const ForkSafeMutex&) = delete;
 
-    inline operator std::mutex&() const
+    inline MutexType& operator*() const
     {
         return *mutex_;
     }
 
-    inline std::mutex& get() const
+    inline MutexType& get() const
     {
         return *mutex_;
     }
