@@ -31,6 +31,11 @@ class Logger::LoggerMock : public Logger
     {
         return Logger::context_info_;
     }
+
+    ChannelView& channel_view_getter()
+    {
+        return Logger::channel_view_;
+    }
 };
 
 } // namespace octo::logger
