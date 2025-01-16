@@ -47,6 +47,18 @@ class Log
   public:
     virtual ~Log();
 
+    [[deprecated("Use LogLevelUtils::level_to_string instead")]] static inline std::string level_to_string(
+        LogLevel level)
+    {
+        return LogLevelUtils::level_to_string(level);
+    }
+
+    [[deprecated("Use LogLevelUtils::string_to_level instead")]] static inline LogLevel string_to_level(
+        std::string const& level_str)
+    {
+        return LogLevelUtils::string_to_level(level_str);
+    }
+
     const std::chrono::time_point<std::chrono::system_clock>& time_created() const;
     [[nodiscard]] bool has_stream() const;
     // @brief Get the string representation of the log message. Caller must first check if the log has a stream.
