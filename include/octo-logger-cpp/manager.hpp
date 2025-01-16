@@ -31,20 +31,24 @@ namespace octo::logger
 {
 class Manager
 {
+  public:
+    using GlobalContextInfoType = ContextInfo const;
+    using GlobalContextInfoTypePtr = std::shared_ptr<GlobalContextInfoType>;
+
   private:
     static std::mutex manager_init_mutex_;
     static std::shared_ptr<Manager> manager_;
 
     std::unordered_map<std::string, ChannelPtr> channels_;
     std::vector<SinkPtr> sinks_;
-    ForkSafeMutex sinks_mutex_;
+    mutable ForkSafeMutex sinks_mutex_;
     ManagerConfigPtr config_;
     Log::LogLevel default_log_level_;
     std::shared_ptr<Logger> global_logger_;
     // Shared Pointer in order to allow thread safe usage on the 'dump' method
     // All access to this shared_ptr should be done through atomic_store/atomic_load functions
     // In the future we should switch to std::atomic_shared_ptr (c++20)
-    std::shared_ptr<ContextInfo const> global_context_info_;
+    GlobalContextInfoTypePtr global_context_info_;
 
   private:
     Manager();
@@ -72,7 +76,7 @@ class Manager
     void clear_channels();
     void restart_sinks() const noexcept;
     const Logger& global_logger() const;
-    std::shared_ptr<ContextInfo const> global_context_info() const;
+    GlobalContextInfoTypePtr global_context_info() const;
     void replace_global_context_info(ContextInfo context_info);
     // @brief replace the global context info with an rvalue to avoid extra copying
     // It is not named 'replace_global_context_info' to avoid ambiguity with the lvalue version

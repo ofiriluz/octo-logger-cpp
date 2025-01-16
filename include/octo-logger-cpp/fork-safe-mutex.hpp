@@ -35,7 +35,16 @@ class ForkSafeMutex
     ForkSafeMutex(const ForkSafeMutex&) = delete;
     ForkSafeMutex& operator=(const ForkSafeMutex&) = delete;
 
-    std::mutex& get();
+    inline operator std::mutex&() const
+    {
+        return *mutex_;
+    }
+
+    inline std::mutex& get() const
+    {
+        return *mutex_;
+    }
+
     /**
      * @brief Resets the mutex after a fork.
      * Should only be called if currently there are no additional threads using the mutex.

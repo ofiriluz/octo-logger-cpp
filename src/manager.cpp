@@ -19,7 +19,7 @@ std::mutex Manager::manager_init_mutex_;
 Manager::Manager()
     : config_(std::make_shared<ManagerConfig>()),
       default_log_level_(Log::LogLevel::INFO),
-      global_context_info_(std::make_shared<ContextInfo>())
+      global_context_info_(std::make_shared<Manager::GlobalContextInfoType>())
 {
 }
 
@@ -43,10 +43,7 @@ Manager& Manager::instance()
 void Manager::reset_manager()
 {
     std::lock_guard<std::mutex> lock(manager_init_mutex_);
-    if (manager_)
-    {
-        manager_.reset();
-    }
+    manager_.reset();
 }
 
 Manager::~Manager()
@@ -57,7 +54,7 @@ Manager::~Manager()
 ChannelView Manager::create_channel(std::string_view name)
 {
     return ChannelView(
-        (channels_.try_emplace(std::string(name), std::make_shared<Channel>(name, default_log_level_)).first->second));
+        channels_.try_emplace(name.data(), std::make_shared<Channel>(name, default_log_level_)).first->second);
 }
 
 const Channel& Manager::channel(const std::string& name) const
@@ -95,22 +92,23 @@ void Manager::configure(const ManagerConfigPtr& config, bool clear_old_sinks)
             default_log_level_ = static_cast<Log::LogLevel>(default_level);
         }
     }
-
-    // Create all the sinks
-    for (auto& sink_config : config_->sinks())
     {
-        SinkPtr sink = SinkFactory::instance().create_sink(sink_config);
-        if (sink)
+        std::lock_guard<std::mutex> lock(manager_init_mutex_);
+        // Create all the sinks
+        for (auto& sink_config : config_->sinks())
+        {
+            SinkPtr sink = SinkFactory::instance().create_sink(sink_config);
+            if (sink)
+            {
+                sinks_.push_back(std::move(sink));
+            }
+        }
+        for (auto& sink : config_->custom_sinks())
         {
             sinks_.push_back(sink);
         }
     }
-    for (auto& sink : config_->custom_sinks())
-    {
-        sinks_.push_back(sink);
-    }
-
-    for (auto& channel : channels_)
+    for (auto const& channel : channels_)
     {
         channel.second->set_log_level(default_log_level_);
     }
@@ -125,7 +123,8 @@ void Manager::terminate()
 
 void Manager::stop(bool discard)
 {
-    for (auto& sink : sinks_)
+    std::lock_guard<std::mutex> lock(sinks_mutex_);
+    for (auto const& sink : sinks_)
     {
         sink->stop(discard);
     }
@@ -142,7 +141,7 @@ void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& co
     // The local copy increments the ref-count and guarantees that the pointed-at context_info will not be deleted
     // while we're working on it, even if the global_context_info_ is replaced with a new context_info pointer
     auto context_info_handle(std::atomic_load(&global_context_info_));
-    std::lock_guard<std::mutex> lock(sinks_mutex_.get());
+    std::lock_guard<std::mutex> lock(sinks_mutex_);
     for (auto& sink : sinks_)
     {
         sink->dump(log, channel, context_info, *context_info_handle);
@@ -150,6 +149,7 @@ void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& co
 }
 void Manager::clear_sinks()
 {
+    std::lock_guard<std::mutex> lock(sinks_mutex_);
     sinks_.clear();
 }
 
@@ -174,7 +174,6 @@ void Manager::set_log_level(Log::LogLevel log_level)
     {
         return;
     }
-    std::lock_guard<std::mutex> lock(sinks_mutex_.get());
     default_log_level_ = log_level;
     for (auto& channel : channels_)
     {
@@ -198,7 +197,7 @@ bool Manager::mute_channel(std::string const& name)
     return true;
 }
 
-std::shared_ptr<ContextInfo const> Manager::global_context_info() const
+Manager::GlobalContextInfoTypePtr Manager::global_context_info() const
 {
     return std::atomic_load(&global_context_info_);
 }
@@ -211,8 +210,8 @@ void Manager::replace_global_context_info(ContextInfo context_info)
 void Manager::replace_global_context_info_rvalue(ContextInfo&& context_info)
 {
     // First allocate the new ContextInfo, and then atomically replace the pointer held in global_context_info_
-    auto new_context_info = std::make_shared<ContextInfo const>(context_info);
-    std::atomic_store(&global_context_info_, new_context_info);
+    auto new_context_info = std::make_shared<Manager::GlobalContextInfoType>(context_info);
+    std::atomic_store(&global_context_info_, std::move(new_context_info));
 }
 
 // Calling this method concurrently from multiple threads could result in loss of context info (one of the calls could
@@ -228,6 +227,7 @@ void Manager::update_global_context_info(ContextInfo const& new_context_info)
 
 void Manager::restart_sinks() const noexcept
 {
+    std::lock_guard<std::mutex> lock(sinks_mutex_);
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
 }
 

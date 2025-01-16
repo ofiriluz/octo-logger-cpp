@@ -31,11 +31,6 @@ ForkSafeMutex::~ForkSafeMutex()
     fork_reset();
 }
 
-std::mutex& ForkSafeMutex::get()
-{
-    return *mutex_;
-}
-
 void ForkSafeMutex::fork_reset()
 {
     if (mutex_pid_ == getpid())
