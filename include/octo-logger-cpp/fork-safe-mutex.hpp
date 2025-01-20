@@ -38,12 +38,12 @@ class ForkSafeMutex
     ForkSafeMutex(const ForkSafeMutex&) = delete;
     ForkSafeMutex& operator=(const ForkSafeMutex&) = delete;
 
-    inline MutexType& operator*() const
+    inline MutexType& operator*()
     {
         return *mutex_;
     }
 
-    inline MutexType& get() const
+    inline MutexType& get()
     {
         return *mutex_;
     }

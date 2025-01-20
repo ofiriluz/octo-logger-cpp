@@ -43,13 +43,13 @@ class LogLevelUtils
     static inline std::string const& level_to_string(LogLevel level) noexcept
     {
         static std::unordered_map<LogLevel, std::string> const level_names{
-            {LogLevel::QUIET, "Quiet"},
             {LogLevel::TRACE, "Trace"},
             {LogLevel::DEBUG, "Debug"},
             {LogLevel::INFO, "Info"},
             {LogLevel::NOTICE, "Notice"},
             {LogLevel::WARNING, "Warning"},
             {LogLevel::ERROR, "Error"},
+            {LogLevel::QUIET, "Quiet"},
         };
         return level_names.at(level);
     }
@@ -61,13 +61,13 @@ class LogLevelUtils
     static inline std::string const& level_to_string_lower(LogLevel level) noexcept
     {
         static std::unordered_map<LogLevel, std::string> const level_names{
-            {LogLevel::QUIET, "quiet"},
             {LogLevel::TRACE, "trace"},
             {LogLevel::DEBUG, "debug"},
             {LogLevel::INFO, "info"},
             {LogLevel::NOTICE, "notice"},
             {LogLevel::WARNING, "warning"},
             {LogLevel::ERROR, "error"},
+            {LogLevel::QUIET, "quiet"},
         };
         return level_names.at(level);
     }
@@ -79,13 +79,13 @@ class LogLevelUtils
     static inline std::string const& level_to_string_upper(LogLevel level) noexcept
     {
         static std::unordered_map<LogLevel, std::string> const level_names{
-            {LogLevel::QUIET, "QUIET"},
             {LogLevel::TRACE, "TRACE"},
             {LogLevel::DEBUG, "DEBUG"},
             {LogLevel::INFO, "INFO"},
             {LogLevel::NOTICE, "NOTICE"},
             {LogLevel::WARNING, "WARNING"},
             {LogLevel::ERROR, "ERROR"},
+            {LogLevel::QUIET, "QUIET"},
         };
         return level_names.at(level);
     }
@@ -97,13 +97,13 @@ class LogLevelUtils
     static inline std::string const& level_to_string_short(LogLevel level) noexcept
     {
         static std::unordered_map<LogLevel, std::string> const level_names{
-            {LogLevel::QUIET, "Q"},
             {LogLevel::TRACE, "T"},
             {LogLevel::DEBUG, "D"},
             {LogLevel::INFO, "I"},
             {LogLevel::NOTICE, "N"},
             {LogLevel::WARNING, "W"},
             {LogLevel::ERROR, "E"},
+            {LogLevel::QUIET, "Q"},
         };
         return level_names.at(level);
     }
@@ -112,20 +112,22 @@ class LogLevelUtils
      * @brief Convert a string to a LogLevel.
      *
      * The input string should be lowercase/UPPERCASE/Capitalized for efficiency.
-     * If the input string is in MiXeDcAsE, it will be normalized to UPPERCASE first which is less efficient.
+     * If the input string is in MiXeDcAsE, it will be normalized to UPPERCASE first, which is less efficient.
      *
      * @param level_str The string to convert.
+     *
+     * @throw std::runtime_error If the input does not match any known name of log level.
      */
     static inline LogLevel string_to_level(std::string const& level_str) noexcept(false)
     {
         static std::unordered_map<std::string, LogLevel> const level_names{
-            {"QUIET", LogLevel::QUIET},     {"Quiet", LogLevel::QUIET},     {"quiet", LogLevel::QUIET},
             {"TRACE", LogLevel::TRACE},     {"Trace", LogLevel::TRACE},     {"trace", LogLevel::TRACE},
             {"DEBUG", LogLevel::DEBUG},     {"Debug", LogLevel::DEBUG},     {"debug", LogLevel::DEBUG},
             {"INFO", LogLevel::INFO},       {"Info", LogLevel::INFO},       {"info", LogLevel::INFO},
             {"NOTICE", LogLevel::NOTICE},   {"Notice", LogLevel::NOTICE},   {"notice", LogLevel::NOTICE},
             {"WARNING", LogLevel::WARNING}, {"Warning", LogLevel::WARNING}, {"warning", LogLevel::WARNING},
             {"ERROR", LogLevel::ERROR},     {"Error", LogLevel::ERROR},     {"error", LogLevel::ERROR},
+            {"QUIET", LogLevel::QUIET},     {"Quiet", LogLevel::QUIET},     {"quiet", LogLevel::QUIET},
         };
         if (auto const itr = level_names.find(level_str); itr != level_names.cend())
         {
@@ -142,7 +144,7 @@ class LogLevelUtils
             return itr->second;
         }
 
-        throw std::runtime_error("Invalid Log Level String");
+        throw std::runtime_error("Invalid Log Level String [" + level_str + "]");
     }
 };
 

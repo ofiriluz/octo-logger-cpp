@@ -75,9 +75,8 @@ class ManagerConfig
 
     friend class SinkConfig;
 };
-typedef std::shared_ptr<ManagerConfig> ManagerConfigPtr;
+using ManagerConfigPtr = std::shared_ptr<ManagerConfig>;
 
-typedef std::shared_ptr<ManagerConfig> ManagerConfigPtr;
 template <>
 void ManagerConfig::set_option<std::string>(LoggerOption option, std::string value);
 template <>
