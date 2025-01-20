@@ -11,8 +11,10 @@
 
 #ifdef OCTO_LOGGER_WITH_AWS
 
-#include "octo-logger-cpp/compat.hpp"
 #include "octo-logger-cpp/aws/cloudwatch-sink.hpp"
+
+#include "octo-logger-cpp/compat.hpp"
+#include "octo-logger-cpp/log-level.hpp"
 #include <aws/logs/model/CreateLogGroupRequest.h>
 #include <aws/logs/model/CreateLogStreamRequest.h>
 #include <aws/logs/model/DescribeLogGroupsRequest.h>
@@ -42,7 +44,8 @@ namespace octo::logger::aws
 {
 bool CloudWatchSink::using_aws_lambda_logging() const
 {
-    return allow_overriding_by_aws_lambda_log_env_  && std::getenv(AWS_LAMBDA_LOG_GROUP_NAME_ENV_VAR) && std::getenv(AWS_LAMBDA_LOG_STREAM_NAME_ENV_VAR);
+    return allow_overriding_by_aws_lambda_log_env_ && std::getenv(AWS_LAMBDA_LOG_GROUP_NAME_ENV_VAR) &&
+           std::getenv(AWS_LAMBDA_LOG_STREAM_NAME_ENV_VAR);
 }
 
 void CloudWatchSink::assert_and_create_log_group()
@@ -357,8 +360,7 @@ std::string CloudWatchSink::log_stream_name(const Log& log, const Channel& chann
 std::string CloudWatchSink::formatted_json(Log const& log,
                                            Channel const& channel,
                                            ContextInfo const& context_info,
-                                           ContextInfo const& global_context_info
-                                           ) const
+                                           ContextInfo const& global_context_info) const
 {
     nlohmann::json j;
     std::stringstream ss;
@@ -374,9 +376,7 @@ std::string CloudWatchSink::formatted_json(Log const& log,
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
     j["timestamp"] = ss.str(); // ISO 8601
-    auto log_level_str = Log::level_to_string(log.log_level());
-    std::transform(log_level_str.begin(), log_level_str.end(), log_level_str.begin(), ::toupper);
-    j["log_level"] = log_level_str;
+    j["log_level"] = LogLevelUtils::level_to_string_upper(log.log_level());
     j["origin_func_name"] = "";
 
     j["context_info"] = init_context_info(log, channel, context_info, global_context_info);
@@ -388,8 +388,7 @@ void CloudWatchSink::init_context_info(nlohmann::json& dst,
                                        Log const& log,
                                        [[maybe_unused]] Channel const& channel,
                                        ContextInfo const& context_info,
-                                       ContextInfo const& global_context_info
-                                       ) const
+                                       ContextInfo const& global_context_info) const
 {
     switch (dst.type())
     {
