@@ -1,5 +1,5 @@
 /**
- * @file log.h
+ * @file log.hpp
  * @author ofir iluz (iluzofir@gmail.com)
  * @brief
  * @version 0.1
@@ -13,6 +13,7 @@
 #define LOG_HPP_
 
 #include "octo-logger-cpp/context-info.hpp"
+#include "octo-logger-cpp/log-level.hpp"
 #include "octo-logger-cpp/logger-test-definitions.hpp"
 #include <fmt/format.h>
 #include <fmt/printf.h>
@@ -30,16 +31,7 @@ class Logger;
 class Log
 {
   public:
-    enum class LogLevel : std::uint8_t
-    {
-        TRACE = 1,
-        DEBUG = 2,
-        INFO = 4,
-        NOTICE = 8,
-        WARNING = 16,
-        ERROR = 32,
-        QUIET = 255,
-    };
+    using LogLevel = octo::logger::LogLevel;
 
   private:
     std::optional<std::ostringstream> stream_;
@@ -55,8 +47,17 @@ class Log
   public:
     virtual ~Log();
 
-    static std::string level_to_string(const LogLevel& level);
-    static LogLevel string_to_level(const std::string& level_str);
+    [[deprecated("Use LogLevelUtils::level_to_string instead")]] static inline std::string level_to_string(
+        LogLevel level)
+    {
+        return LogLevelUtils::level_to_string(level);
+    }
+
+    [[deprecated("Use LogLevelUtils::string_to_level instead")]] static inline LogLevel string_to_level(
+        std::string const& level_str)
+    {
+        return LogLevelUtils::string_to_level(level_str);
+    }
 
     const std::chrono::time_point<std::chrono::system_clock>& time_created() const;
     [[nodiscard]] bool has_stream() const;

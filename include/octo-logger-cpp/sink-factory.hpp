@@ -12,7 +12,7 @@
 #ifndef SINK_FACTORY_HPP_
 #define SINK_FACTORY_HPP_
 
-#include "sink.hpp"
+#include "octo-logger-cpp/sink.hpp"
 
 namespace octo::logger
 {

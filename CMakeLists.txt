@@ -7,7 +7,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 INCLUDE(ConfigOptions)
 
 SET (JSON_ENABLED OFF)
-IF (WITH_AWS OR WITH_JSON_FORMATTING )
+IF (WITH_AWS OR WITH_JSON_FORMATTING)
     SET (JSON_ENABLED ON)
 ENDIF()
 
@@ -36,6 +36,7 @@ ADD_LIBRARY(octo-logger-cpp STATIC
     $<$<NOT:$<PLATFORM_ID:Windows>>:src/sinks/syslog-sink.cpp>
     $<$<BOOL:${WITH_AWS}>:src/aws/cloudwatch-sink.cpp>
     $<$<BOOL:${WITH_AWS}>:src/aws/aws-log-system.cpp>
+    $<$<BOOL:${JSON_ENABLED}>:src/sinks/console-json-sink.cpp>
 )
 
 # Alias

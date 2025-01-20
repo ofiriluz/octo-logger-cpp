@@ -19,16 +19,9 @@
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/sink-config.hpp"
 #include "octo-logger-cpp/sink.hpp"
-#include <cstring>
-#include <ctime>
-#include <dirent.h>
+#include <cinttypes>
 #include <fstream>
-#include <iomanip>
-#include <libgen.h>
 #include <string>
-#include <string_view>
-#include <strings.h>
-#include <sys/stat.h>
 #include <unordered_map>
 
 namespace octo::logger
@@ -39,7 +32,7 @@ class FileSink : public Sink
     struct File
     {
         std::ofstream stream;
-        uint32_t index;
+        std::uint32_t index;
         File();
     };
 
@@ -49,14 +42,14 @@ class FileSink : public Sink
     std::string combined_channels_prefix_;
     long size_per_file_;
     int max_files_;
-    std::map<std::string, std::shared_ptr<File>> current_files_;
+    std::unordered_map<std::string, std::shared_ptr<File>> current_files_;
     bool separate_channels_to_files_;
     bool separate_logs_by_date_folder_;
     std::string strftime_format_;
     bool disable_file_context_info_;
 
   private:
-    int recursive_folder_creation(const char* dir, mode_t mode);
+    static int recursive_folder_creation(const char* dir, mode_t mode);
     void create_log_path();
     void switch_stream(const std::string& channel);
 

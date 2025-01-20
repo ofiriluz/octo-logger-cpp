@@ -1,5 +1,5 @@
 /**
- * @file channel_view.h
+ * @file channel-view.hpp
  * @author arad yaron (aradyaron98@gmail.com)
  * @brief
  * @version 0.1

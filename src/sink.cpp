@@ -8,14 +8,14 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include "octo-logger-cpp/compat.hpp"
+
 #include "octo-logger-cpp/sink.hpp"
+
+#include "octo-logger-cpp/compat.hpp"
+#include "octo-logger-cpp/log-level.hpp"
 #include <fmt/format.h>
 #include <iomanip>
 #include <thread>
-#ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
-#include <nlohmann/json.hpp>
-#endif
 #ifndef _WIN32
 #include <unistd.h>
 #else
@@ -45,8 +45,8 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
     }
 
     ss << dtf << "." << std::setfill('0') << std::setw(3) << fraction << "]["
-       << Log::level_to_string(log.log_level())[0] << "][" << channel.channel_name() << "][PID(" << getpid()
-       << ")][TID(" << std::this_thread::get_id() << ")]" << extra_id << ": " << log.str();
+       << LogLevelUtils::level_to_string_short(log.log_level()) << "][" << channel.channel_name() << "][PID("
+       << getpid() << ")][TID(" << std::this_thread::get_id() << ")]" << extra_id << ": " << log.str();
 
     if (!disable_context_info && !(context_info.empty() && log.context_info().empty() && global_context_info.empty()))
     {
@@ -59,7 +59,7 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
 #ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
 static void init_context_info_impl(nlohmann::json& dst,
                                    Log const& log,
-                                   Channel const& channel,
+                                   Channel const&,
                                    ContextInfo const& context_info,
                                    ContextInfo const& global_context_info)
 {
@@ -101,10 +101,10 @@ static nlohmann::json init_context_info_impl(Log const& log,
     return std::move(j);
 }
 
-std::string Sink::formatted_log_json(Log const& log,
-                                     Channel const& channel,
-                                     ContextInfo const& context_info,
-                                     ContextInfo const& global_context_info) const
+nlohmann::json Sink::construct_log_json(Log const& log,
+                                        Channel const& channel,
+                                        ContextInfo const& context_info,
+                                        ContextInfo const& global_context_info) const
 {
     nlohmann::json j;
     std::stringstream ss;
@@ -120,14 +120,20 @@ std::string Sink::formatted_log_json(Log const& log,
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
     j["timestamp"] = ss.str(); // ISO 8601
-    auto log_level_str = Log::level_to_string(log.log_level());
-    std::transform(log_level_str.begin(), log_level_str.end(), log_level_str.begin(), ::toupper);
-    j["log_level"] = log_level_str;
+    j["log_level"] = LogLevelUtils::level_to_string_upper(log.log_level());
     j["origin_func_name"] = "";
 
     j["context_info"] = init_context_info_impl(log, channel, context_info, global_context_info);
 
-    return j.dump();
+    return j;
+}
+
+std::string Sink::formatted_log_json(Log const& log,
+                                     Channel const& channel,
+                                     ContextInfo const& context_info,
+                                     ContextInfo const& global_context_info) const
+{
+    return construct_log_json(log, channel, context_info, global_context_info).dump();
 }
 #endif
 
@@ -141,9 +147,9 @@ std::string Sink::formatted_log_plaintext_short(Log const& log, Channel const& c
     {
         extra_id = "[" + log.extra_identifier() + "]";
     }
-    ss << "[MS(" << std::setfill('0') << std::setw(3) << fraction << ")][" << Log::level_to_string(log.log_level())[0]
-       << "][" << channel.channel_name() << "][TID(" << std::this_thread::get_id() << ")]" << extra_id << ": "
-       << log.str();
+    ss << "[MS(" << std::setfill('0') << std::setw(3) << fraction << ")]["
+       << LogLevelUtils::level_to_string_short(log.log_level()) << "][" << channel.channel_name() << "][TID("
+       << std::this_thread::get_id() << ")]" << extra_id << ": " << log.str();
     return ss.str();
 }
 
@@ -173,8 +179,7 @@ std::string Sink::formatted_log(Log const& log,
     switch (line_format_)
     {
         case LineFormat::PLAINTEXT_LONG:
-            return formatted_log_plaintext_long(
-                log, channel, context_info, global_context_info, disable_context_info);
+            return formatted_log_plaintext_long(log, channel, context_info, global_context_info, disable_context_info);
         case LineFormat::PLAINTEXT_SHORT:
             return formatted_log_plaintext_short(log, channel);
 #ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
@@ -184,13 +189,13 @@ std::string Sink::formatted_log(Log const& log,
             {
                 return formatted_log_json(log, channel, context_info, global_context_info);
             }
-            catch(const nlohmann::json::exception & ex)
+            catch (nlohmann::json::exception const&)
             {
                 // Fallback to default upon exception
                 return formatted_log_plaintext_long(
                     log, channel, context_info, global_context_info, disable_context_info);
             }
-            catch(const std::exception & ex)
+            catch (std::exception const&)
             {
                 // Fallback to default upon exception
                 return formatted_log_plaintext_long(
@@ -219,7 +224,7 @@ void Sink::stop(bool discard)
 }
 
 Sink::Sink(const SinkConfig& config, std::string const& origin, LineFormat format)
-    : config_(config), origin_(std::move(origin)), line_format_(format), is_discarding_(false)
+    : config_(config), is_discarding_(false), origin_(origin), line_format_(format)
 {
 }
 } // namespace octo::logger

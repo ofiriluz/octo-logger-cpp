@@ -16,6 +16,9 @@
 #include "octo-logger-cpp/log.hpp"
 #include "octo-logger-cpp/logger.hpp"
 #include "octo-logger-cpp/sink-config.hpp"
+#ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
+#include <nlohmann/json.hpp>
+#endif // OCTO_LOGGER_WITH_JSON_FORMATTING
 #include <atomic>
 #include <memory>
 #include <string>
@@ -52,6 +55,10 @@ class Sink
                                              bool disable_context_info) const;
     std::string formatted_log_plaintext_short(Log const& log, Channel const& channel) const;
 #ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
+    nlohmann::json construct_log_json(Log const& log,
+                                      Channel const& channel,
+                                      ContextInfo const& context_info,
+                                      ContextInfo const& global_context_info) const;
     std::string formatted_log_json(Log const& log,
                                    Channel const& channel,
                                    ContextInfo const& context_info,
