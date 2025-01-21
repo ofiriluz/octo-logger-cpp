@@ -15,9 +15,12 @@
 namespace octo::logger
 {
 ConsoleJSONSink::ConsoleJSONSink(SinkConfig const& sink_config)
-    : Sink(sink_config, sink_config.option_default(SinkConfig::SinkOption::CONSOLE_JSON_ORIGIN, ""), LineFormat::JSON),
-      host_(sink_config.option_default(SinkConfig::SinkOption::CONSOLE_JSON_HOST, "")),
-      service_(sink_config.option_default(SinkConfig::SinkOption::CONSOLE_JSON_SERVICE, ""))
+    : Sink(sink_config,
+           sink_config.option_default(SinkConfig::SinkOption::CONSOLE_JSON_ORIGIN, DEFAULT_ORIGIN),
+           LineFormat::JSON),
+      host_(sink_config.option_default(SinkConfig::SinkOption::CONSOLE_JSON_HOST, DEFAULT_HOST)),
+      service_(sink_config.option_default(SinkConfig::SinkOption::CONSOLE_JSON_SERVICE, DEFAULT_SERVICE)),
+      indent_(sink_config.option_default(SinkConfig::SinkOption::CONSOLE_JSON_INDENT, DEFAULT_INDENT))
 {
 }
 
@@ -30,10 +33,10 @@ void ConsoleJSONSink::dump(Log const& log,
     {
         try
         {
-            auto log_json = construct_log_json(log, channel, context_info, global_context_info);
+            nlohmann::json log_json(construct_log_json(log, channel, context_info, global_context_info));
             log_json["host"] = host_;
             log_json["service"] = service_;
-            std::cout << log_json.dump() << std::endl;
+            std::cout << log_json.dump(indent_) << std::endl;
         }
         catch (nlohmann::json::exception const& ex)
         {
