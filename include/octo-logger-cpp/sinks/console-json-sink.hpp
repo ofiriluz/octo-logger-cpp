@@ -30,12 +30,20 @@ namespace octo::logger
  * - CONSOLE_JSON_HOST: The host name to be included in the JSON log.
  * - CONSOLE_JSON_ORIGIN: The origin name to be included in the JSON log.
  * - CONSOLE_JSON_SERVICE: The service name to be included in the JSON log.
+ * - CONSOLE_JSON_INDENT: The indentation level to be used in the JSON log.
  */
 class ConsoleJSONSink : public Sink
 {
+  public:
+    static auto constexpr DEFAULT_HOST = "";
+    static auto constexpr DEFAULT_ORIGIN = "";
+    static auto constexpr DEFAULT_SERVICE = "";
+    static int constexpr DEFAULT_INDENT = -1;
+
   private:
     std::string const host_;
     std::string const service_;
+    int const indent_;
 
   public:
     explicit ConsoleJSONSink(SinkConfig const& sink_config);

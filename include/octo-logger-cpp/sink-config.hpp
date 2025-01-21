@@ -63,6 +63,7 @@ class SinkConfig
         CONSOLE_JSON_ORIGIN,
         CONSOLE_JSON_HOST,
         CONSOLE_JSON_SERVICE,
+        CONSOLE_JSON_INDENT,
 #endif // OCTO_LOGGER_WITH_JSON_FORMATTING
     };
 
