@@ -204,7 +204,16 @@ std::string Sink::formatted_log(Log const& log,
         }
 #endif
     }
-    throw std::runtime_error(fmt::format("Unexpected Error Occurred - received illegal line format: [{}]", static_cast<int>(line_format_)));
+    // Log an error only once so that it doesn't spam upon every log message
+    static bool error_logged = false;
+    if (!error_logged)
+    {
+        std::cerr << fmt::format("Unexpected Error Occurred - received illegal line format: [{}] falling back to PLAINTEXT_LONG", static_cast<int>(line_format_)) << std::endl;
+        error_logged = true;
+    }
+    // Fallback to default upon exception
+    return formatted_log_plaintext_long(
+        log, channel, context_info, global_context_info, disable_context_info);
 }
 
 const SinkConfig& Sink::config() const
