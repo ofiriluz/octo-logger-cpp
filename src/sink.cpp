@@ -211,7 +211,7 @@ std::string Sink::formatted_log(Log const& log,
         std::cerr << fmt::format("Unexpected Error Occurred - received illegal line format: [{}] falling back to PLAINTEXT_LONG", static_cast<int>(line_format_)) << std::endl;
         error_logged = true;
     }
-    // Fallback to default upon exception
+    // Fallback to PLAINTEXT_LONG format
     return formatted_log_plaintext_long(
         log, channel, context_info, global_context_info, disable_context_info);
 }
