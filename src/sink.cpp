@@ -204,7 +204,7 @@ std::string Sink::formatted_log(Log const& log,
         }
 #endif
     }
-    throw std::runtime_error("Unexpected Error Occurred");
+    throw std::runtime_error(fmt::format("Unexpected Error Occurred - received illegal line format: [{}]", static_cast<int>(line_format_)));
 }
 
 const SinkConfig& Sink::config() const
