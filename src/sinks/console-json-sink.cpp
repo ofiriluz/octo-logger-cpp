@@ -20,7 +20,8 @@ ConsoleJSONSink::ConsoleJSONSink(SinkConfig const& sink_config)
            LineFormat::JSON),
       host_(sink_config.option_default(SinkConfig::SinkOption::CONSOLE_JSON_HOST, DEFAULT_HOST)),
       service_(sink_config.option_default(SinkConfig::SinkOption::CONSOLE_JSON_SERVICE, DEFAULT_SERVICE)),
-      indent_(sink_config.option_default(SinkConfig::SinkOption::CONSOLE_JSON_INDENT, DEFAULT_INDENT))
+      indent_(sink_config.option_default(SinkConfig::SinkOption::CONSOLE_JSON_INDENT, DEFAULT_INDENT)),
+      log_thread_id_(sink_config.option_default<bool>(SinkConfig::SinkOption::LOG_THREAD_ID, false))
 {
 }
 
@@ -36,6 +37,13 @@ void ConsoleJSONSink::dump(Log const& log,
             nlohmann::json log_json(construct_log_json(log, channel, context_info, global_context_info));
             log_json["host"] = host_;
             log_json["service"] = service_;
+            if (log_thread_id_)
+            {
+                std::ostringstream oss;
+                ss << std::this_thread::get_id();
+                log_json["context_info"]["thread_id"] = oss.str();
+            }
+
             std::cout << log_json.dump(indent_) << std::endl;
         }
         catch (nlohmann::json::exception const& ex)
