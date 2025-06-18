@@ -40,7 +40,7 @@ void ConsoleJSONSink::dump(Log const& log,
             if (log_thread_id_)
             {
                 std::ostringstream oss;
-                ss << std::this_thread::get_id();
+                oss << std::this_thread::get_id();
                 log_json["context_info"]["thread_id"] = oss.str();
             }
 
