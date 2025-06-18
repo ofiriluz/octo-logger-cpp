@@ -44,7 +44,6 @@ class ConsoleJSONSink : public Sink
     std::string const host_;
     std::string const service_;
     int const indent_;
-    bool const log_thread_id_;
 
   public:
     explicit ConsoleJSONSink(SinkConfig const& sink_config);

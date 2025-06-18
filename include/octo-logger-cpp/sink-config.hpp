@@ -43,7 +43,7 @@ class SinkConfig
         CONSOLE_DISABLE_CONTEXT_INFO,
 
         LINE_FORMAT,
-        LOG_THREAD_ID,
+
 #ifndef _WIN32
         FILE_LOG_FILES_PATH,
         FILE_SIZE_PER_LOG_FILE,
