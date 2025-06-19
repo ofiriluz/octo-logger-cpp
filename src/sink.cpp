@@ -123,8 +123,6 @@ nlohmann::json Sink::construct_log_json(Log const& log,
     else if (timestamp_format_ == Sink::TimestampFormat::UNIX_EPOCH)
     {
         auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch());
-        std::time_t time = std::chrono::duration_cast<std::chrono::seconds>(ms).count();
-        auto fraction = ms.count() % 1000;
         j["timestamp"] = static_cast<double>(ms.count()) / 1000.0;
     }
     else

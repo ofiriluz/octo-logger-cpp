@@ -363,8 +363,6 @@ std::string CloudWatchSink::formatted_json(Log const& log,
                                            ContextInfo const& global_context_info) const
 {
     nlohmann::json j;
-    std::stringstream ss;
-    std::time_t const log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
     if (timestamp_format_ == Sink::TimestampFormat::ISO8601)
     {
         std::stringstream ss;
@@ -381,7 +379,6 @@ std::string CloudWatchSink::formatted_json(Log const& log,
     else if (timestamp_format_ == Sink::TimestampFormat::UNIX_EPOCH)
     {
         auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch());
-        
         j["timestamp"] =  static_cast<double>(ms.count()) / 1000.0;
     }
     else

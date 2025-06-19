@@ -30,13 +30,19 @@ namespace octo::logger
 class Sink
 {
   public:
-    enum class LineFormat : std::uint8_t
+    enum class LineFormat : int
     {
         PLAINTEXT_LONG = 0,  // Used in console
         PLAINTEXT_SHORT = 1, // Used in syslog
 #ifdef OCTO_LOGGER_WITH_JSON_FORMATTING
         JSON = 2,
 #endif
+    };
+
+    enum class TimestampFormat : int
+    {
+        ISO8601 = 0, // ISO 8601 format, e.g., "2023-10-01T12:34:56Z"
+        UNIX_EPOCH = 1   // Unix timestamp format, e.g., "1696152896"
     };
 
   private:
@@ -47,6 +53,7 @@ class Sink
     const SinkConfig& config() const;
     const std::string origin_;
     const LineFormat line_format_;
+    const Sink::TimestampFormat timestamp_format_;
 
     std::string formatted_log_plaintext_long(Log const& log,
                                              Channel const& channel,
@@ -74,6 +81,12 @@ class Sink
     inline static LineFormat extract_format_with_default(const SinkConfig& config, LineFormat default_format)
     {
         return static_cast<LineFormat>(
+            config.option_default(SinkConfig::SinkOption::LINE_FORMAT, static_cast<int>(default_format)));
+    }
+
+    inline static TimestampFormat extract_timstamp_format_with_default(const SinkConfig& config, TimestampFormat default_format)
+    {
+        return static_cast<TimestampFormat>(
             config.option_default(SinkConfig::SinkOption::LINE_FORMAT, static_cast<int>(default_format)));
     }
 
