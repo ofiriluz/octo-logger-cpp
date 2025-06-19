@@ -19,8 +19,11 @@
 namespace octo::logger::compat
 {
 
-inline struct tm* localtime(const time_t* timep, struct tm* result)
+
+
+inline struct tm* localtime(const time_t* timep, struct tm* result);
 {
+    static
 #ifndef _WIN32
     return localtime_r(timep, result);
 #else

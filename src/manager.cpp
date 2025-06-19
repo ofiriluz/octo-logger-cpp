@@ -234,6 +234,12 @@ void Manager::restart_sinks() noexcept
 void Manager::child_on_fork() noexcept
 {
     sinks_mutex_.fork_reset();
+    if (global_context_info_)
+    {
+        // Replace as atmoic operations on shared_ptr are not fork-safe
+        // On fork, there is only one thread, so we can safely replace the pointer without a lock
+        global_context_info_ = std::make_shared<GlobalContextInfoType>(*global_context_info_);
+    }
 }
 
 } // namespace octo::logger

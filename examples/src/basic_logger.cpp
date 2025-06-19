@@ -17,7 +17,8 @@ int main(int argc, char** argv)
     auto config = std::make_shared<octo::logger::ManagerConfig>();
     config->set_option(octo::logger::ManagerConfig::LoggerOption::DEFAULT_CHANNEL_LEVEL,
                        octo::logger::Log::LogLevel::TRACE);
-    octo::logger::SinkConfig console_sink("Console", octo::logger::SinkConfig::SinkType::CONSOLE_SINK);
+    octo::logger::SinkConfig console_sink("Console", octo::logger::SinkConfig::SinkType::CONSOLE_JSON_SINK);
+    console_sink.set_option(octo::logger::SinkConfig::SinkOption::LOG_THREAD_ID, true);
     config->add_sink(console_sink);
     octo::logger::Manager::instance().configure(config);
 
