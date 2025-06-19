@@ -13,8 +13,10 @@
 
 namespace octo::logger::compat
 {
+
 namespace
 {
+
 struct tm* localtime_internal(const time_t* timep, struct tm* result)
 {
 #ifndef _WIN32
@@ -46,7 +48,8 @@ static bool check_is_utc()
     return static_cast<int>(mktime(local) - mktime(gmt)) != 0;
 }
 
-}
+} // namespace
+
 struct tm* localtime(const time_t* timep, struct tm* result)
 {
     static bool is_utc = check_is_utc();
