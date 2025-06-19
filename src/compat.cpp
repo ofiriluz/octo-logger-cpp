@@ -57,7 +57,6 @@ struct tm* localtime(const time_t* timep, struct tm* result)
     // If it is, we use gmtime instead of localtime.
     // NOTE: This is not a perfect solution, as gmtime also locks, but for less time.
     // Check the web, this is a known issue with localtime and fork.
-    // https://stackoverflow.com/questions/1207718/calling-localtime-in-a-fork
     return is_utc ? gmtime_internal(timep, result) : localtime_internal(timep, result);
 }
 

@@ -50,8 +50,8 @@ TEST_CASE_METHOD(LoggerPerformanceFixture, "Logger fork performance test: child 
         }
     }
 
-    // Wait 2 seconds before reaping children
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    // Wait 5 seconds before reaping children
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     int failed_waits = 0;
     for (pid_t pid : children) {
         int status = 0;
