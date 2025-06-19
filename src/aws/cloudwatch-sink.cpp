@@ -307,7 +307,7 @@ CloudWatchSink::CloudWatchSink(SinkConfig const& config,
       log_group_tags_(std::move(log_group_tags)),
       thread_pid_(::getpid()),
       allow_overriding_by_aws_lambda_log_env_(allow_overriding_by_aws_lambda_log_env),
-      log_thread_id_(log_thread_id)
+      log_thread_id_(log_thread_id || config.option_default<bool>(SinkConfig::SinkOption::LOG_THREAD_ID, false))
 {
 #ifndef UNIT_TESTS
     // Create the AWS client
