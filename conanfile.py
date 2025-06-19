@@ -11,11 +11,13 @@ class OctoLoggerCPPConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "with_aws": [True, False],
-        "with_json_formatting": [True, False]
+        "with_json_formatting": [True, False],
+        "with_performance_tests": [True, False],
     }
     default_options = {
         "with_aws": False,
-        "with_json_formatting" : False
+        "with_json_formatting" : True,
+        "with_performance_tests": False,
     }
 
     def set_version(self):
