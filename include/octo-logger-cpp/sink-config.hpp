@@ -44,6 +44,7 @@ class SinkConfig
 
         LINE_FORMAT,
         LOG_THREAD_ID,
+        TIMESTAMP_FORMAT,
 #ifndef _WIN32
         FILE_LOG_FILES_PATH,
         FILE_SIZE_PER_LOG_FILE,
