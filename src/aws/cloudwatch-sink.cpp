@@ -365,17 +365,32 @@ std::string CloudWatchSink::formatted_json(Log const& log,
     nlohmann::json j;
     std::stringstream ss;
     std::time_t const log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
-    struct tm timeinfo;
-    auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch()) % 1000;
-    // Put datetime with milliseconds: YYYY-MM-DDTHH:MM:SS.mmm
-    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%FT%T");
-    ss << "." << std::setfill('0') << std::setw(3) << ms.count();
-    // Put timezone as offset from UTC: ±HHMM
-    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%z");
+    if (timestamp_format_ == Sink::TimestampFormat::ISO8601)
+    {
+        std::stringstream ss;
+        std::time_t const log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
+        struct tm timeinfo;
+        auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch()) % 1000;
+        // Put datetime with milliseconds: YYYY-MM-DDTHH:MM:SS.mmm
+        ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%FT%T");
+        ss << "." << std::setfill('0') << std::setw(3) << ms.count();
+        // Put timezone as offset from UTC: ±HHMM
+        ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%z");
+        j["timestamp"] = ss.str(); // ISO 8601
+    }
+    else if (timestamp_format_ == Sink::TimestampFormat::UNIX_EPOCH)
+    {
+        auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch());
+        
+        j["timestamp"] =  static_cast<double>(ms.count()) / 1000.0;
+    }
+    else
+    {
+        throw std::runtime_error(fmt::format("Unexpected timestamp format: {}", static_cast<int>(timestamp_format_)));
+    }
     j["message"] = log.str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
-    j["timestamp"] = ss.str(); // ISO 8601
     j["log_level"] = LogLevelUtils::level_to_string_upper(log.log_level());
     j["origin_func_name"] = "";
 
