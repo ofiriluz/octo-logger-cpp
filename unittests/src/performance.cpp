@@ -21,6 +21,7 @@ public:
 
 TEST_CASE_METHOD(LoggerPerformanceFixture, "Logger fork performance test: child does not hang after first log", "[logger][fork][performance]")
 {
+    octo::logger::Manager::instance().register_atfork_handlers();
     
     constexpr int NUM_FORKS = 1000;
     auto config = std::make_shared<octo::logger::ManagerConfig>();
@@ -46,21 +47,17 @@ TEST_CASE_METHOD(LoggerPerformanceFixture, "Logger fork performance test: child 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     for (int i = 0; i < NUM_FORKS; ++i) {
-        octo::logger::Manager::instance().execute_pre_fork();
         pid_t pid = fork();
         if (pid == 0) {
             // Child process
-            octo::logger::Manager::instance().execute_post_fork(true);
             std::cerr << "Child process started with pid: " << getpid() << std::endl;
             logger.info().formatted(FMT_STRING("Child {} log"), getpid());
             _exit(0);
         } else if (pid > 0) {
             // Parent process: log to ensure logging threads are alive
-            octo::logger::Manager::instance().execute_post_fork(false);
             logger.info().formatted(FMT_STRING("Parent after fork {}"), pid);
             children.push_back(pid);
         } else {
-            octo::logger::Manager::instance().execute_post_fork(true);
             FAIL("fork() failed");
         }
     }

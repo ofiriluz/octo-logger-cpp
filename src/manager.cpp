@@ -11,6 +11,10 @@
 
 #include "octo-logger-cpp/manager.hpp"
 
+#ifndef _WIN32
+#include <pthread.h>
+#endif //_WIN32
+
 namespace octo::logger
 {
 std::shared_ptr<Manager> Manager::manager_;
@@ -231,12 +235,49 @@ void Manager::restart_sinks() noexcept
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
 }
 
+#ifndef _WIN32
+namespace
+{
+static void static_execute_pre_fork()
+{
+    Manager::instance().execute_pre_fork();
+}
+
+static void static_execute_post_fork_parent()
+{
+    Manager::instance().execute_post_fork_parent();
+}
+
+static void static_execute_post_fork_child() noexcept
+{
+    Manager::instance().execute_post_fork_child();
+}
+}
+
+void Manager::register_atfork_handlers()
+{
+    // Register the atfork handlers for the manager
+    pthread_atfork(
+        static_execute_pre_fork,
+        static_execute_post_fork_parent,
+        static_execute_post_fork_child
+    );
+}
+
+#endif //_WIN32
+
 void Manager::execute_pre_fork() noexcept
 {
     sinks_mutex_.get().lock();
 }
 
-void Manager::execute_post_fork(bool is_child) noexcept
+void Manager::execute_post_fork_parent() noexcept
+{
+    sinks_mutex_.get().unlock();
+}
+
+
+void Manager::execute_post_fork_child() noexcept
 {
     sinks_mutex_.get().unlock();
 }
