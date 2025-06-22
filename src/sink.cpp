@@ -248,7 +248,7 @@ void Sink::stop(bool discard)
 
 Sink::Sink(const SinkConfig& config, std::string const& origin, LineFormat format)
     : config_(config), is_discarding_(false), origin_(origin), line_format_(format), timestamp_format_(
-        extract_timstamp_format_with_default(config, Sink::TimestampFormat::ISO8601))
+        extract_timestamp_format_with_default(config, Sink::TimestampFormat::ISO8601))
 {
 }
 } // namespace octo::logger
