@@ -28,7 +28,7 @@ TEST_CASE("gmtime_safe matches std::gmtime", "[compat][gmtime]") {
         REQUIRE(safe_tm.tm_mday == std_ptr->tm_mday);
         REQUIRE(safe_tm.tm_mon == std_ptr->tm_mon);
         REQUIRE(safe_tm.tm_year == std_ptr->tm_year);
-        // Note: are not supported
+        // Note: These are not supported
         // REQUIRE(safe_tm.tm_wday == std_ptr->tm_wday);
         // REQUIRE(safe_tm.tm_yday == std_ptr->tm_yday);
         // REQUIRE(safe_tm.tm_isdst == std_ptr->tm_isdst);
