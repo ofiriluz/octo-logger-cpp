@@ -84,6 +84,15 @@ class Manager
     void update_global_context_info(ContextInfo const& new_context_info);
     // @brief execute this function on child process after fork before logging anything
     void child_on_fork() noexcept;
+    // @brief execute this function on parent process before fork without logging anything afterwards. This locks and does not allow logging until the child_on_fork/parent_on_fork is called
+    void parent_pre_fork() noexcept;
+    // @brief execute this function on parent process after fork before logging anything
+    void parent_on_fork() noexcept;
+
+    [[nodiscard]] Log::LogLevel default_log_level() const
+    {
+        return default_log_level_;
+    }
 
     [[nodiscard]] Log::LogLevel get_log_level() const;
     void set_log_level(Log::LogLevel log_level);

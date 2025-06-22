@@ -140,8 +140,8 @@ void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& co
     // Copy shared pointer in order to allow update without locking on replace_global_context_info
     // The local copy increments the ref-count and guarantees that the pointed-at context_info will not be deleted
     // while we're working on it, even if the global_context_info_ is replaced with a new context_info pointer
-    auto context_info_handle(std::atomic_load(&global_context_info_));
     std::lock_guard<std::mutex> lock(*sinks_mutex_);
+    auto context_info_handle(std::atomic_load(&global_context_info_));
     for (auto& sink : sinks_)
     {
         sink->dump(log, channel, context_info, *context_info_handle);
@@ -233,7 +233,17 @@ void Manager::restart_sinks() noexcept
 
 void Manager::child_on_fork() noexcept
 {
-    sinks_mutex_.fork_reset();
+    sinks_mutex_.get().unlock();
+}
+
+void Manager::parent_pre_fork() noexcept
+{
+    sinks_mutex_.get().lock();
+}
+
+void Manager::parent_on_fork() noexcept
+{
+    sinks_mutex_.get().unlock();
 }
 
 } // namespace octo::logger
