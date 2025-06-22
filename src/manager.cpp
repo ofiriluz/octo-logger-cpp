@@ -11,10 +11,6 @@
 
 #include "octo-logger-cpp/manager.hpp"
 
-#ifndef _WIN32
-#include <pthread.h>
-#endif //_WIN32
-
 namespace octo::logger
 {
 std::shared_ptr<Manager> Manager::manager_;
@@ -144,8 +140,8 @@ void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& co
     // Copy shared pointer in order to allow update without locking on replace_global_context_info
     // The local copy increments the ref-count and guarantees that the pointed-at context_info will not be deleted
     // while we're working on it, even if the global_context_info_ is replaced with a new context_info pointer
-    std::lock_guard<std::mutex> lock(*sinks_mutex_);
     auto context_info_handle(std::atomic_load(&global_context_info_));
+    std::lock_guard<std::mutex> lock(*sinks_mutex_);
     for (auto& sink : sinks_)
     {
         sink->dump(log, channel, context_info, *context_info_handle);
@@ -235,55 +231,15 @@ void Manager::restart_sinks() noexcept
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
 }
 
-#ifndef _WIN32
-namespace
+void Manager::child_on_fork() noexcept
 {
-static void static_execute_pre_fork()
+    sinks_mutex_.fork_reset();
+    if (global_context_info_)
 {
-    Manager::instance().execute_pre_fork();
-}
-
-static void static_execute_post_fork_parent()
-{
-    Manager::instance().execute_post_fork_parent();
-}
-
-static void static_execute_post_fork_child() noexcept
-{
-    Manager::instance().execute_post_fork_child();
-}
-}
-
-void Manager::register_atfork_handlers()
-{
-    // Register the atfork handlers for the manager
-    auto ret = pthread_atfork(
-        static_execute_pre_fork,
-        static_execute_post_fork_parent,
-        static_execute_post_fork_child
-    );
-    if (ret != 0)
-    {
-        throw std::runtime_error("Failed to register atfork handlers for the logger manager: " + std::to_string(ret));
+        // Replace as atmoic operations on shared_ptr are not fork-safe
+        // On fork, there is only one thread, so we can safely replace the pointer without a lock
+        global_context_info_ = std::make_shared<GlobalContextInfoType>(*global_context_info_);
     }
-}
-
-#endif //_WIN32
-
-void Manager::execute_pre_fork() noexcept
-{
-    sinks_mutex_.get().lock();
-}
-
-void Manager::execute_post_fork_parent() noexcept
-{
-    sinks_mutex_.get().unlock();
-}
-
-
-void Manager::execute_post_fork_child() noexcept
-{
-    sinks_mutex_.get().unlock();
 }
 
 } // namespace octo::logger

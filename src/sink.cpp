@@ -110,12 +110,16 @@ nlohmann::json Sink::construct_log_json(Log const& log,
     std::stringstream ss;
     std::time_t const log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
     struct tm timeinfo;
+    struct tm timeinfo_safe;
     auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch()) % 1000;
+    compat::localtime(&log_time_t, &timeinfo);
     // Put datetime with milliseconds: YYYY-MM-DDTHH:MM:SS.mmm
-    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%FT%T");
+    ss << std::put_time(&timeinfo, "%FT%T");
     ss << "." << std::setfill('0') << std::setw(3) << ms.count();
     // Put timezone as offset from UTC: ±HHMM
-    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%z");
+    ss << std::put_time(&timeinfo, "%z");
+
+
     j["message"] = log.str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();

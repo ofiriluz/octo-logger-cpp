@@ -82,24 +82,8 @@ class Manager
     // It is not named 'replace_global_context_info' to avoid ambiguity with the lvalue version
     void replace_global_context_info_rvalue(ContextInfo&& context_info);
     void update_global_context_info(ContextInfo const& new_context_info);
-
-#ifndef _WIN32
-    // @brief register atfork handlers for the manager
-    // This is required to avoid deadlocks when using fork in a multi-threaded environment
-    // It is not supported on Windows, so this function is only defined for POSIX systems
-    // @note This function replaces te need to call execute_pre_fork, execute_post_fork_parent, execute_post_fork_parent
-  void register_atfork_handlers();
-#endif //_WIN32
-
-    // @brief execute this function on after fork at parent process before logging anything beforehand.
-    // Not doing this can result in deadlocks
-    void execute_pre_fork() noexcept;
-    // @brief execute this function on after fork at parent process before logging anything beforehand.
-    // Not doing this can result in deadlocks
-    void execute_post_fork_parent() noexcept;
-    // @brief execute this function on after fork at child process before logging anything beforehand.
-    // Not doing this can result in deadlocks
-    void execute_post_fork_child() noexcept;
+    // @brief execute this function on child process after fork before logging anything
+    void child_on_fork() noexcept;
 
     [[nodiscard]] Log::LogLevel get_log_level() const;
     void set_log_level(Log::LogLevel log_level);
