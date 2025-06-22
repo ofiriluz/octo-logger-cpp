@@ -49,7 +49,7 @@ void FileSink::create_log_path()
         char dtf[TIME_FORMAT_SIZE];
         std::time_t const time_v = std::time(nullptr);
         struct tm timeinfo;
-        std::strftime(dtf, sizeof(dtf), "%d-%m-%Y", compat::localtime(&time_v, &timeinfo));
+        std::strftime(dtf, sizeof(dtf), "%d-%m-%Y", compat::localtime(&time_v, &timeinfo, safe_localtime_utc_));
         log_path_ += std::string(dtf);
     }
 }
@@ -92,7 +92,7 @@ void FileSink::switch_stream(const std::string& channel)
         char dtf[TIME_FORMAT_SIZE] = {};
         std::time_t const time_v = std::time(nullptr);
         struct tm timeinfo;
-        std::strftime(dtf, sizeof(dtf), strftime_format_.c_str(), compat::localtime(&time_v, &timeinfo));
+        std::strftime(dtf, sizeof(dtf), strftime_format_.c_str(), compat::localtime(&time_v, &timeinfo, safe_localtime_utc_));
         ss << "_" << dtf;
     }
     // If Channel file exists, close it and move to the index for this channel

@@ -29,7 +29,19 @@ namespace octo::logger::compat
 // That is why we use it only in case of utc, with the assumption that the timezone is intentional.
 struct tm *gmtime_safe(time_t time, struct tm *tm_time);
 
-struct tm* localtime(const time_t* timep, struct tm* result);
+inline struct tm* localtime(const time_t* timep, struct tm* result, bool safe_utc = false)
+{
+    if (safe_utc)
+    {
+        return gmtime_safe(*timep, result);
+    }
+#ifndef _WIN32
+    return localtime_r(timep, result);
+#else
+    errno = localtime_s(result, timep);
+    return errno == 0 ? result : nullptr;
+#endif
+}
 
 } // namespace octo::logger::compat
 

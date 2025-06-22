@@ -37,7 +37,7 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
     std::time_t time = std::chrono::duration_cast<std::chrono::seconds>(ms).count();
     auto fraction = ms.count() % 1000;
     struct tm timeinfo;
-    std::strftime(dtf, sizeof(dtf), "[%d/%m/%Y %H:%M:%S", compat::localtime(&time, &timeinfo));
+    std::strftime(dtf, sizeof(dtf), "[%d/%m/%Y %H:%M:%S", compat::localtime(&time, &timeinfo, safe_localtime_utc_));
     std::string extra_id;
     if (!log.extra_identifier().empty())
     {
@@ -112,7 +112,7 @@ nlohmann::json Sink::construct_log_json(Log const& log,
     struct tm timeinfo;
     struct tm timeinfo_safe;
     auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch()) % 1000;
-    compat::localtime(&log_time_t, &timeinfo);
+    compat::localtime(&log_time_t, &timeinfo, safe_localtime_utc_);
     // Put datetime with milliseconds: YYYY-MM-DDTHH:MM:SS.mmm
     ss << std::put_time(&timeinfo, "%FT%T");
     ss << "." << std::setfill('0') << std::setw(3) << ms.count();
@@ -237,7 +237,8 @@ void Sink::stop(bool discard)
 }
 
 Sink::Sink(const SinkConfig& config, std::string const& origin, LineFormat format)
-    : config_(config), is_discarding_(false), origin_(origin), line_format_(format)
+    : config_(config), is_discarding_(false), origin_(origin), line_format_(format), 
+safe_localtime_utc_(config.option_default(SinkConfig::SinkOption::USE_SAFE_LOCALTIME_UTC, false))
 {
 }
 } // namespace octo::logger

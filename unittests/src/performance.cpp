@@ -21,8 +21,6 @@ public:
 
 TEST_CASE_METHOD(LoggerPerformanceFixture, "Logger fork performance test: child does not hang after first log", "[logger][fork][performance]")
 {
-    setenv("TZ", "UTC", 1);
-    tzset();
     constexpr int NUM_FORKS = 1000;
     auto config = std::make_shared<octo::logger::ManagerConfig>();
     config->set_option(octo::logger::ManagerConfig::LoggerOption::DEFAULT_CHANNEL_LEVEL,
@@ -30,6 +28,7 @@ TEST_CASE_METHOD(LoggerPerformanceFixture, "Logger fork performance test: child 
     octo::logger::SinkConfig console_sink("Console", octo::logger::SinkConfig::SinkType::CONSOLE_JSON_SINK);
     console_sink.set_option(octo::logger::SinkConfig::SinkOption::CONSOLE_JSON_HOST, "localhost");
     console_sink.set_option(octo::logger::SinkConfig::SinkOption::LOG_THREAD_ID, true);
+    console_sink.set_option(octo::logger::SinkConfig::SinkOption::USE_SAFE_LOCALTIME_UTC, true);
     config->add_sink(console_sink);
     octo::logger::Manager::instance().configure(config);
 
