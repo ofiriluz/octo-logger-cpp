@@ -101,15 +101,8 @@ class Manager
     // Not doing this can result in deadlocks
     void execute_post_fork_child() noexcept;
 
-    [[nodiscard]] Log::LogLevel default_log_level() const
-    {
-        return default_log_level_;
-    }
-
     [[nodiscard]] Log::LogLevel get_log_level() const;
     void set_log_level(Log::LogLevel log_level);
-
-
 };
 } // namespace octo::logger
 
