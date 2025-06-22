@@ -82,11 +82,14 @@ class Manager
     // It is not named 'replace_global_context_info' to avoid ambiguity with the lvalue version
     void replace_global_context_info_rvalue(ContextInfo&& context_info);
     void update_global_context_info(ContextInfo const& new_context_info);
-    // @brief execute this function on child process after fork before logging anything
+    // @brief execute this function on child process after fork before logging anything. 
+    // Not doing this can result in deadlocks
     void child_on_fork() noexcept;
-    // @brief execute this function on parent process before fork without logging anything afterwards. This locks and does not allow logging until the child_on_fork/parent_on_fork is called
+    // @brief execute this function on parent process before fork without logging anything afterwards. This locks and does not allow logging until the child_on_fork/parent_on_fork is called.
+    // Not doing this can result in deadlocks
     void parent_pre_fork() noexcept;
     // @brief execute this function on parent process after fork before logging anything
+    // Not doing this can result in deadlocks
     void parent_on_fork() noexcept;
 
     [[nodiscard]] Log::LogLevel default_log_level() const
