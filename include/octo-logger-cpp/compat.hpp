@@ -19,7 +19,15 @@
 namespace octo::logger::compat
 {
 
-struct tm* localtime(const time_t* timep, struct tm* result);
+inline struct tm* localtime(const time_t* timep, struct tm* result)
+{
+#ifndef _WIN32
+    return localtime_r(timep, result);
+#else
+    errno = localtime_s(result, timep);
+    return errno == 0 ? result : nullptr;
+#endif
+}
 
 } // namespace octo::logger::compat
 
