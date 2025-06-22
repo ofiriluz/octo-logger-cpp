@@ -30,7 +30,7 @@ namespace octo::logger
 class Sink
 {
   public:
-    enum class LineFormat : uint8_t
+    enum class LineFormat : std::uint8_t
     {
         PLAINTEXT_LONG = 0,  // Used in console
         PLAINTEXT_SHORT = 1, // Used in syslog
@@ -39,7 +39,7 @@ class Sink
 #endif
     };
 
-    enum class TimestampFormat : uint8_t
+    enum class TimestampFormat : std::uint8_t
     {
         ISO8601 = 0, // ISO 8601 format, e.g., "2023-10-01T12:34:56Z"
         // To avoid deadlock on fork, Use UNIX_EPOCH, this is due internal locking on localtime/gmttime functionality.
