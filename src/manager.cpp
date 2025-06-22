@@ -236,12 +236,12 @@ void Manager::child_on_fork() noexcept
     sinks_mutex_.get().unlock();
 }
 
-void Manager::parent_pre_fork() noexcept
+void Manager::execute_pre_fork() noexcept
 {
     sinks_mutex_.get().lock();
 }
 
-void Manager::parent_on_fork() noexcept
+void Manager::execute_post_fork(bool child) noexcept
 {
     sinks_mutex_.get().unlock();
 }
