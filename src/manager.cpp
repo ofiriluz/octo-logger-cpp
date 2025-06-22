@@ -236,7 +236,7 @@ void Manager::execute_pre_fork() noexcept
     sinks_mutex_.get().lock();
 }
 
-void Manager::execute_post_fork(bool child) noexcept
+void Manager::execute_post_fork(bool is_child) noexcept
 {
     sinks_mutex_.get().unlock();
 }

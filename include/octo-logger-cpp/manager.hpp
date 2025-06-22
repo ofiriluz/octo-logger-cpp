@@ -87,7 +87,7 @@ class Manager
     void execute_pre_fork() noexcept;
     // @brief execute this function on after fork before logging anything beforehand.
     // Not doing this can result in deadlocks
-    void execute_post_fork(bool child) noexcept;
+    void execute_post_fork(bool is_child) noexcept;
 
     [[nodiscard]] Log::LogLevel default_log_level() const
     {
