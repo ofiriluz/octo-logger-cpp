@@ -85,10 +85,10 @@ class Sink
             config.option_default(SinkConfig::SinkOption::LINE_FORMAT, static_cast<int>(default_format)));
     }
 
-    inline static TimestampFormat extract_timstamp_format_with_default(const SinkConfig& config, TimestampFormat default_format)
+    inline static TimestampFormat extract_timestamp_format_with_default(const SinkConfig& config, TimestampFormat default_format)
     {
         return static_cast<TimestampFormat>(
-            config.option_default(SinkConfig::SinkOption::LINE_FORMAT, static_cast<int>(default_format)));
+            config.option_default(SinkConfig::SinkOption::TIMESTAMP_FORMAT, static_cast<int>(default_format)));
     }
 
     [[nodiscard]] virtual std::string formatted_context_info(Log const& log,
