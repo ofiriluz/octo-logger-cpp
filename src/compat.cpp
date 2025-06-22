@@ -52,7 +52,7 @@ static bool check_is_utc()
 
 struct tm* localtime(const time_t* timep, struct tm* result)
 {
-    static bool is_utc = check_is_utc();
+    const static bool is_utc = check_is_utc();
     // The reason is that localtime internally use __tz_convert, which locks.
     // Upon fork, in rare occasions, the child process may inherit the lock,
     // causing a deadlock if the child process tries to call localtime.
