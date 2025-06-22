@@ -231,11 +231,6 @@ void Manager::restart_sinks() noexcept
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
 }
 
-void Manager::child_on_fork() noexcept
-{
-    sinks_mutex_.get().unlock();
-}
-
 void Manager::execute_pre_fork() noexcept
 {
     sinks_mutex_.get().lock();
