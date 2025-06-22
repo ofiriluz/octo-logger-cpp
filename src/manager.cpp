@@ -257,11 +257,15 @@ static void static_execute_post_fork_child() noexcept
 void Manager::register_atfork_handlers()
 {
     // Register the atfork handlers for the manager
-    pthread_atfork(
+    auto ret = pthread_atfork(
         static_execute_pre_fork,
         static_execute_post_fork_parent,
         static_execute_post_fork_child
     );
+    if (ret != 0)
+    {
+        throw std::runtime_error("Failed to register atfork handlers for the logger manager: " + std::to_string(ret));
+    }
 }
 
 #endif //_WIN32
