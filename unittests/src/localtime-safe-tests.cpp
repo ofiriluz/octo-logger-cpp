@@ -43,7 +43,7 @@ TEST_CASE("Performance: gmtime_safe vs localtime_safe", "[compat][gmtime][localt
     std::vector<std::time_t> times;
     times.reserve(N);
     for (int i = 0; i < N; ++i) {
-        times.push_back(now + rand() % now); // Random times around now
+        times.push_back(now + rand() % now);
     }
     std::tm tm_buf = {};
     volatile int sum = 0; // prevent optimization
