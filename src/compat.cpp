@@ -14,11 +14,8 @@
 namespace octo::logger::compat
 {
 
-namespace
-{
-
 // See https://sourceware.org/bugzilla/show_bug.cgi?id=16145
-static void gmtime_safe_internal(time_t time, long timezone, struct tm *tm_time) 
+void gmtime_safe_internal(time_t time, long timezone, struct tm *tm_time) 
 {
     const char Days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     std::uint32_t n32_Pass4year;
@@ -77,15 +74,6 @@ static void gmtime_safe_internal(time_t time, long timezone, struct tm *tm_time)
 
     tm_time->tm_mday = (int)(time);
     return;
-}
-
-} // namespace
-
-
-struct tm *gmtime_safe(time_t time, struct tm *tm_time)
-{
-    gmtime_safe_internal(time, 0, tm_time);
-    return tm_time;
 }
 
 } // namespace octo::logger::compat

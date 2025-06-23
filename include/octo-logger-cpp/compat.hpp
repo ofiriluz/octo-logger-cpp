@@ -27,7 +27,12 @@ namespace octo::logger::compat
 // This is a partial implementation that matches most needs, but does not handle all use cases, 
 // like daylight saving time, and leap seconds.
 // That is why we use it only in case of utc, with the assumption that the timezone is intentional.
-struct tm *gmtime_safe(time_t time, struct tm *tm_time);
+void gmtime_safe_internal(time_t time, long timezone, struct tm *tm_time);
+inline struct tm *gmtime_safe(const time_t time, struct tm *tm_time)
+{
+    gmtime_safe_internal(time, 0, tm_time);
+    return tm_time;
+}
 
 inline struct tm* localtime(const time_t* timep, struct tm* result, bool safe_utc = false)
 {
