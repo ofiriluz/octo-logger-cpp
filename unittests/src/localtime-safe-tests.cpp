@@ -1,6 +1,7 @@
 #include <catch2/catch_all.hpp>
 #include "octo-logger-cpp/compat.hpp"
 #include <ctime>
+#include <cstdlib>
 #include <chrono>
 #include <thread>
 #include <iostream>
@@ -42,7 +43,7 @@ TEST_CASE("Performance: gmtime_safe vs localtime_safe", "[compat][gmtime][localt
     std::vector<std::time_t> times;
     times.reserve(N);
     for (int i = 0; i < N; ++i) {
-        times.push_back(now + i);
+        times.push_back(now + rand() % now); // Random times around now
     }
     std::tm tm_buf = {};
     volatile int sum = 0; // prevent optimization
