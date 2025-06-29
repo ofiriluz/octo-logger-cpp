@@ -118,7 +118,6 @@ nlohmann::json Sink::construct_log_json(Log const& log,
     // Put timezone as offset from UTC: ±HHMM
     ss << std::put_time(&timeinfo, "%z");
 
-
     j["message"] = log.str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
@@ -237,7 +236,7 @@ void Sink::stop(bool discard)
 
 Sink::Sink(const SinkConfig& config, std::string const& origin, LineFormat format)
     : config_(config), is_discarding_(false), origin_(origin), line_format_(format), 
-safe_localtime_utc_(config.option_default(SinkConfig::SinkOption::USE_SAFE_LOCALTIME_UTC, false))
+    safe_localtime_utc_(config.option_default(SinkConfig::SinkOption::USE_SAFE_LOCALTIME_UTC, false))
 {
 }
 } // namespace octo::logger

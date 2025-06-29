@@ -9,7 +9,7 @@
 TEST_CASE("gmtime_safe matches std::gmtime", "[compat][gmtime]") {
     using namespace std::chrono;
     // Test a range of times, including edge cases
-    std::time_t now = std::time(nullptr);
+    std::time_t const now = std::time(nullptr);
     std::time_t times[] = {
         0, // Epoch
         now,
@@ -30,7 +30,7 @@ TEST_CASE("gmtime_safe matches std::gmtime", "[compat][gmtime]") {
         REQUIRE(safe_tm.tm_mday == std_ptr->tm_mday);
         REQUIRE(safe_tm.tm_mon == std_ptr->tm_mon);
         REQUIRE(safe_tm.tm_year == std_ptr->tm_year);
-        // Note: These are not supported
+        // Note: These are not supported in the current implementation of safe gmtime
         // REQUIRE(safe_tm.tm_wday == std_ptr->tm_wday);
         // REQUIRE(safe_tm.tm_yday == std_ptr->tm_yday);
         // REQUIRE(safe_tm.tm_isdst == std_ptr->tm_isdst);
@@ -38,33 +38,30 @@ TEST_CASE("gmtime_safe matches std::gmtime", "[compat][gmtime]") {
 }
 
 TEST_CASE("Performance: gmtime_safe vs localtime_safe", "[compat][gmtime][localtime][performance]") {
-    constexpr int N = 1000000;
-    std::time_t now = std::time(nullptr);
+    constexpr int N = 1'000'000;
+    std::time_t const now = std::time(nullptr);
     std::vector<std::time_t> times;
     times.reserve(N);
     for (int i = 0; i < N; ++i) {
         times.push_back(now + rand() % now);
     }
     std::tm tm_buf = {};
-    volatile int sum = 0; // prevent optimization
 
     auto t1 = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < N; ++i) {
         std::tm* tm = octo::logger::compat::localtime(&times[i], &tm_buf, true);
-        sum += tm->tm_sec;
     }
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto gmtime_duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    auto const gmtime_duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
     t1 = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < N; ++i) {
         std::tm* tm = octo::logger::compat::localtime(&times[i], &tm_buf, false);
-        sum += tm->tm_sec;
     }
     t2 = std::chrono::high_resolution_clock::now();
-    auto localtime_duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    auto const localtime_duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
-    std::cout << "gmtime_safe: " << gmtime_duration << " ms, localtime_safe: " << localtime_duration << " ms, sum: " << sum << std::endl;
+    std::cout << "gmtime_safe: " << gmtime_duration << " ms, localtime_safe: " << localtime_duration << " ms" << std::endl;
     // Not a correctness test, just for timing
     REQUIRE(true);
 }

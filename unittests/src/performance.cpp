@@ -21,7 +21,7 @@ public:
 
 TEST_CASE_METHOD(LoggerPerformanceFixture, "Logger fork performance test: child does not hang after first log", "[logger][fork][performance]")
 {
-    constexpr int NUM_FORKS = 1000;
+    int constexpr NUM_FORKS = 1000;
     auto config = std::make_shared<octo::logger::ManagerConfig>();
     config->set_option(octo::logger::ManagerConfig::LoggerOption::DEFAULT_CHANNEL_LEVEL,
                        octo::logger::Log::LogLevel::INFO);
@@ -46,7 +46,7 @@ TEST_CASE_METHOD(LoggerPerformanceFixture, "Logger fork performance test: child 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     for (int i = 0; i < NUM_FORKS; ++i) {
-        pid_t pid = fork();
+        pid_t const pid = fork();
         if (pid == 0) {
             octo::logger::Manager::instance().child_on_fork();
             
@@ -94,7 +94,5 @@ TEST_CASE_METHOD(LoggerPerformanceFixture, "Logger fork performance test: child 
         }
         FAIL(std::to_string(failed_waits) + " children did not exit cleanly");
     }
-
-    // Stop background logger
 
 }
