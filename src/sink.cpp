@@ -37,7 +37,7 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
     std::time_t time = std::chrono::duration_cast<std::chrono::seconds>(ms).count();
     auto fraction = ms.count() % 1000;
     struct tm timeinfo;
-    std::strftime(dtf, sizeof(dtf), "[%d/%m/%Y %H:%M:%S", compat::localtime(&time, &timeinfo));
+    std::strftime(dtf, sizeof(dtf), "[%d/%m/%Y %H:%M:%S", compat::localtime(&time, &timeinfo, safe_localtime_utc_));
     std::string extra_id;
     if (!log.extra_identifier().empty())
     {
@@ -111,11 +111,13 @@ nlohmann::json Sink::construct_log_json(Log const& log,
     std::time_t const log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
     struct tm timeinfo;
     auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch()) % 1000;
+    compat::localtime(&log_time_t, &timeinfo, safe_localtime_utc_);
     // Put datetime with milliseconds: YYYY-MM-DDTHH:MM:SS.mmm
-    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%FT%T");
+    ss << std::put_time(&timeinfo, "%FT%T");
     ss << "." << std::setfill('0') << std::setw(3) << ms.count();
     // Put timezone as offset from UTC: ±HHMM
-    ss << std::put_time(compat::localtime(&log_time_t, &timeinfo), "%z");
+    ss << std::put_time(&timeinfo, "%z");
+
     j["message"] = log.str();
     j["origin"] = origin_;
     j["origin_service_name"] = channel.channel_name();
@@ -233,7 +235,8 @@ void Sink::stop(bool discard)
 }
 
 Sink::Sink(const SinkConfig& config, std::string const& origin, LineFormat format)
-    : config_(config), is_discarding_(false), origin_(origin), line_format_(format)
+    : config_(config), is_discarding_(false), origin_(origin), line_format_(format), 
+    safe_localtime_utc_(config.option_default(SinkConfig::SinkOption::USE_SAFE_LOCALTIME_UTC, false))
 {
 }
 } // namespace octo::logger

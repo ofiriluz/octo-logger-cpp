@@ -12,6 +12,8 @@ ADD_EXECUTABLE(${UT_EXECUTABLE}
     src/log-tests.cpp
     src/logger-tests.cpp
     src/logging-tests.cpp
+    src/localtime-safe-tests.cpp
+    $<$<BOOL:${WITH_PERFORMANCE_TESTS}>:src/performance.cpp>
     $<$<BOOL:${WITH_AWS}>:${PROJECT_SOURCE_DIR}/src/aws/cloudwatch-sink.cpp>
     $<$<BOOL:${WITH_AWS}>:src/cloudwatch-sink-tests.cpp>
     $<$<BOOL:${JSON_ENABLED}>:src/sinks/console-json-sink-tests.cpp>

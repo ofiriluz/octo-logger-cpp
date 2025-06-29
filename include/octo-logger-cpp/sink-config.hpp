@@ -44,6 +44,7 @@ class SinkConfig
 
         LINE_FORMAT,
         LOG_THREAD_ID,
+        USE_SAFE_LOCALTIME_UTC,
 #ifndef _WIN32
         FILE_LOG_FILES_PATH,
         FILE_SIZE_PER_LOG_FILE,
