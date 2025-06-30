@@ -47,6 +47,7 @@ class Sink
     const SinkConfig& config() const;
     const std::string origin_;
     const LineFormat line_format_;
+    const bool safe_localtime_utc_;
 
     std::string formatted_log_plaintext_long(Log const& log,
                                              Channel const& channel,
