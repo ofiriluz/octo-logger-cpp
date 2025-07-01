@@ -3,6 +3,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <chrono>
+#include <iomanip>
 #include <thread>
 #include <iostream>
 
@@ -37,6 +38,45 @@ TEST_CASE("gmtime_safe matches std::gmtime", "[compat][gmtime]") {
     }
 }
 
+// Helper function to format time as ISO 8601 with milliseconds and timezone offset
+// Should be same as how we serialize the timestamp for our Cloudwatch Sink and for the Console JSON Sink
+std::string format_time(std::tm const* timeinfo) {
+    std::stringstream ss;
+    // Put datetime with milliseconds: YYYY-MM-DDTHH:MM:SS.mmm
+    ss << std::put_time(timeinfo, "%FT%T");
+    std::chrono::milliseconds const ms{123}; // Arbitrary milliseconds
+    ss << "." << std::setfill('0') << std::setw(3) << ms.count();
+    // Put timezone as offset from UTC: ±HHMM
+    ss << std::put_time(timeinfo, "%z");
+    return ss.str();
+}
+
+TEST_CASE("Stringify compat::localtime with std::put_time with/without safe_utc enabled should match", "[compat][gmtime][put_time]") {
+    using namespace std::chrono;
+    // Test a range of times, including edge cases
+    std::time_t const now = std::time(nullptr);
+    std::time_t times[] = {
+        0, // Epoch
+        now,
+        now - 86400, // 1 day ago
+        now + 86400, // 1 day ahead
+        2147483647, // Year 2038 problem boundary (on 32-bit)
+    };
+    for (std::time_t t : times) {
+        std::tm safe_tm = {};
+        std::tm* safe_ptr = octo::logger::compat::localtime(&t, &safe_tm, true);
+        std::tm* std_ptr = std::gmtime(&t);
+        REQUIRE(safe_ptr != nullptr);
+        REQUIRE(std_ptr != nullptr);
+
+        // Compare stringified times
+        std::string safe_time_str = format_time(safe_ptr);
+        std::string std_time_str = format_time(std_ptr);
+        std::cout << "Safe time: " << safe_time_str << ", Std time: " << std_time_str << std::endl;
+        REQUIRE(safe_time_str == std_time_str);
+    }
+}
+
 TEST_CASE("Performance: gmtime_safe vs localtime_safe", "[compat][gmtime][localtime][performance]") {
     constexpr int N = 1'000'000;
     std::time_t const now = std::time(nullptr);
@@ -65,3 +105,4 @@ TEST_CASE("Performance: gmtime_safe vs localtime_safe", "[compat][gmtime][localt
     // Not a correctness test, just for timing
     REQUIRE(true);
 }
+
