@@ -51,7 +51,33 @@ std::string format_time(std::tm const* timeinfo) {
     return ss.str();
 }
 
-TEST_CASE("Stringify compat::localtime with std::put_time with/without safe_utc enabled should match", "[compat][gmtime][put_time]") {
+// Fixture to set the timezone to UTC for testing
+// Resets the original timezone after the test
+struct SetUTCTimezoneFixture {
+    std::string old_tz;
+
+    SetUTCTimezoneFixture() {
+        const char* tz = getenv("TZ");
+        old_tz = tz ? tz : "";
+
+        std::cout << "Setting timezone to UTC for tests" << std::endl;
+        setenv("TZ", "UTC", 1);
+        tzset();
+    }
+
+    ~SetUTCTimezoneFixture() {
+        if (!old_tz.empty()) {
+            std::cout << "Resetting timezone to " << old_tz << std::endl;
+            setenv("TZ", old_tz.c_str(), 1);
+        } else {
+            std::cout << "Unsetting TZ env var" << std::endl;
+            unsetenv("TZ");
+        }
+        tzset();
+    }
+};
+
+TEST_CASE_METHOD(SetUTCTimezoneFixture, "Stringify compat::localtime with std::put_time with/without safe_utc enabled should match", "[compat][gmtime][put_time]") {
     using namespace std::chrono;
     // Test a range of times, including edge cases
     std::time_t const now = std::time(nullptr);
@@ -63,17 +89,18 @@ TEST_CASE("Stringify compat::localtime with std::put_time with/without safe_utc 
         2147483647, // Year 2038 problem boundary (on 32-bit)
     };
     for (std::time_t t : times) {
-        std::tm safe_tm = {};
-        std::tm* safe_ptr = octo::logger::compat::localtime(&t, &safe_tm, true);
-        std::tm* std_ptr = std::gmtime(&t);
-        REQUIRE(safe_ptr != nullptr);
-        REQUIRE(std_ptr != nullptr);
+        std::tm safe_localtime_tm = {};
+        std::tm const* safe_localtime_ptr = octo::logger::compat::localtime(&t, &safe_localtime_tm, true);
+        std::tm unsafe_localtime_tm = {};
+        std::tm const* unsafe_localtime_ptr = octo::logger::compat::localtime(&t, &unsafe_localtime_tm, false);
+        REQUIRE(safe_localtime_ptr != nullptr);
+        REQUIRE(unsafe_localtime_ptr != nullptr);
 
         // Compare stringified times
-        std::string safe_time_str = format_time(safe_ptr);
-        std::string std_time_str = format_time(std_ptr);
-        std::cout << "Safe time: " << safe_time_str << ", Std time: " << std_time_str << std::endl;
-        REQUIRE(safe_time_str == std_time_str);
+        std::string const safe_localtime_str = format_time(safe_localtime_ptr);
+        std::string const unsafe_localtime_str = format_time(unsafe_localtime_ptr);
+        std::cout << "Safe time: " << safe_localtime_str << ", Std time: " << unsafe_localtime_str << std::endl;
+        REQUIRE(safe_localtime_str == unsafe_localtime_str);
     }
 }
 
