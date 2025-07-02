@@ -89,9 +89,9 @@ TEST_CASE_METHOD(SetUTCTimezoneFixture, "Stringify compat::localtime with std::p
         2147483647, // Year 2038 problem boundary (on 32-bit)
     };
     for (std::time_t t : times) {
-        std::tm safe_localtime_tm;
+        std::tm safe_localtime_tm = {};
         std::tm const* safe_localtime_ptr = octo::logger::compat::localtime(&t, &safe_localtime_tm, true);
-        std::tm unsafe_localtime_tm;
+        std::tm unsafe_localtime_tm = {};
         std::tm const* unsafe_localtime_ptr = octo::logger::compat::localtime(&t, &unsafe_localtime_tm, false);
         REQUIRE(safe_localtime_ptr != nullptr);
         REQUIRE(unsafe_localtime_ptr != nullptr);
