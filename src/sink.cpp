@@ -34,9 +34,9 @@ std::string Sink::formatted_log_plaintext_long(Log const& log,
     char dtf[1024];
     std::stringstream ss;
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch());
-    std::time_t time = std::chrono::duration_cast<std::chrono::seconds>(ms).count();
-    auto fraction = ms.count() % 1000;
-    struct tm timeinfo;
+    std::time_t const time = std::chrono::duration_cast<std::chrono::seconds>(ms).count();
+    auto const fraction = ms.count() % 1000;
+    struct tm timeinfo = {};
     std::strftime(dtf, sizeof(dtf), "[%d/%m/%Y %H:%M:%S", compat::localtime(&time, &timeinfo, safe_localtime_utc_));
     std::string extra_id;
     if (!log.extra_identifier().empty())
@@ -109,7 +109,7 @@ nlohmann::json Sink::construct_log_json(Log const& log,
     nlohmann::json j;
     std::stringstream ss;
     std::time_t const log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
-    struct tm timeinfo;
+    struct tm timeinfo = {};
     auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch()) % 1000;
     compat::localtime(&log_time_t, &timeinfo, safe_localtime_utc_);
     // Put datetime with milliseconds: YYYY-MM-DDTHH:MM:SS.mmm

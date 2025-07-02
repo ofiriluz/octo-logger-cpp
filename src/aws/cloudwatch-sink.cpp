@@ -365,7 +365,7 @@ std::string CloudWatchSink::formatted_json(Log const& log,
     nlohmann::json j;
     std::stringstream ss;
     std::time_t const log_time_t = std::chrono::system_clock::to_time_t(log.time_created());
-    struct tm timeinfo;
+    struct tm timeinfo = {};
     auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(log.time_created().time_since_epoch()) % 1000;
     compat::localtime(&log_time_t, &timeinfo, safe_localtime_utc_);
     // Put datetime with milliseconds: YYYY-MM-DDTHH:MM:SS.mmm
