@@ -81,6 +81,9 @@ void gmtime_safe_internal(time_t time, long timezone, struct tm *tm_time)
     }
 
     tm_time->tm_mday = (int)(time);
+
+    // Always set daylight saving time to 0 (i.e DST not in effect), as we currently do not handle it.
+    tm_time->tm_isdst = 0;
     return;
 }
 
