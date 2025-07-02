@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [windows-2019]
+        os: [windows-2025]
         platform: [Win32, x64]
         toolset: [v142]
         build_type: [Debug, Release]
