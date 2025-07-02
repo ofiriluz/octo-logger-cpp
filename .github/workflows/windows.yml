@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [windows-2019]
+        os: [windows-2025]
         platform: [Win32, x64]
         toolset: [v142]
         build_type: [Debug, Release]
@@ -33,7 +33,7 @@ jobs:
       run: |
         conan profile new default --detect
         conan profile update settings.build_type=${{matrix.build_type}} default
-        conan install $GITHUB_WORKSPACE
+        conan install $GITHUB_WORKSPACE --build=catch2 --build=fmt
     - name: Build and test conan
       working-directory: ${{runner.workspace}}\\build
       shell: bash
