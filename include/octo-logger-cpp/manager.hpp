@@ -51,11 +51,14 @@ class Manager
     GlobalContextInfoTypePtr global_context_info_;
 
   private:
-    Manager();
+    explicit Manager();
 
   public:
+    // Non-copyable and non-movable
     Manager(const Manager& other) = delete;
     Manager& operator=(const Manager& other) = delete;
+    Manager(Manager&&) = delete;
+    Manager& operator=(Manager&&) = delete;
 
     static Manager& instance();
     static void reset_manager();
