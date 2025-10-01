@@ -25,10 +25,7 @@ Manager::Manager()
 
 Manager& Manager::instance()
 {
-    if (manager_)
-    {
-        return *manager_;
-    }
+    if (!manager_)
     {
         std::lock_guard<std::mutex> lock(manager_init_mutex_);
         if (!manager_)
