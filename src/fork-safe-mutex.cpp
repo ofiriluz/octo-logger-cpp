@@ -1,4 +1,3 @@
-
 /**
  * @file fork-safe-mutex.cpp
  * @author arad yaron (aradyaron98@gmail.com)
@@ -24,11 +23,6 @@ namespace octo::logger
 
 ForkSafeMutex::ForkSafeMutex() : mutex_(std::make_unique<MutexType>()), mutex_pid_(getpid())
 {
-}
-
-ForkSafeMutex::~ForkSafeMutex()
-{
-    fork_reset();
 }
 
 void ForkSafeMutex::fork_reset()

@@ -12,8 +12,8 @@
 #ifndef FORK_SAFE_MUTEX_HPP_
 #define FORK_SAFE_MUTEX_HPP_
 
-#include <mutex>
 #include <memory>
+#include <mutex>
 
 namespace octo::logger
 {
@@ -31,19 +31,17 @@ class ForkSafeMutex
     pid_t mutex_pid_;
 
   public:
-    ForkSafeMutex();
-    virtual ~ForkSafeMutex();
+    explicit ForkSafeMutex();
+    ~ForkSafeMutex() = default;
+
+    // Non-copyable and non-movable
     ForkSafeMutex(ForkSafeMutex&&) = delete;
     ForkSafeMutex& operator=(ForkSafeMutex&&) = delete;
     ForkSafeMutex(const ForkSafeMutex&) = delete;
     ForkSafeMutex& operator=(const ForkSafeMutex&) = delete;
 
-    inline MutexType& operator*()
-    {
-        return *mutex_;
-    }
-
-    inline MutexType& get()
+    /// @brief Implicit conversion to MutexType
+    operator MutexType&()
     {
         return *mutex_;
     }

@@ -216,7 +216,7 @@ bool CloudWatchSink::send_log_events(std::string const& stream_name, AwsLogEvent
     }
     if (!outcome.GetResult().GetNextSequenceToken().empty())
     {
-        std::lock_guard<std::mutex> lock(sequence_tokens_mtx_.get());
+        std::lock_guard<std::mutex> lock(sequence_tokens_mtx_);
         sequence_tokens_[stream_name] = outcome.GetResult().GetNextSequenceToken();
     }
     return true;
@@ -231,7 +231,7 @@ void CloudWatchSink::cloudwatch_logs_thread()
     {
         try
         {
-            std::unique_lock<std::mutex> lock(logs_mtx_.get());
+            std::unique_lock<std::mutex> lock(logs_mtx_);
             logs_cond_.wait_for(lock, THREAD_WAIT_DURATION, [&]() -> bool {
                 return logs_queue_.size() >= AWS_LOGS_PER_REQUEST_LIMIT || !is_running_;
             });
@@ -260,7 +260,7 @@ void CloudWatchSink::cloudwatch_logs_thread()
     }
     try
     {
-        std::unique_lock<std::mutex> lock(logs_mtx_.get());
+        std::unique_lock<std::mutex> lock(logs_mtx_);
         // Send the remainder logs
         while (!logs_queue_.empty())
         {
