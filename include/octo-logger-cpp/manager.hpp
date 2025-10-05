@@ -45,10 +45,11 @@ class Manager
     ManagerConfigPtr config_;
     Log::LogLevel default_log_level_;
     std::shared_ptr<Logger> global_logger_;
-    // Shared Pointer in order to allow thread safe usage on the 'dump' method with minimal locking
-    // The shared pointer is copied under mutex protection to ensure that the pointed-at ContextInfo will
-    // not be deleted while being used in the 'dump' method, even if another thread updates the global_context_info_
     /*
+     * Shared Pointer in order to allow thread safe usage on the 'dump' method with minimal locking.
+     * The shared pointer is copied under mutex protection to ensure that the pointed-at ContextInfo will not be
+     * deleted while being used in the 'dump' method, even if another thread updates the global_context_info_.
+     *
      * FIXME: In the future we should switch to std::atomic_shared_ptr (c++20) and then we won't need the mutex here,
      * We are using a mutex for fork-safety, but std::atomic_shared_ptr should inherently be fork-safe, since it should
      * only use lock-free atomic operations (as opposed to std::atomic_load/store on shared_ptr which uses locks internally)
