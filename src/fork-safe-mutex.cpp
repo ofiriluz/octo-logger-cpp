@@ -25,6 +25,11 @@ ForkSafeMutex::ForkSafeMutex() : mutex_(std::make_unique<MutexType>()), mutex_pi
 {
 }
 
+ForkSafeMutex::~ForkSafeMutex()
+{
+    fork_reset();
+}
+
 void ForkSafeMutex::fork_reset()
 {
     if (mutex_pid_ == getpid())
@@ -40,6 +45,7 @@ void ForkSafeMutex::fork_reset()
     else
     {
         // Mutex owned by parent only thread, best solution for bad state.
+        // This purposefully leaks the locked mutex, since we cannot unlock it, and destroying it would be undefined behavior.
         mutex_.release();
         mutex_ = std::make_unique<MutexType>();
     }
