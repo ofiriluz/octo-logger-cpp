@@ -49,7 +49,7 @@ class ForkSafeMutex
     /**
      * @brief Resets the mutex after a fork.
      * Should only be called if currently there are no additional threads using the mutex.
-     * If the mutex is locked by another thread, then it will be purposefully leaked and replaced by a newly allocated
+     * @warning If the mutex is locked by another thread, then it will be purposefully leaked and replaced by a newly allocated
      * mutex. We leak it since destroying a locked mutex is undefined behavior.
      */
     void fork_reset();
