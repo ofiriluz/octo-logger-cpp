@@ -12,8 +12,8 @@
 #ifndef FORK_SAFE_MUTEX_HPP_
 #define FORK_SAFE_MUTEX_HPP_
 
-#include <mutex>
 #include <memory>
+#include <mutex>
 
 namespace octo::logger
 {
@@ -31,19 +31,17 @@ class ForkSafeMutex
     pid_t mutex_pid_;
 
   public:
-    ForkSafeMutex();
-    virtual ~ForkSafeMutex();
+    explicit ForkSafeMutex();
+    ~ForkSafeMutex();
+
+    // Non-copyable and non-movable
     ForkSafeMutex(ForkSafeMutex&&) = delete;
     ForkSafeMutex& operator=(ForkSafeMutex&&) = delete;
     ForkSafeMutex(const ForkSafeMutex&) = delete;
     ForkSafeMutex& operator=(const ForkSafeMutex&) = delete;
 
-    inline MutexType& operator*()
-    {
-        return *mutex_;
-    }
-
-    inline MutexType& get()
+    /// @brief Implicit conversion to MutexType
+    operator MutexType&()
     {
         return *mutex_;
     }
@@ -51,6 +49,8 @@ class ForkSafeMutex
     /**
      * @brief Resets the mutex after a fork.
      * Should only be called if currently there are no additional threads using the mutex.
+     * @warning If the mutex is locked by another thread, then it will be purposefully leaked and replaced by a newly allocated
+     * mutex. We leak it since destroying a locked mutex is undefined behavior.
      */
     void fork_reset();
 };

@@ -25,10 +25,7 @@ Manager::Manager()
 
 Manager& Manager::instance()
 {
-    if (manager_)
-    {
-        return *manager_;
-    }
+    if (!manager_)
     {
         std::lock_guard<std::mutex> lock(manager_init_mutex_);
         if (!manager_)
@@ -123,7 +120,7 @@ void Manager::terminate()
 
 void Manager::stop(bool discard)
 {
-    std::lock_guard<std::mutex> lock(*sinks_mutex_);
+    std::lock_guard<std::mutex> lock(sinks_mutex_);
     for (auto const& sink : sinks_)
     {
         sink->stop(discard);
@@ -137,11 +134,15 @@ void Manager::dump(const Log& log, const std::string& channel_name, ContextInfo 
 
 void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& context_info)
 {
-    // Copy shared pointer in order to allow update without locking on replace_global_context_info
     // The local copy increments the ref-count and guarantees that the pointed-at context_info will not be deleted
     // while we're working on it, even if the global_context_info_ is replaced with a new context_info pointer
-    auto context_info_handle(std::atomic_load(&global_context_info_));
-    std::lock_guard<std::mutex> lock(*sinks_mutex_);
+    GlobalContextInfoTypePtr context_info_handle;
+    {
+        std::lock_guard<std::mutex> lock(global_context_info_mutex_);
+        context_info_handle = global_context_info_;
+    }
+
+    std::lock_guard<std::mutex> lock(sinks_mutex_);
     for (auto& sink : sinks_)
     {
         sink->dump(log, channel, context_info, *context_info_handle);
@@ -149,7 +150,7 @@ void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& co
 }
 void Manager::clear_sinks()
 {
-    std::lock_guard<std::mutex> lock(*sinks_mutex_);
+    std::lock_guard<std::mutex> lock(sinks_mutex_);
     sinks_.clear();
 }
 
@@ -199,7 +200,8 @@ bool Manager::mute_channel(std::string const& name)
 
 Manager::GlobalContextInfoTypePtr Manager::global_context_info() const
 {
-    return std::atomic_load(&global_context_info_);
+    std::lock_guard<std::mutex> lock(global_context_info_mutex_);
+    return global_context_info_;
 }
 
 void Manager::replace_global_context_info(ContextInfo context_info)
@@ -209,17 +211,22 @@ void Manager::replace_global_context_info(ContextInfo context_info)
 
 void Manager::replace_global_context_info_rvalue(ContextInfo&& context_info)
 {
-    // First allocate the new ContextInfo, and then atomically replace the pointer held in global_context_info_
+    // First allocate the new ContextInfo, and then lock and replace the pointer held in global_context_info_
     auto new_context_info = std::make_shared<Manager::GlobalContextInfoType>(context_info);
-    std::atomic_store(&global_context_info_, std::move(new_context_info));
+    std::lock_guard<std::mutex> lock(global_context_info_mutex_);
+    global_context_info_ = std::move(new_context_info);
 }
 
 // Calling this method concurrently from multiple threads could result in loss of context info (one of the calls could
 // be lost)
 void Manager::update_global_context_info(ContextInfo const& new_context_info)
 {
-    // First make a local copy of the current context info, update it and then replace the global context info
-    auto context_info_handle(std::atomic_load(&global_context_info_));
+    // First make a local copy of the current context info (under lock), update it and then replace the global context info
+    GlobalContextInfoTypePtr context_info_handle;
+    {
+        std::lock_guard<std::mutex> lock(global_context_info_mutex_);
+        context_info_handle = global_context_info_;
+    }
     auto copy_of_current = *context_info_handle;
     copy_of_current.update(new_context_info);
     replace_global_context_info_rvalue(std::move(copy_of_current));
@@ -227,16 +234,19 @@ void Manager::update_global_context_info(ContextInfo const& new_context_info)
 
 void Manager::restart_sinks() noexcept
 {
-    std::lock_guard<std::mutex> lock(*sinks_mutex_);
+    std::lock_guard<std::mutex> lock(sinks_mutex_);
     std::for_each(sinks_.cbegin(), sinks_.cend(), [](SinkPtr const& itr) { itr->restart_sink(); });
 }
 
 void Manager::child_on_fork() noexcept
 {
     sinks_mutex_.fork_reset();
+    global_context_info_mutex_.fork_reset();
     if (global_context_info_)
     {
-        // Replace as atomic operations on shared_ptr are not fork-safe
+        // This is probably unnecessary, since the shared_ptr should only use lock-free atomic operations, but just to
+        // be on the safe side...
+        // Replace in case there is any internal lock in the shared_ptr which is not fork-safe
         // On fork, there is only one thread, so we can safely replace the pointer without a lock
         global_context_info_ = std::make_shared<GlobalContextInfoType>(*global_context_info_);
     }

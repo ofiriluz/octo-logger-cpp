@@ -1,4 +1,3 @@
-
 /**
  * @file fork-safe-mutex.cpp
  * @author arad yaron (aradyaron98@gmail.com)
@@ -46,6 +45,7 @@ void ForkSafeMutex::fork_reset()
     else
     {
         // Mutex owned by parent only thread, best solution for bad state.
+        // This purposefully leaks the locked mutex, since we cannot unlock it, and destroying it would be undefined behavior.
         mutex_.release();
         mutex_ = std::make_unique<MutexType>();
     }
