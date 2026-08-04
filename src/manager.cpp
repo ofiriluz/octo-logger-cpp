@@ -151,10 +151,12 @@ void Manager::stop(bool discard)
 
 void Manager::dump(const Log& log, const std::string& channel_name, ContextInfo const& context_info)
 {
-    // Acquire channels_mutex_ only long enough to copy the ChannelPtr.
-    // Calling the Channel& overload under the channels lock would invert the
-    // lock order (channels_mutex_ -> sinks_mutex_), which is forbidden by the
-    // ordering declared in manager.hpp.
+    // Acquire channels_mutex_ only long enough to copy the ChannelPtr, then
+    // release it before calling the Channel& overload. dump() is the hot path
+    // (called on every log message) and the Channel& overload holds sinks_mutex_
+    // while writing to potentially slow sinks. Holding channels_mutex_ for that
+    // entire duration would serialize all channel operations (create, has, set_log_level)
+    // against every log write.
     ChannelPtr channel_ptr;
     {
         std::lock_guard<std::mutex> lock(channels_mutex_);
