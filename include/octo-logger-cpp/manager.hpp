@@ -40,6 +40,8 @@ class Manager
     static std::shared_ptr<Manager> manager_;
 
     std::unordered_map<std::string, ChannelPtr> channels_;
+    // Protects channels_ and default_log_level_ (both are always accessed
+    // together or in the same logical operations).
     // Lock ordering: channels_mutex_ must never be acquired while sinks_mutex_
     // is already held. Code that needs both must acquire channels_mutex_ first.
     mutable ForkSafeMutex channels_mutex_;

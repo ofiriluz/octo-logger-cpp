@@ -227,14 +227,15 @@ TEST_CASE_METHOD(ManagerChannelsFixture,
     reader_mute.join();
     reader_level.join();
 
-    // If we got here without a crash or TSan report, the test passes.
-    REQUIRE(true);
+    // Reaching here without a crash or TSan report means the test passed.
 }
 
 // ----- Fork regression guard -----
-// Verifies that channels_mutex_.fork_reset() is called in child_on_fork(),
-// so a child that acquires channels_mutex_ after fork does not deadlock.
-// This is NOT a pre-fix failure test; it guards the new mutex against fork.
+// Verifies that child_on_fork() resets channels_mutex_, so a forked child
+// can call create_channel() without deadlocking on the mutex it inherited
+// from the parent. The test forks while a channel exists (i.e. the mutex
+// has been acquired and released at least once), then calls child_on_fork()
+// in the child and exercises create_channel(). Deadlock == test failure.
 
 TEST_CASE_METHOD(ManagerChannelsFixture,
                  "create_channel: child process can create channels after child_on_fork without deadlock",
