@@ -32,6 +32,9 @@ jobs:
       shell: bash
       run: |
         conan profile new default --detect
+        # Conan v1 tops out at GCC 12; windows-2025 runners ship GCC 15 via MSYS2
+        conan profile update settings.compiler.version=12 default
+        conan profile update settings.compiler.libcxx=libstdc++11 default
         conan profile update settings.build_type=${{matrix.build_type}} default
         conan install $GITHUB_WORKSPACE --build=catch2 --build=fmt
     - name: Build and test conan
