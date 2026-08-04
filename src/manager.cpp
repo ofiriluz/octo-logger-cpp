@@ -50,24 +50,43 @@ Manager::~Manager()
 
 ChannelView Manager::create_channel(std::string_view name)
 {
-    return ChannelView(
-        channels_.try_emplace(name.data(), std::make_shared<Channel>(name, default_log_level_)).first->second);
+    // name.data() is not guaranteed to be NUL-terminated, so explicitly creating an std::string key.
+    std::string key(name);
+    std::lock_guard<std::mutex> lock(channels_mutex_);
+    // If the channel exists - return it
+    if (auto it = channels_.find(key); it != channels_.end())
+    {
+        return ChannelView(it->second);
+    }
+    // Create the channel
+    auto [it, _] = channels_.try_emplace(std::move(key), std::make_shared<Channel>(name, default_log_level_));
+    return ChannelView(it->second);
 }
 
+// NOTE: The returned reference is valid only as long as the caller holds a
+// ChannelPtr (e.g. via ChannelView) that keeps the Channel alive. Do not store
+// raw references across call sites that may call clear_channels() or
+// reset_manager() on another thread.
+// TODO <ADB-3405>: Replace this accessor and editable_channel() with a find_channel()
+// that returns a ChannelPtr, eliminating the reference-validity problem.
 const Channel& Manager::channel(const std::string& name) const
 {
-    if (channels_.find(name) != channels_.cend())
+    std::lock_guard<std::mutex> lock(channels_mutex_);
+    auto const it = channels_.find(name);
+    if (it != channels_.cend())
     {
-        return *channels_.at(name);
+        return *it->second;
     }
     throw std::runtime_error("No channel for given name [" + name + "]");
 }
 
 Channel& Manager::editable_channel(const std::string& name)
 {
-    if (channels_.find(name) != channels_.cend())
+    std::lock_guard<std::mutex> lock(channels_mutex_);
+    auto const it = channels_.find(name);
+    if (it != channels_.cend())
     {
-        return *channels_.at(name);
+        return *it->second;
     }
     throw std::runtime_error("No channel for given name [" + name + "]");
 }
@@ -80,15 +99,6 @@ void Manager::configure(const ManagerConfigPtr& config, bool clear_old_sinks)
     }
     config_ = config;
 
-    // Change the default level if requested by config
-    if (config_->has_option(ManagerConfig::LoggerOption::DEFAULT_CHANNEL_LEVEL))
-    {
-        int default_level;
-        if (config_->option(ManagerConfig::LoggerOption::DEFAULT_CHANNEL_LEVEL, default_level))
-        {
-            default_log_level_ = static_cast<Log::LogLevel>(default_level);
-        }
-    }
     {
         std::lock_guard<std::mutex> lock(manager_init_mutex_);
         // Create all the sinks
@@ -105,9 +115,21 @@ void Manager::configure(const ManagerConfigPtr& config, bool clear_old_sinks)
             sinks_.push_back(sink);
         }
     }
-    for (auto const& channel : channels_)
     {
-        channel.second->set_log_level(default_log_level_);
+        std::lock_guard<std::mutex> lock(channels_mutex_);
+        // Change the default level if requested by config, then propagate to all channels.
+        if (config_->has_option(ManagerConfig::LoggerOption::DEFAULT_CHANNEL_LEVEL))
+        {
+            int default_level = 0;
+            if (config_->option(ManagerConfig::LoggerOption::DEFAULT_CHANNEL_LEVEL, default_level))
+            {
+                default_log_level_ = static_cast<Log::LogLevel>(default_level);
+            }
+        }
+        for (auto const& [_, channel_ptr] : channels_)
+        {
+            channel_ptr->set_log_level(default_log_level_);
+        }
     }
 }
 
@@ -129,7 +151,18 @@ void Manager::stop(bool discard)
 
 void Manager::dump(const Log& log, const std::string& channel_name, ContextInfo const& context_info)
 {
-    dump(log, channel(channel_name), context_info);
+    // channels_ is intentionally NOT locked here: acquiring channels_mutex_ on
+    // every log message would serialize all logging behind channel management
+    // operations (create_channel, set_log_level, etc.).
+    // Known race: a concurrent create_channel() that triggers a rehash will
+    // invalidate iterators. In practice channels are created once at startup
+    // before any logging begins, so this window is very narrow.
+    auto const it = channels_.find(channel_name);
+    if (it == channels_.cend())
+    {
+        return;
+    }
+    dump(log, *it->second, context_info);
 }
 
 void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& context_info)
@@ -156,6 +189,7 @@ void Manager::clear_sinks()
 
 void Manager::clear_channels()
 {
+    std::lock_guard<std::mutex> lock(channels_mutex_);
     channels_.clear();
 }
 
@@ -166,29 +200,33 @@ const Logger& Manager::global_logger() const
 
 Log::LogLevel Manager::get_log_level() const
 {
+    std::lock_guard<std::mutex> lock(channels_mutex_);
     return default_log_level_;
 }
 
 void Manager::set_log_level(Log::LogLevel log_level)
 {
+    std::lock_guard<std::mutex> lock(channels_mutex_);
     if (log_level == default_log_level_)
     {
         return;
     }
     default_log_level_ = log_level;
-    for (auto& channel : channels_)
+    for (auto& [_, channel_ptr] : channels_)
     {
-        channel.second->set_log_level(default_log_level_);
+        channel_ptr->set_log_level(default_log_level_);
     }
 }
 
 bool Manager::has_channel(std::string const& name) const
 {
+    std::lock_guard<std::mutex> lock(channels_mutex_);
     return channels_.find(name) != channels_.cend();
 }
 
 bool Manager::mute_channel(std::string const& name)
 {
+    std::lock_guard<std::mutex> lock(channels_mutex_);
     auto const itr = channels_.find(name);
     if (itr == channels_.cend())
     {
@@ -240,6 +278,7 @@ void Manager::restart_sinks() noexcept
 
 void Manager::child_on_fork() noexcept
 {
+    channels_mutex_.fork_reset();
     sinks_mutex_.fork_reset();
     global_context_info_mutex_.fork_reset();
     if (global_context_info_)

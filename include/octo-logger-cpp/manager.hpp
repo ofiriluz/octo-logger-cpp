@@ -40,6 +40,11 @@ class Manager
     static std::shared_ptr<Manager> manager_;
 
     std::unordered_map<std::string, ChannelPtr> channels_;
+    // Protects channels_ and default_log_level_ (both are always accessed
+    // together or in the same logical operations).
+    // Lock ordering: channels_mutex_ must never be acquired while sinks_mutex_
+    // is already held. Code that needs both must acquire channels_mutex_ first.
+    mutable ForkSafeMutex channels_mutex_;
     std::vector<SinkPtr> sinks_;
     mutable ForkSafeMutex sinks_mutex_;
     ManagerConfigPtr config_;
@@ -80,6 +85,7 @@ class Manager
     void configure(const ManagerConfigPtr& config, bool clear_old_sinks = true);
     void terminate();
     void stop(bool discard = false);
+    /// @warning silently returns if channel_name is not found
     void dump(const Log& log, const std::string& channel_name, ContextInfo const& context_info);
     void dump(const Log& log, const Channel& channel, ContextInfo const& context_info);
     void clear_sinks();

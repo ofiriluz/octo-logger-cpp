@@ -13,6 +13,7 @@ ADD_EXECUTABLE(${UT_EXECUTABLE}
     src/logger-tests.cpp
     src/logging-tests.cpp
     src/localtime-safe-tests.cpp
+    $<$<NOT:$<PLATFORM_ID:Windows>>:src/manager-channels-tests.cpp>
     $<$<BOOL:${WITH_PERFORMANCE_TESTS}>:src/performance.cpp>
     $<$<BOOL:${WITH_AWS}>:${PROJECT_SOURCE_DIR}/src/aws/cloudwatch-sink.cpp>
     $<$<BOOL:${WITH_AWS}>:src/cloudwatch-sink-tests.cpp>
