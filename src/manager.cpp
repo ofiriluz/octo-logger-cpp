@@ -59,8 +59,8 @@ ChannelView Manager::create_channel(std::string_view name)
     {
         return ChannelView(it->second);
     }
-    auto result = channels_.try_emplace(std::move(key), std::make_shared<Channel>(name, default_log_level_));
-    return ChannelView(result.first->second);
+    auto [it, _] = channels_.try_emplace(std::move(key), std::make_shared<Channel>(name, default_log_level_));
+    return ChannelView(it->second);
 }
 
 // NOTE: The returned reference is valid only as long as the caller holds a
@@ -127,9 +127,9 @@ void Manager::configure(const ManagerConfigPtr& config, bool clear_old_sinks)
                 default_log_level_ = static_cast<Log::LogLevel>(default_level);
             }
         }
-        for (auto const& channel : channels_)
+        for (auto const& [_, channel_ptr] : channels_)
         {
-            channel.second->set_log_level(default_log_level_);
+            channel_ptr->set_log_level(default_log_level_);
         }
     }
 }
@@ -216,9 +216,9 @@ void Manager::set_log_level(Log::LogLevel log_level)
         return;
     }
     default_log_level_ = log_level;
-    for (auto& channel : channels_)
+    for (auto& [_, channel_ptr] : channels_)
     {
-        channel.second->set_log_level(default_log_level_);
+        channel_ptr->set_log_level(default_log_level_);
     }
 }
 
