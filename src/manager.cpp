@@ -157,7 +157,6 @@ void Manager::dump(const Log& log, const std::string& channel_name, ContextInfo 
     // Known race: a concurrent create_channel() that triggers a rehash will
     // invalidate iterators. In practice channels are created once at startup
     // before any logging begins, so this window is very narrow.
-    // See ADB-3406 for a proper lock-free follow-up.
     auto const it = channels_.find(channel_name);
     if (it == channels_.cend())
     {
