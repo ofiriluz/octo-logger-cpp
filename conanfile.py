@@ -66,11 +66,11 @@ class OctoLoggerCPPConan(ConanFile):
             raise ConanInvalidConfiguration(f"{self.name} does not support MSVC MT/MTd configurations, only MD/MDd is supported")
 
     def requirements(self):
-        self.requires("catch2/3.6.0")
-        self.requires("fmt/10.2.1")
-        self.requires("trompeloeil/47")
+        self.requires("catch2/3.1.0")
+        self.requires("fmt/9.0.0")
+        self.requires("trompeloeil/42")
         if self.options.with_json_formatting:
-            self.requires("nlohmann_json/3.11.3")
+            self.requires("nlohmann_json/3.11.2")
         if self.options.with_aws:
             self.requires("aws-sdk-cpp/1.9.234")
 
