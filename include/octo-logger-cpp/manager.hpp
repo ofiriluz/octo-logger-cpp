@@ -85,6 +85,7 @@ class Manager
     void configure(const ManagerConfigPtr& config, bool clear_old_sinks = true);
     void terminate();
     void stop(bool discard = false);
+    /// @warning silently returns if channel_name is not found
     void dump(const Log& log, const std::string& channel_name, ContextInfo const& context_info);
     void dump(const Log& log, const Channel& channel, ContextInfo const& context_info);
     void clear_sinks();
