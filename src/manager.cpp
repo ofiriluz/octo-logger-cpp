@@ -151,19 +151,19 @@ void Manager::stop(bool discard)
 
 void Manager::dump(const Log& log, const std::string& channel_name, ContextInfo const& context_info)
 {
-    // Acquire channels_mutex_ only long enough to copy the ChannelPtr, then
-    // release it before calling the Channel& overload.
-    ChannelPtr channel_ptr;
+    // channels_ is intentionally NOT locked here: acquiring channels_mutex_ on
+    // every log message would serialize all logging behind channel management
+    // operations (create_channel, set_log_level, etc.).
+    // Known race: a concurrent create_channel() that triggers a rehash will
+    // invalidate iterators. In practice channels are created once at startup
+    // before any logging begins, so this window is very narrow.
+    // See ADB-3406 for a proper lock-free follow-up.
+    auto const it = channels_.find(channel_name);
+    if (it == channels_.cend())
     {
-        std::lock_guard<std::mutex> lock(channels_mutex_);
-        auto const it = channels_.find(channel_name);
-        if (it == channels_.cend())
-        {
-            return;
-        }
-        channel_ptr = it->second;
+        return;
     }
-    dump(log, *channel_ptr, context_info);
+    dump(log, *it->second, context_info);
 }
 
 void Manager::dump(const Log& log, const Channel& channel, ContextInfo const& context_info)
