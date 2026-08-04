@@ -50,15 +50,15 @@ Manager::~Manager()
 
 ChannelView Manager::create_channel(std::string_view name)
 {
-    // Materialise the key once. name.data() is NOT NUL-terminated in general,
-    // so it must never be used as-is for map lookup or insertion.
+    // name.data() is not guaranteed to be NUL-terminated, so explicitly creating an std::string key.
     std::string key(name);
     std::lock_guard<std::mutex> lock(channels_mutex_);
-    auto it = channels_.find(key);
-    if (it != channels_.end())
+    // If the channel exists - return it
+    if (auto it = channels_.find(key); it != channels_.end())
     {
         return ChannelView(it->second);
     }
+    // Create the channel
     auto [it, _] = channels_.try_emplace(std::move(key), std::make_shared<Channel>(name, default_log_level_));
     return ChannelView(it->second);
 }
@@ -67,9 +67,8 @@ ChannelView Manager::create_channel(std::string_view name)
 // ChannelPtr (e.g. via ChannelView) that keeps the Channel alive. Do not store
 // raw references across call sites that may call clear_channels() or
 // reset_manager() on another thread.
-// TODO: Replace this accessor and editable_channel() with a find_channel()
+// TODO <ADB-3405>: Replace this accessor and editable_channel() with a find_channel()
 // that returns a ChannelPtr, eliminating the reference-validity problem.
-// See follow-up ticket ADB-3405 (linked to ADB-3114).
 const Channel& Manager::channel(const std::string& name) const
 {
     std::lock_guard<std::mutex> lock(channels_mutex_);
@@ -121,7 +120,7 @@ void Manager::configure(const ManagerConfigPtr& config, bool clear_old_sinks)
         // Change the default level if requested by config, then propagate to all channels.
         if (config_->has_option(ManagerConfig::LoggerOption::DEFAULT_CHANNEL_LEVEL))
         {
-            int default_level;
+            int default_level = 0;
             if (config_->option(ManagerConfig::LoggerOption::DEFAULT_CHANNEL_LEVEL, default_level))
             {
                 default_log_level_ = static_cast<Log::LogLevel>(default_level);
