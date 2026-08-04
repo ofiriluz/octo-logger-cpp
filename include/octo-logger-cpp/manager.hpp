@@ -40,6 +40,9 @@ class Manager
     static std::shared_ptr<Manager> manager_;
 
     std::unordered_map<std::string, ChannelPtr> channels_;
+    // Lock ordering: channels_mutex_ must never be acquired while sinks_mutex_
+    // is already held. Code that needs both must acquire channels_mutex_ first.
+    mutable ForkSafeMutex channels_mutex_;
     std::vector<SinkPtr> sinks_;
     mutable ForkSafeMutex sinks_mutex_;
     ManagerConfigPtr config_;
